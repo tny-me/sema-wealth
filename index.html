@@ -1073,7 +1073,7 @@ service cloud.firestore {
     <div class="modal-body">
       <div class="form-row">
         <div class="form-group"><label class="form-label">Concepto</label><input type="text" class="form-control" id="g-concepto" placeholder="ej. Renta, Súper"></div>
-        <div class="form-group"><label class="form-label">Monto ($)</label><input type="number" class="form-control" id="g-monto" placeholder="0.00" step="0.01"></div>
+        <div class="form-group"><label class="form-label">Monto ($)</label><input type="number" class="form-control" id="g-monto" placeholder="0.00" step="0.01" oninput="mostrarInfoTarjeta()"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Categoría</label>
@@ -1096,12 +1096,43 @@ service cloud.firestore {
       </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Método de pago</label>
-          <select class="form-control" id="g-metodo"><option>Efectivo</option><option>Tarjeta Débito</option><option>Tarjeta Crédito</option><option>Transferencia</option><option>OXXO</option></select>
+          <select class="form-control" id="g-metodo" onchange="toggleTarjetaSelector(this.value)">
+            <option>Efectivo</option><option>Tarjeta Débito</option><option value="Tarjeta Crédito">Tarjeta Crédito</option><option>Transferencia</option><option>OXXO</option>
+          </select>
         </div>
         <div class="form-group"><label class="form-label">Se paga con (fuente de ingreso)</label>
           <select class="form-control" id="g-fuente-ingreso">
             <option value="">Sin asignar</option>
           </select>
+        </div>
+      </div>
+      <!-- Selector de tarjeta — aparece solo cuando se elige Tarjeta Crédito -->
+      <div id="g-tarjeta-row" style="display:none">
+        <div class="form-group">
+          <label class="form-label" style="display:flex;align-items:center;gap:6px">
+            <i class="fa-solid fa-credit-card" style="color:var(--accent);font-size:12px"></i>
+            ¿Con qué tarjeta?
+          </label>
+          <select class="form-control" id="g-tarjeta-sel" onchange="mostrarInfoTarjeta()">
+            <option value="">— Selecciona una tarjeta —</option>
+          </select>
+          <div id="g-tarjeta-info" style="display:none;margin-top:8px;padding:10px 12px;background:var(--bg3);border-radius:9px;border-left:3px solid var(--accent)">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+              <div style="text-align:center">
+                <div class="mono" style="font-size:13px;font-weight:600;color:var(--green)" id="g-tc-disponible">$0</div>
+                <div style="font-size:10px;color:var(--text3);margin-top:2px">Disponible</div>
+              </div>
+              <div style="text-align:center">
+                <div class="mono" style="font-size:13px;font-weight:600" id="g-tc-usado">0%</div>
+                <div style="font-size:10px;color:var(--text3);margin-top:2px">Utilización</div>
+              </div>
+              <div style="text-align:center">
+                <div class="mono" style="font-size:13px;font-weight:600" id="g-tc-corte">— días</div>
+                <div style="font-size:10px;color:var(--text3);margin-top:2px">Para corte</div>
+              </div>
+            </div>
+            <div id="g-tc-alerta" style="margin-top:8px;font-size:11.5px;font-weight:500"></div>
+          </div>
         </div>
       </div>
       <div class="form-group"><label class="form-label">Notas (opcional)</label><input type="text" class="form-control" id="g-notas" placeholder="Detalle adicional"></div>
@@ -1563,7 +1594,20 @@ function navigate(page, el){
 // ============================================================
 // MODALS
 // ============================================================
-function openModal(id){ document.getElementById(id).classList.add('open'); }
+function openModal(id){
+  document.getElementById(id).classList.add('open');
+  // Al abrir modal-gasto, reset tarjeta y poblar fuentes
+  if(id==='modal-gasto'){
+    document.getElementById('g-tarjeta-row').style.display='none';
+    document.getElementById('g-tarjeta-info').style.display='none';
+    document.getElementById('g-metodo').value='Efectivo';
+    const sel=document.getElementById('g-fuente-ingreso');
+    if(sel){
+      const fuentes=[...new Set(ST.ingresos.map(i=>i.fuente))];
+      sel.innerHTML='<option value="">Sin asignar</option>'+fuentes.map(f=>`<option value="${f}">${f}</option>`).join('');
+    }
+  }
+}
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); }));
 
@@ -2290,6 +2334,69 @@ function renderIngresos(){
 // ============================================================
 // GASTOS CRUD
 // ============================================================
+// ============================================================
+// TARJETA AUTO-CARGO desde gasto
+// ============================================================
+function toggleTarjetaSelector(metodo){
+  const row  = document.getElementById('g-tarjeta-row');
+  const sel  = document.getElementById('g-tarjeta-sel');
+  if(metodo==='Tarjeta Crédito'){
+    row.style.display='block';
+    // Poblar con tarjetas registradas
+    if(ST.tarjetas.length){
+      sel.innerHTML='<option value="">— Selecciona una tarjeta —</option>'+
+        ST.tarjetas.filter(t=>t.activa).map(t=>{
+          const {util,disponible}=calcUtilTarjeta(t);
+          return `<option value="${t.id}">${t.nombre} · ${t.banco} · ${util.toFixed(0)}% usado · ${fmt(disponible)} disp.</option>`;
+        }).join('');
+    } else {
+      sel.innerHTML='<option value="">Sin tarjetas registradas — agrega una primero</option>';
+    }
+    document.getElementById('g-tarjeta-info').style.display='none';
+  } else {
+    row.style.display='none';
+    document.getElementById('g-tarjeta-info').style.display='none';
+  }
+}
+
+function mostrarInfoTarjeta(){
+  const id = parseInt(document.getElementById('g-tarjeta-sel').value)||0;
+  const info = document.getElementById('g-tarjeta-info');
+  if(!id){ info.style.display='none'; return; }
+  const t = ST.tarjetas.find(t=>t.id===id);
+  if(!t){ info.style.display='none'; return; }
+  const {saldoReal,util,disponible} = calcUtilTarjeta(t);
+  const diasCorte = diasParaFecha(t.corte||1);
+  const monto = parseFloat(document.getElementById('g-monto').value)||0;
+  const dispTras = disponible - monto;
+  const utilTras = t.limite>0?(saldoReal+monto)/t.limite*100:0;
+  const color = dispTras<0?'var(--red)':utilTras>70?'var(--orange)':'var(--green)';
+
+  document.getElementById('g-tc-disponible').textContent = fmt(disponible);
+  document.getElementById('g-tc-disponible').style.color = disponible<0?'var(--red)':'var(--green)';
+  document.getElementById('g-tc-usado').textContent = `${util.toFixed(1)}%`;
+  document.getElementById('g-tc-usado').style.color = util>70?'var(--red)':util>30?'var(--orange)':'var(--green)';
+  document.getElementById('g-tc-corte').textContent = `${diasCorte}d`;
+  document.getElementById('g-tc-corte').style.color = diasCorte<=5?'var(--red)':'var(--text2)';
+
+  const alerta = document.getElementById('g-tc-alerta');
+  if(monto>0){
+    if(dispTras<0){
+      alerta.style.color='var(--red)';
+      alerta.textContent=`⚠ Este cargo excede tu límite disponible en ${fmt(Math.abs(dispTras))}`;
+    } else if(utilTras>70){
+      alerta.style.color='var(--orange)';
+      alerta.textContent=`⚡ Tras este cargo tu utilización quedará en ${utilTras.toFixed(1)}% — zona de riesgo`;
+    } else {
+      alerta.style.color='var(--green)';
+      alerta.textContent=`✓ Tras este cargo quedarán ${fmt(dispTras)} disponibles (${(100-utilTras).toFixed(1)}% libre)`;
+    }
+  } else {
+    alerta.textContent='';
+  }
+  info.style.display='block';
+}
+
 function agregarGasto(){
   const concepto     = document.getElementById('g-concepto').value.trim();
   const monto        = parseFloat(document.getElementById('g-monto').value);
@@ -2301,18 +2408,60 @@ function agregarGasto(){
   const metodo        = document.getElementById('g-metodo').value;
   const notas         = document.getElementById('g-notas').value;
   const fuenteIngreso = document.getElementById('g-fuente-ingreso')?.value||'';
+  const tarjetaId     = metodo==='Tarjeta Crédito' ? (parseInt(document.getElementById('g-tarjeta-sel')?.value)||0) : 0;
+
   if(!concepto||!monto||monto<=0){ toast('Completa los campos requeridos','error'); return; }
-  ST.gastos.push({ id:Date.now(), concepto, monto, categoria, frecuencia, quincena:q, mes, ano, metodo, notas, fuenteIngreso, esDeuda:false });
+  if(metodo==='Tarjeta Crédito' && !tarjetaId && ST.tarjetas.length){
+    toast('Selecciona la tarjeta con la que pagas','error'); return;
+  }
+
+  const gasto = { id:Date.now(), concepto, monto, categoria, frecuencia, quincena:q, mes, ano, metodo, notas, fuenteIngreso, tarjetaId, esDeuda:false };
+  ST.gastos.push(gasto);
+
+  // ── Auto-cargo a tarjeta ──
+  if(tarjetaId){
+    const t = ST.tarjetas.find(t=>t.id===tarjetaId);
+    if(t){
+      // Registrar como movimiento en cargosTarjeta
+      ST.cargosTarjeta.push({
+        id: Date.now()+1,
+        concepto,
+        monto,
+        tarjetaId,
+        fecha: `${ano}-${String(mes).padStart(2,'0')}-${q===1?'07':'22'}`,
+        categoria,
+        tipo: 'cargo',
+        origenGastoId: gasto.id
+      });
+      toast(`Gasto registrado y cargado a ${t.nombre}`, 'success');
+    }
+  } else {
+    toast('Gasto registrado', 'success');
+  }
+
   saveState();
   closeModal('modal-gasto');
-  toast('Gasto registrado','success');
+  // Reset tarjeta selector
+  document.getElementById('g-tarjeta-row').style.display='none';
+  document.getElementById('g-tarjeta-info').style.display='none';
+  document.getElementById('g-metodo').value='Efectivo';
+
   if(currentPage==='gastos') renderGastos();
+  if(currentPage==='tarjetas') renderTarjetas();
   if(currentPage==='dashboard') refreshDashboard();
   recalcularCorrida();
 }
 function eliminarGasto(id){
+  // Si tenía cargo automático a tarjeta, revertirlo
+  const cargo = ST.cargosTarjeta.find(c=>c.origenGastoId===id);
+  if(cargo){
+    const t = ST.tarjetas.find(t=>t.id===cargo.tarjetaId);
+    if(t) t.saldo = Math.max(0,(t.saldo||0)-cargo.monto);
+    ST.cargosTarjeta = ST.cargosTarjeta.filter(c=>c.origenGastoId!==id);
+  }
   ST.gastos = ST.gastos.filter(g=>g.id!==id);
   saveState(); renderGastos(); refreshDashboard();
+  if(currentPage==='tarjetas') renderTarjetas();
 }
 function renderGastos(){
   const f_mes  = document.getElementById('f-mes-gasto')?.value;
@@ -2326,16 +2475,22 @@ function renderGastos(){
   if(asel && asel.children.length===1) anos.forEach(y=>{ const o=document.createElement('option');o.value=y;o.textContent=y;asel.appendChild(o); });
   const data = ST.gastos.filter(g=>(!f_mes||g.mes==f_mes)&&(!f_ano||g.ano==f_ano)&&(!f_cat||g.categoria===f_cat));
   document.getElementById('tabla-gastos').innerHTML = data.length
-    ? data.map(g=>`<tr>
-        <td style="font-weight:500">${g.concepto}</td>
-        <td><span class="badge" style="background:${CATS_COLORS[g.categoria]||'#6b7280'}22;color:${CATS_COLORS[g.categoria]||'#6b7280'}">${g.categoria}</span></td>
-        <td><span class="badge badge-blue">${g.frecuencia}</span></td>
-        <td><span class="badge badge-blue">Q${g.quincena}</span></td>
-        <td>${MESES[g.mes-1]||''} ${g.ano}</td>
-        <td class="mono" style="color:var(--red)">${fmt(g.monto)}</td>
-        <td>${g.metodo}</td>
-        <td><button class="btn btn-danger btn-sm" onclick="eliminarGasto(${g.id})"><i class="fa-solid fa-trash"></i></button></td>
-      </tr>`).join('')
+    ? data.map(g=>{
+        const tarjeta = g.tarjetaId ? ST.tarjetas.find(t=>t.id===g.tarjetaId) : null;
+        const metodoLabel = tarjeta
+          ? `<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:${tarjeta.color||'#0099e6'};display:inline-block"></span>${tarjeta.nombre}</span>`
+          : g.metodo;
+        return `<tr>
+          <td style="font-weight:500">${g.concepto}</td>
+          <td><span class="badge" style="background:${CATS_COLORS[g.categoria]||'#6b7280'}22;color:${CATS_COLORS[g.categoria]||'#6b7280'}">${g.categoria}</span></td>
+          <td><span class="badge badge-blue">${g.frecuencia}</span></td>
+          <td><span class="badge badge-blue">Q${g.quincena}</span></td>
+          <td>${MESES[g.mes-1]||''} ${g.ano}</td>
+          <td class="mono" style="color:var(--red)">${fmt(g.monto)}</td>
+          <td style="font-size:12px">${metodoLabel}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="eliminarGasto(${g.id})"><i class="fa-solid fa-trash"></i></button></td>
+        </tr>`;
+      }).join('')
     : '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:20px">Sin gastos registrados</td></tr>';
 }
 function renderTablaGastos(){ renderGastos(); }
