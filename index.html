@@ -3,7 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="SEMA">
+<meta name="theme-color" content="#0d1117">
 <title>SEMA FinanceOS Pro</title>
+<link rel="manifest" href="data:application/json,{%22name%22:%22SEMA%20FinanceOS%20Pro%22,%22short_name%22:%22SEMA%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%230d1117%22,%22theme_color%22:%22%230099e6%22,%22icons%22:[{%22src%22:%22https://raw.githubusercontent.com/tny-me/sema-wealth/main/icon.png%22,%22sizes%22:%22192x192%22,%22type%22:%22image/png%22}]}">
+<meta name="description" content="Control financiero inteligente con IA predictiva">
+<meta name="theme-color" content="#0d1117">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SEMA">
+<link rel="manifest" href="data:application/json,{%22name%22:%22SEMA%20FinanceOS%20Pro%22,%22short_name%22:%22SEMA%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%230d1117%22,%22theme_color%22:%22%230099e6%22,%22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Crect%20width='512'%20height='512'%20rx='80'%20fill='%230099e6'/%3E%3Ctext%20x='256'%20y='340'%20font-family='Arial'%20font-weight='bold'%20font-size='260'%20fill='white'%20text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E%22,%22sizes%22:%22512x512%22,%22type%22:%22image/svg+xml%22}]}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -18,14 +31,14 @@
   import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
   import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
-  // ── Firebase Config (usuario debe reemplazar con su config) ──
-  const firebaseConfig = window.FIREBASE_CONFIG || {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_MSG_ID",
-    appId: "YOUR_APP_ID"
+  // ── Firebase Config ──
+  const firebaseConfig = {
+    apiKey: "AIzaSyDdM6BBWMxrRwFAqn6ZKzogW_7D-dFN7rc",
+    authDomain: "sema-wealth.firebaseapp.com",
+    projectId: "sema-wealth",
+    storageBucket: "sema-wealth.firebasestorage.app",
+    messagingSenderId: "916630135081",
+    appId: "1:916630135081:web:3fa56116ee20535d6bd738"
   };
 
   try {
@@ -118,9 +131,6 @@ body{font-family:var(--font-body);font-size:13.5px;background:var(--bg);color:va
 .auth-tab{flex:1;padding:8px;text-align:center;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-radius:8px;transition:all .2s;}
 .auth-tab.active{background:var(--bg2);color:var(--text);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.1);}
 .auth-error{background:var(--red-glow);border:1px solid rgba(229,51,74,0.2);color:var(--red);font-size:12px;padding:10px 14px;border-radius:8px;margin-bottom:16px;display:none;}
-.firebase-notice{background:rgba(217,119,6,0.07);border:1px solid rgba(217,119,6,0.2);border-radius:10px;padding:14px;margin-top:20px;}
-.firebase-notice p{font-size:12px;color:var(--orange);line-height:1.6;}
-.firebase-notice a{color:var(--accent);text-decoration:none;}
 
 /* ── SIDEBAR ── */
 .sidebar {
@@ -377,9 +387,9 @@ body{font-family:var(--font-body);font-size:13.5px;background:var(--bg);color:va
     <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;" id="auth-btn" onclick="handleAuth()">
       Iniciar sesión
     </button>
-    <div class="firebase-notice" id="firebase-notice">
-      <p><strong>⚡ Firebase no configurado.</strong> Usando modo local (localStorage). Para sincronización en la nube, <a href="#" onclick="navigate('config');document.getElementById('auth-screen').style.display='none'">configura Firebase</a> en Ajustes. <br><br>Para entrar al modo demo: <a href="#" onclick="demoLogin()">clic aquí →</a></p>
-    </div>
+    <button id="install-btn" style="display:none;width:100%;justify-content:center;padding:10px;margin-top:10px;background:rgba(0,153,230,0.08);border:1px solid rgba(0,153,230,0.2);border-radius:9px;color:#0099e6;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;" onclick="installApp()">
+      <i class="fa-solid fa-download" style="margin-right:6px"></i> Instalar como app en esta computadora
+    </button>
   </div>
 </div>
 
@@ -432,10 +442,12 @@ body{font-family:var(--font-body);font-size:13.5px;background:var(--bg);color:va
       <div id="quincena-pill" style="font-size:11px;color:var(--text3);font-family:var(--font-mono);"></div>
     </div>
     <div class="topbar-right">
+      <button class="btn btn-ghost btn-sm" id="btn-instalar" style="display:none" onclick="instalarApp()"><i class="fa-solid fa-download"></i> Instalar app</button>
       <button class="btn btn-ghost btn-sm" onclick="openModal('modal-ingreso')"><i class="fa-solid fa-plus"></i> Ingreso</button>
       <button class="btn btn-ghost btn-sm" onclick="openModal('modal-gasto')"><i class="fa-solid fa-plus"></i> Gasto</button>
       <button class="btn btn-primary btn-sm" onclick="openModal('modal-deuda')"><i class="fa-solid fa-circle-plus"></i> Deuda</button>
       <button class="btn btn-ghost btn-sm" onclick="syncData()" title="Sincronizar"><i class="fa-solid fa-cloud-arrow-up"></i></button>
+      <button id="install-btn-app" style="display:none" class="btn btn-ghost btn-sm" onclick="installApp()" title="Instalar app"><i class="fa-solid fa-download"></i> Instalar</button>
     </div>
   </header>
 
@@ -2187,6 +2199,35 @@ else {
       if(user){ ST.uid=user.uid; ST.perfil.email=user.email; loadFromFirebase(user.uid).then(()=>enterApp()); }
     });
   }
+}
+
+// ── PWA Install ──
+let _deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _deferredPrompt = e;
+  const btn = document.getElementById('install-btn');
+  if(btn) btn.style.display = 'flex';
+  const btn2 = document.getElementById('install-btn-app');
+  if(btn2) btn2.style.display = 'inline-flex';
+});
+function installApp(){
+  if(!_deferredPrompt){ toast('Abre desde Chrome en escritorio para instalar','info'); return; }
+  _deferredPrompt.prompt();
+  _deferredPrompt.userChoice.then(()=>{ _deferredPrompt=null; document.getElementById('install-btn').style.display='none'; });
+}
+window.addEventListener('appinstalled', ()=>{ toast('¡SEMA instalada correctamente!','success'); });
+
+// ── Service Worker para uso offline ──
+if('serviceWorker' in navigator){
+  const sw = `
+    const CACHE='sema-v1';
+    const ASSETS=[self.location.pathname];
+    self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
+    self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match(self.location.pathname)))));
+  `;
+  const blob = new Blob([sw],{type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
 }
 </script>
 </body>
