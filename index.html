@@ -9,14 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="SEMA">
 <meta name="theme-color" content="#0d1117">
 <title>SEMA FinanceOS Pro</title>
-<link rel="manifest" href="data:application/json,{%22name%22:%22SEMA%20FinanceOS%20Pro%22,%22short_name%22:%22SEMA%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%230d1117%22,%22theme_color%22:%22%230099e6%22,%22icons%22:[{%22src%22:%22https://raw.githubusercontent.com/tny-me/sema-wealth/main/icon.png%22,%22sizes%22:%22192x192%22,%22type%22:%22image/png%22}]}">
-<meta name="description" content="Control financiero inteligente con IA predictiva">
-<meta name="theme-color" content="#0d1117">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SEMA">
-<link rel="manifest" href="data:application/json,{%22name%22:%22SEMA%20FinanceOS%20Pro%22,%22short_name%22:%22SEMA%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%230d1117%22,%22theme_color%22:%22%230099e6%22,%22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Crect%20width='512'%20height='512'%20rx='80'%20fill='%230099e6'/%3E%3Ctext%20x='256'%20y='340'%20font-family='Arial'%20font-weight='bold'%20font-size='260'%20fill='white'%20text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E%22,%22sizes%22:%22512x512%22,%22type%22:%22image/svg+xml%22}]}">
+<link rel="manifest" href="./manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -146,14 +139,9 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
 }
 
 /* Logo colapsado */
-.sidebar.collapsed .sidebar-logo{ padding:18px 0;text-align:center; }
-.sidebar.collapsed .logo-text{ font-size:14px;letter-spacing:0; }
-
-/* Sync status colapsado */
-.sidebar.collapsed .sync-status{
-  justify-content:center;padding:8px 0;
-}
-.sidebar.collapsed .sync-status .sync-label{ display:none; }
+.sidebar.collapsed .sidebar-logo{ padding:14px 0;justify-content:center; }
+.sidebar.collapsed .logo-text{ display:none; }
+.sidebar.collapsed .sb-toggle{ right:auto;transform:none; }
 
 /* User card colapsado */
 .sidebar.collapsed .user-card{ justify-content:center;padding:8px 0; }
@@ -161,17 +149,19 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
 
 /* Toggle button */
 .sb-toggle{
-  position:absolute;right:-12px;top:22px;
-  width:24px;height:24px;
-  background:#0d1117;
-  border:1px solid rgba(255,255,255,0.15);
-  border-radius:50%;
+  position:absolute;right:8px;top:20px;
+  width:22px;height:22px;
+  background:rgba(255,255,255,0.07);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:6px;
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;z-index:60;
-  color:#8b97a8;font-size:10px;
+  color:#8b97a8;font-size:9px;
   transition:all .2s;
+  flex-shrink:0;
 }
-.sb-toggle:hover{ background:#111820;color:#e8edf5; }
+.sb-toggle:hover{ background:rgba(255,255,255,0.14);color:#e8edf5; }
+.sidebar.collapsed .sb-toggle{ right:50%;transform:translateX(50%);top:20px; }
 
 /* Main transition */
 .main{ margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;transition:margin-left .25s cubic-bezier(.4,0,.2,1); }
@@ -202,7 +192,7 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
 .auth-error{background:var(--red-glow);border:1px solid rgba(229,51,74,0.2);color:var(--red);font-size:12px;padding:10px 14px;border-radius:8px;margin-bottom:16px;display:none;}
 
 /* ── SIDEBAR COMPONENTS ── */
-.sidebar-logo{padding:26px 20px 18px;border-bottom:1px solid rgba(255,255,255,0.06);white-space:nowrap;}
+.sidebar-logo{padding:18px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;white-space:nowrap;}
 .logo-text{font-family:'Inter',Arial,sans-serif;font-size:18px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,var(--accent),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .logo-sub{font-size:10px;color:#4a5568;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;margin-top:2px;}
 .sync-status{display:flex;align-items:center;gap:6px;padding:8px 12px;margin:8px 12px 0;background:#111820;border-radius:8px;font-size:10.5px;color:#4a5568;white-space:nowrap;overflow:hidden;}
@@ -459,12 +449,14 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
      SIDEBAR
 ====================================================== -->
 <aside class="sidebar" id="sidebar">
-  <div class="sb-toggle" id="sb-toggle" onclick="toggleSidebar()" title="Ocultar/mostrar menú">
-    <i class="fa-solid fa-chevron-left" id="sb-toggle-icon"></i>
-  </div>
-  <div class="sidebar-logo">
-    <div class="logo-text">SEMA</div>
-    <div class="logo-sub">FinanceOS Pro</div>
+  <div class="sidebar-logo" style="display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <div class="logo-text">SEMA</div>
+      <div class="logo-sub">FinanceOS Pro</div>
+    </div>
+    <div class="sb-toggle" id="sb-toggle" onclick="toggleSidebar()" title="Ocultar/mostrar menú" style="position:relative;right:auto;top:auto;transform:none;flex-shrink:0;">
+      <i class="fa-solid fa-chevron-left" id="sb-toggle-icon"></i>
+    </div>
   </div>
   <div class="sync-status" id="sync-status">
     <span class="sync-dot offline" id="sync-dot"></span>
@@ -3504,16 +3496,11 @@ function installApp(){
 }
 window.addEventListener('appinstalled', ()=>{ toast('¡SEMA instalada correctamente!','success'); });
 
-// ── Service Worker para uso offline ──
-if('serviceWorker' in navigator){
-  const sw = `
-    const CACHE='sema-v1';
-    const ASSETS=[self.location.pathname];
-    self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
-    self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match(self.location.pathname)))));
-  `;
-  const blob = new Blob([sw],{type:'application/javascript'});
-  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+// ── Service Worker (solo en producción) ──
+if('serviceWorker' in navigator && location.hostname.includes('github.io')){
+  navigator.serviceWorker.register('./sw.js')
+    .then(r => console.log('SW registrado:', r.scope))
+    .catch(e => console.warn('SW error:', e));
 }
 </script>
 </body>
