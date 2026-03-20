@@ -108,31 +108,75 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.18);border-radius:2px;}
 
-/* ── SIDEBAR COLLAPSE ── */
-.sidebar{transition:width .22s cubic-bezier(.4,0,.2,1);}
-.sidebar.collapsed{width:var(--sidebar-collapsed);}
-.sidebar.collapsed .logo-sub,
-.sidebar.collapsed .sync-status,
-.sidebar.collapsed .nav-section,
-.sidebar.collapsed .nav-item span:not(.nav-badge),
-.sidebar.collapsed .nav-item > *:not(i),
-.sidebar.collapsed .user-card .user-name,
-.sidebar.collapsed .user-card .user-email,
-.sidebar.collapsed .user-card > div:last-child{display:none;}
-.sidebar.collapsed .nav-item{justify-content:center;padding:10px 0;margin:1px 6px;}
-.sidebar.collapsed .nav-item i{width:auto;font-size:14px;}
-.sidebar.collapsed .logo-text{font-size:13px;letter-spacing:0;}
-.sidebar.collapsed .sidebar-logo{padding:18px 0;text-align:center;}
-.sidebar.collapsed .user-card{justify-content:center;padding:8px;}
-.sidebar.collapsed .user-avatar{margin:0;}
-.sidebar.collapsed .nav-badge{position:absolute;top:4px;right:4px;font-size:8px;padding:0 4px;}
-.sidebar.collapsed .nav-item{position:relative;}
-.main{transition:margin-left .22s cubic-bezier(.4,0,.2,1);}
-.main.expanded{margin-left:var(--sidebar-collapsed);}
-.sb-toggle{position:absolute;right:-12px;top:22px;width:24px;height:24px;background:#0d1117;border:1px solid rgba(255,255,255,0.12);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:60;color:#8b97a8;font-size:10px;transition:all .2s;}
-.sb-toggle:hover{background:#111820;color:#e8edf5;}
 
-/* ── AUTH SCREEN ── */
+/* ── SIDEBAR BASE ── */
+.sidebar{
+  width:var(--sidebar);min-height:100vh;position:fixed;left:0;top:0;
+  background:#0d1117;border-right:1px solid rgba(255,255,255,0.06);
+  display:flex;flex-direction:column;z-index:50;
+  overflow:hidden;
+  transition:width .25s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── SIDEBAR COLLAPSE ── */
+.sidebar.collapsed{ width:var(--sidebar-collapsed); }
+
+/* Ocultar textos al colapsar */
+.sidebar.collapsed .logo-sub,
+.sidebar.collapsed .sync-label,
+.sidebar.collapsed .nav-section,
+.sidebar.collapsed .nav-text,
+.sidebar.collapsed .user-name,
+.sidebar.collapsed .user-email,
+.sidebar.collapsed .user-info { display:none; }
+
+/* Nav items colapsados — solo icono centrado */
+.sidebar.collapsed .nav-item{
+  justify-content:center;
+  padding:10px 0;
+  margin:1px 6px;
+  gap:0;
+  position:relative;
+}
+.sidebar.collapsed .nav-item .nav-text{ display:none; }
+.sidebar.collapsed .nav-item i{ width:auto;font-size:15px; }
+.sidebar.collapsed .nav-badge{
+  position:absolute;top:3px;right:3px;
+  font-size:8px;padding:1px 4px;min-width:0;
+}
+
+/* Logo colapsado */
+.sidebar.collapsed .sidebar-logo{ padding:18px 0;text-align:center; }
+.sidebar.collapsed .logo-text{ font-size:14px;letter-spacing:0; }
+
+/* Sync status colapsado */
+.sidebar.collapsed .sync-status{
+  justify-content:center;padding:8px 0;
+}
+.sidebar.collapsed .sync-status .sync-label{ display:none; }
+
+/* User card colapsado */
+.sidebar.collapsed .user-card{ justify-content:center;padding:8px 0; }
+.sidebar.collapsed .user-card .user-info{ display:none; }
+
+/* Toggle button */
+.sb-toggle{
+  position:absolute;right:-12px;top:22px;
+  width:24px;height:24px;
+  background:#0d1117;
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;z-index:60;
+  color:#8b97a8;font-size:10px;
+  transition:all .2s;
+}
+.sb-toggle:hover{ background:#111820;color:#e8edf5; }
+
+/* Main transition */
+.main{ margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;transition:margin-left .25s cubic-bezier(.4,0,.2,1); }
+.main.expanded{ margin-left:var(--sidebar-collapsed); }
+
 #auth-screen {
   position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;
 }
@@ -157,29 +201,25 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
 .auth-tab.active{background:var(--bg2);color:var(--text);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.1);}
 .auth-error{background:var(--red-glow);border:1px solid rgba(229,51,74,0.2);color:var(--red);font-size:12px;padding:10px 14px;border-radius:8px;margin-bottom:16px;display:none;}
 
-/* ── SIDEBAR ── */
-.sidebar {
-  width:var(--sidebar);min-height:100vh;position:fixed;left:0;top:0;
-  background:#0d1117;border-right:1px solid rgba(255,255,255,0.06);
-  display:flex;flex-direction:column;z-index:50;
-}
-.sidebar-logo{padding:26px 20px 18px;border-bottom:1px solid rgba(255,255,255,0.06);}
+/* ── SIDEBAR COMPONENTS ── */
+.sidebar-logo{padding:26px 20px 18px;border-bottom:1px solid rgba(255,255,255,0.06);white-space:nowrap;}
 .logo-text{font-family:'Inter',Arial,sans-serif;font-size:18px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,var(--accent),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .logo-sub{font-size:10px;color:#4a5568;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;margin-top:2px;}
-.sync-status{display:flex;align-items:center;gap:6px;padding:8px 12px;margin:8px 12px 0;background:#111820;border-radius:8px;font-size:10.5px;color:#4a5568;}
-.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);}
+.sync-status{display:flex;align-items:center;gap:6px;padding:8px 12px;margin:8px 12px 0;background:#111820;border-radius:8px;font-size:10.5px;color:#4a5568;white-space:nowrap;overflow:hidden;}
+.sync-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--green);box-shadow:0 0 6px var(--green);}
 .sync-dot.offline{background:#4a5568;box-shadow:none;}
-.nav-section{padding:20px 12px 4px;font-size:9.5px;font-weight:700;letter-spacing:0.1em;color:#3d4455;text-transform:uppercase;}
-.nav-item{display:flex;align-items:center;gap:9px;padding:9px 12px;margin:1px 8px;border-radius:10px;color:#8b97a8;font-size:12.5px;font-weight:500;cursor:pointer;transition:all .15s;}
-.nav-item i{width:16px;text-align:center;font-size:12px;}
+.nav-section{padding:20px 12px 4px;font-size:9.5px;font-weight:700;letter-spacing:0.1em;color:#3d4455;text-transform:uppercase;white-space:nowrap;overflow:hidden;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 12px;margin:1px 8px;border-radius:10px;color:#8b97a8;font-size:12.5px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;overflow:hidden;}
+.nav-item i{width:16px;text-align:center;font-size:12px;flex-shrink:0;}
 .nav-item:hover{background:#111820;color:#e8edf5;}
 .nav-item.active{background:rgba(0,153,230,0.12);color:var(--accent);border:1px solid rgba(0,153,230,0.18);}
-.nav-badge{margin-left:auto;font-size:10px;background:var(--red);color:#fff;padding:1px 6px;border-radius:10px;}
+.nav-badge{margin-left:auto;font-size:10px;background:var(--red);color:#fff;padding:1px 6px;border-radius:10px;flex-shrink:0;}
 .sidebar-footer{margin-top:auto;padding:14px 12px;border-top:1px solid rgba(255,255,255,0.06);}
-.user-card{display:flex;align-items:center;gap:10px;padding:10px;background:#111820;border-radius:10px;cursor:pointer;}
-.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-family:'Inter',Arial,sans-serif;font-weight:700;font-size:12px;color:#fff;}
+.user-card{display:flex;align-items:center;gap:10px;padding:10px;background:#111820;border-radius:10px;cursor:pointer;white-space:nowrap;overflow:hidden;}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-family:'Inter',Arial,sans-serif;font-weight:700;font-size:12px;color:#fff;flex-shrink:0;}
+.user-info{overflow:hidden;}
 .user-name{font-size:12.5px;font-weight:600;color:#e8edf5;}
-.user-email{font-size:10.5px;color:#4a5568;}
+.user-email{font-size:10.5px;color:#4a5568;overflow:hidden;text-overflow:ellipsis;}
 
 /* ── MAIN ── */
 .main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;transition:margin-left .22s cubic-bezier(.4,0,.2,1);}
@@ -432,26 +472,26 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
   </div>
 
   <div class="nav-section">Principal</div>
-  <div class="nav-item active" onclick="navigate('dashboard',this)"><i class="fa-solid fa-chart-pie"></i>Dashboard</div>
-  <div class="nav-item" onclick="navigate('corrida',this)"><i class="fa-solid fa-table-list"></i>Corrida Quincenal<span class="nav-badge" id="badge-alertas">0</span></div>
-  <div class="nav-item" onclick="navigate('prediccion',this)"><i class="fa-solid fa-brain"></i>IA Predictiva</div>
+  <div class="nav-item active" onclick="navigate('dashboard',this)"><i class="fa-solid fa-chart-pie"></i><span class="nav-text">Dashboard</span></div>
+  <div class="nav-item" onclick="navigate('corrida',this)"><i class="fa-solid fa-table-list"></i><span class="nav-text">Corrida Quincenal</span><span class="nav-badge" id="badge-alertas">0</span></div>
+  <div class="nav-item" onclick="navigate('prediccion',this)"><i class="fa-solid fa-brain"></i><span class="nav-text">IA Predictiva</span></div>
 
   <div class="nav-section">Finanzas</div>
-  <div class="nav-item" onclick="navigate('ingresos',this)"><i class="fa-solid fa-wallet"></i>Ingresos</div>
-  <div class="nav-item" onclick="navigate('gastos',this)"><i class="fa-solid fa-receipt"></i>Gastos</div>
-  <div class="nav-item" onclick="navigate('deudas',this)"><i class="fa-solid fa-credit-card"></i>Deudas &amp; Crédito</div>
-  <div class="nav-item" onclick="navigate('tarjetas',this)"><i class="fa-solid fa-credit-card"></i>Tarjetas de Crédito</div>
-  <div class="nav-item" onclick="navigate('prestamos',this)"><i class="fa-solid fa-hand-holding-dollar"></i>Préstamos</div>
-  <div class="nav-item" onclick="navigate('calendario',this)"><i class="fa-solid fa-calendar-days"></i>Calendario</div>
+  <div class="nav-item" onclick="navigate('ingresos',this)"><i class="fa-solid fa-wallet"></i><span class="nav-text">Ingresos</span></div>
+  <div class="nav-item" onclick="navigate('gastos',this)"><i class="fa-solid fa-receipt"></i><span class="nav-text">Gastos</span></div>
+  <div class="nav-item" onclick="navigate('deudas',this)"><i class="fa-solid fa-file-invoice-dollar"></i><span class="nav-text">Deudas &amp; Crédito</span></div>
+  <div class="nav-item" onclick="navigate('tarjetas',this)"><i class="fa-solid fa-credit-card"></i><span class="nav-text">Tarjetas de Crédito</span></div>
+  <div class="nav-item" onclick="navigate('prestamos',this)"><i class="fa-solid fa-hand-holding-dollar"></i><span class="nav-text">Préstamos</span></div>
+  <div class="nav-item" onclick="navigate('calendario',this)"><i class="fa-solid fa-calendar-days"></i><span class="nav-text">Calendario</span></div>
 
   <div class="nav-section">Sistema</div>
-  <div class="nav-item" onclick="navigate('estadisticas',this)"><i class="fa-solid fa-chart-line"></i>Estadísticas</div>
-  <div class="nav-item" onclick="navigate('config',this)"><i class="fa-solid fa-gear"></i>Configuración</div>
+  <div class="nav-item" onclick="navigate('estadisticas',this)"><i class="fa-solid fa-chart-line"></i><span class="nav-text">Estadísticas</span></div>
+  <div class="nav-item" onclick="navigate('config',this)"><i class="fa-solid fa-gear"></i><span class="nav-text">Configuración</span></div>
 
   <div class="sidebar-footer">
     <div class="user-card" onclick="navigate('config',document.querySelector('.nav-item:last-child'))">
       <div class="user-avatar" id="user-avatar">U</div>
-      <div>
+      <div class="user-info">
         <div class="user-name" id="user-name-sidebar">Usuario</div>
         <div class="user-email" id="user-email-sidebar">No sincronizado</div>
       </div>
