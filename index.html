@@ -18,7 +18,7 @@
 <meta name="apple-mobile-web-app-title" content="SEMA">
 <link rel="manifest" href="data:application/json,{%22name%22:%22SEMA%20FinanceOS%20Pro%22,%22short_name%22:%22SEMA%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%230d1117%22,%22theme_color%22:%22%230099e6%22,%22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Crect%20width='512'%20height='512'%20rx='80'%20fill='%230099e6'/%3E%3Ctext%20x='256'%20y='340'%20font-family='Arial'%20font-weight='bold'%20font-size='260'%20fill='white'%20text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E%22,%22sizes%22:%22512x512%22,%22type%22:%22image/svg+xml%22}]}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -90,22 +90,47 @@
   --purple: #7c3aed;
   --purple-glow: rgba(124,58,237,0.1);
 
-  --font-head: 'Syne', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
+  --font-head: 'Inter', Arial, sans-serif;
+  --font-body: 'Inter', Arial, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   --sidebar: 240px;
-  --radius: 14px;
-  --radius-sm: 8px;
+  --sidebar-collapsed: 60px;
+  --radius: 12px;
+  --radius-sm: 7px;
 }
 
 *{margin:0;padding:0;box-sizing:border-box;}
-html{-webkit-font-smoothing:antialiased;}
-body{font-family:var(--font-body);font-size:13.5px;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01em;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
 
 /* scrollbar */
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.18);border-radius:2px;}
+
+/* ── SIDEBAR COLLAPSE ── */
+.sidebar{transition:width .22s cubic-bezier(.4,0,.2,1);}
+.sidebar.collapsed{width:var(--sidebar-collapsed);}
+.sidebar.collapsed .logo-sub,
+.sidebar.collapsed .sync-status,
+.sidebar.collapsed .nav-section,
+.sidebar.collapsed .nav-item span:not(.nav-badge),
+.sidebar.collapsed .nav-item > *:not(i),
+.sidebar.collapsed .user-card .user-name,
+.sidebar.collapsed .user-card .user-email,
+.sidebar.collapsed .user-card > div:last-child{display:none;}
+.sidebar.collapsed .nav-item{justify-content:center;padding:10px 0;margin:1px 6px;}
+.sidebar.collapsed .nav-item i{width:auto;font-size:14px;}
+.sidebar.collapsed .logo-text{font-size:13px;letter-spacing:0;}
+.sidebar.collapsed .sidebar-logo{padding:18px 0;text-align:center;}
+.sidebar.collapsed .user-card{justify-content:center;padding:8px;}
+.sidebar.collapsed .user-avatar{margin:0;}
+.sidebar.collapsed .nav-badge{position:absolute;top:4px;right:4px;font-size:8px;padding:0 4px;}
+.sidebar.collapsed .nav-item{position:relative;}
+.main{transition:margin-left .22s cubic-bezier(.4,0,.2,1);}
+.main.expanded{margin-left:var(--sidebar-collapsed);}
+.sb-toggle{position:absolute;right:-12px;top:22px;width:24px;height:24px;background:#0d1117;border:1px solid rgba(255,255,255,0.12);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:60;color:#8b97a8;font-size:10px;transition:all .2s;}
+.sb-toggle:hover{background:#111820;color:#e8edf5;}
 
 /* ── AUTH SCREEN ── */
 #auth-screen {
@@ -121,7 +146,7 @@ body{font-family:var(--font-body);font-size:13.5px;background:var(--bg);color:va
   pointer-events:none;
 }
 .auth-logo {
-  font-family:var(--font-head);font-size:28px;font-weight:800;
+  font-family:'Inter',Arial,sans-serif;font-size:28px;font-weight:800;
   background:linear-gradient(135deg,var(--accent),var(--green));
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
   margin-bottom:6px;
@@ -139,7 +164,7 @@ body{font-family:var(--font-body);font-size:13.5px;background:var(--bg);color:va
   display:flex;flex-direction:column;z-index:50;
 }
 .sidebar-logo{padding:26px 20px 18px;border-bottom:1px solid rgba(255,255,255,0.06);}
-.logo-text{font-family:var(--font-head);font-size:18px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,var(--accent),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.logo-text{font-family:'Inter',Arial,sans-serif;font-size:18px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,var(--accent),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .logo-sub{font-size:10px;color:#4a5568;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;margin-top:2px;}
 .sync-status{display:flex;align-items:center;gap:6px;padding:8px 12px;margin:8px 12px 0;background:#111820;border-radius:8px;font-size:10.5px;color:#4a5568;}
 .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);}
@@ -152,17 +177,18 @@ body{font-family:var(--font-body);font-size:13.5px;background:var(--bg);color:va
 .nav-badge{margin-left:auto;font-size:10px;background:var(--red);color:#fff;padding:1px 6px;border-radius:10px;}
 .sidebar-footer{margin-top:auto;padding:14px 12px;border-top:1px solid rgba(255,255,255,0.06);}
 .user-card{display:flex;align-items:center;gap:10px;padding:10px;background:#111820;border-radius:10px;cursor:pointer;}
-.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:700;font-size:12px;color:#fff;}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-family:'Inter',Arial,sans-serif;font-weight:700;font-size:12px;color:#fff;}
 .user-name{font-size:12.5px;font-weight:600;color:#e8edf5;}
 .user-email{font-size:10.5px;color:#4a5568;}
 
 /* ── MAIN ── */
-.main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;}
+.main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;transition:margin-left .22s cubic-bezier(.4,0,.2,1);}
+.main.expanded{margin-left:var(--sidebar-collapsed);}
 .topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
 .topbar-left{display:flex;align-items:center;gap:14px;}
-.topbar-title{font-family:var(--font-head);font-size:15px;font-weight:700;letter-spacing:-0.3px;}
+.topbar-title{font-family:'Inter',Arial,sans-serif;font-size:15px;font-weight:700;letter-spacing:-0.3px;}
 .topbar-right{display:flex;align-items:center;gap:8px;}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:var(--font-body);}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:'Inter',Arial,sans-serif;}
 .btn-primary{background:var(--accent);color:#fff;}
 .btn-primary:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 4px 20px var(--accent-glow);}
 .btn-ghost{background:var(--bg2);color:var(--text2);border:1px solid var(--border2);}
@@ -178,7 +204,7 @@ body{font-family:var(--font-body);font-size:13.5px;background:var(--bg);color:va
 /* ── CARDS ── */
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
 .card-header{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-.card-title{font-family:var(--font-head);font-size:13.5px;font-weight:700;letter-spacing:-0.2px;color:var(--text);}
+.card-title{font-family:'Inter',Arial,sans-serif;font-size:13.5px;font-weight:700;letter-spacing:-0.2px;color:var(--text);}
 .card-body{padding:20px 22px;}
 
 /* ── KPI CARDS ── */
@@ -231,7 +257,7 @@ body{font-family:var(--font-body);font-size:13.5px;background:var(--bg);color:va
 /* ── FORMS ── */
 .form-group{margin-bottom:16px;}
 .form-label{display:block;font-size:11.5px;font-weight:600;color:var(--text2);margin-bottom:6px;letter-spacing:0.01em;}
-.form-control{width:100%;padding:9px 13px;background:var(--bg2);border:1px solid var(--border2);border-radius:9px;font-size:13px;font-family:var(--font-body);color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s;}
+.form-control{width:100%;padding:9px 13px;background:var(--bg2);border:1px solid var(--border2);border-radius:9px;font-size:13px;font-family:'Inter',Arial,sans-serif;color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s;}
 .form-control:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);}
 .form-control option{background:#fff;color:#1a1d23;}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
@@ -243,7 +269,7 @@ body{font-family:var(--font-body);font-size:13.5px;background:var(--bg);color:va
 .modal{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.18);}
 .modal-lg{max-width:740px;}
 .modal-header{padding:22px 26px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-.modal-title{font-family:var(--font-head);font-size:15px;font-weight:700;color:var(--text);}
+.modal-title{font-family:'Inter',Arial,sans-serif;font-size:15px;font-weight:700;color:var(--text);}
 .modal-close{width:28px;height:28px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center;}
 .modal-close:hover{background:var(--bg4);color:var(--text);}
 .modal-body{padding:22px 26px;}
@@ -311,7 +337,7 @@ body{font-family:var(--font-body);font-size:13.5px;background:var(--bg);color:va
 .table-modern tbody tr:last-child td{border-bottom:none;}
 
 /* ── SECTION HEADERS ── */
-.section-h{font-family:var(--font-head);font-size:18px;font-weight:800;letter-spacing:-0.5px;margin-bottom:4px;}
+.section-h{font-family:'Inter',Arial,sans-serif;font-size:18px;font-weight:800;letter-spacing:-0.5px;margin-bottom:4px;}
 .section-sub{font-size:12.5px;color:var(--text2);margin-bottom:22px;}
 
 /* ── FIREBASE CONFIG ── */
@@ -323,7 +349,7 @@ body{font-family:var(--font-body);font-size:13.5px;background:var(--bg);color:va
 
 /* ── TABS ── */
 .tabs{display:flex;background:var(--bg3);border-radius:10px;padding:3px;margin-bottom:20px;gap:2px;}
-.tab-btn{flex:1;padding:8px 14px;border:none;background:transparent;border-radius:8px;font-size:12.5px;font-weight:500;color:var(--text2);cursor:pointer;font-family:var(--font-body);transition:all .15s;}
+.tab-btn{flex:1;padding:8px 14px;border:none;background:transparent;border-radius:8px;font-size:12.5px;font-weight:500;color:var(--text2);cursor:pointer;font-family:'Inter',Arial,sans-serif;transition:all .15s;}
 .tab-btn.active{background:var(--bg2);color:var(--text);font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,0.1);}
 
 /* ── DIVIDER ── */
@@ -361,7 +387,7 @@ body{font-family:var(--font-body);font-size:13.5px;background:var(--bg);color:va
 <div id="auth-screen">
   <div class="auth-card">
     <div class="auth-logo">SEMA</div>
-    <div style="font-family:var(--font-head);font-size:12px;font-weight:700;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">FinanceOS Pro</div>
+    <div style="font-family:'Inter',Arial,sans-serif;font-size:12px;font-weight:700;color:var(--text2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">FinanceOS Pro</div>
     <div class="auth-sub">Control financiero inteligente con IA predictiva</div>
     <div class="auth-tabs">
       <div class="auth-tab active" onclick="switchAuthTab('login')">Iniciar sesión</div>
@@ -380,14 +406,10 @@ body{font-family:var(--font-body);font-size:13.5px;background:var(--bg);color:va
       <label class="form-label">Tu nombre</label>
       <input type="text" class="form-control" id="auth-name" placeholder="Nombre completo">
     </div>
-    <div class="form-group">
-      <label class="form-label">Ingreso base quincenal ($)</label>
-      <input type="number" class="form-control" id="auth-income" placeholder="ej. 8500">
-    </div>
     <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;" id="auth-btn" onclick="handleAuth()">
       Iniciar sesión
     </button>
-    <button id="install-btn" style="display:none;width:100%;justify-content:center;padding:10px;margin-top:10px;background:rgba(0,153,230,0.08);border:1px solid rgba(0,153,230,0.2);border-radius:9px;color:#0099e6;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;" onclick="installApp()">
+    <button id="install-btn" style="display:none;width:100%;justify-content:center;padding:10px;margin-top:10px;background:rgba(0,153,230,0.08);border:1px solid rgba(0,153,230,0.2);border-radius:9px;color:#0099e6;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Inter',Arial,sans-serif;" onclick="installApp()">
       <i class="fa-solid fa-download" style="margin-right:6px"></i> Instalar como app en esta computadora
     </button>
   </div>
@@ -397,6 +419,9 @@ body{font-family:var(--font-body);font-size:13.5px;background:var(--bg);color:va
      SIDEBAR
 ====================================================== -->
 <aside class="sidebar" id="sidebar">
+  <div class="sb-toggle" id="sb-toggle" onclick="toggleSidebar()" title="Ocultar/mostrar menú">
+    <i class="fa-solid fa-chevron-left" id="sb-toggle-icon"></i>
+  </div>
   <div class="sidebar-logo">
     <div class="logo-text">SEMA</div>
     <div class="logo-sub">FinanceOS Pro</div>
@@ -415,6 +440,8 @@ body{font-family:var(--font-body);font-size:13.5px;background:var(--bg);color:va
   <div class="nav-item" onclick="navigate('ingresos',this)"><i class="fa-solid fa-wallet"></i>Ingresos</div>
   <div class="nav-item" onclick="navigate('gastos',this)"><i class="fa-solid fa-receipt"></i>Gastos</div>
   <div class="nav-item" onclick="navigate('deudas',this)"><i class="fa-solid fa-credit-card"></i>Deudas &amp; Crédito</div>
+  <div class="nav-item" onclick="navigate('tarjetas',this)"><i class="fa-solid fa-credit-card"></i>Tarjetas de Crédito</div>
+  <div class="nav-item" onclick="navigate('prestamos',this)"><i class="fa-solid fa-hand-holding-dollar"></i>Préstamos</div>
   <div class="nav-item" onclick="navigate('calendario',this)"><i class="fa-solid fa-calendar-days"></i>Calendario</div>
 
   <div class="nav-section">Sistema</div>
@@ -493,6 +520,17 @@ body{font-family:var(--font-body);font-size:13.5px;background:var(--bg);color:va
         <div class="kpi-val mono" id="kpi-health" style="color:var(--purple)">—</div>
         <div class="kpi-sub">Score IA</div>
         <div class="kpi-trend neutral" id="kpi-health-badge">Ver análisis →</div>
+      </div>
+    </div>
+
+    <!-- Panel de fuentes de ingreso -->
+    <div class="card mb24" id="dash-fuentes-panel">
+      <div class="card-header">
+        <span class="card-title">Fuentes de Ingreso — Disponible por fuente</span>
+        <button class="btn btn-ghost btn-sm" onclick="openModal('modal-ingreso')"><i class="fa-solid fa-plus"></i> Agregar ingreso</button>
+      </div>
+      <div class="card-body" style="padding:0" id="dash-fuentes-body">
+        <div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Sin ingresos registrados esta quincena</div>
       </div>
     </div>
 
@@ -616,13 +654,12 @@ body{font-family:var(--font-body);font-size:13.5px;background:var(--bg);color:va
               <tr>
                 <th>#</th>
                 <th>Quincena</th>
+                <th>Fecha Pago</th>
                 <th>Ingreso</th>
-                <th>Fijos</th>
-                <th>Cuotas Deuda</th>
-                <th>Gastos Únicos</th>
+                <th>Detalle de Compromisos</th>
                 <th>Total Egreso</th>
                 <th>Uso%</th>
-                <th>Saldo</th>
+                <th>Saldo Libre</th>
                 <th>Estado</th>
               </tr>
             </thead>
@@ -806,6 +843,81 @@ body{font-family:var(--font-body);font-size:13.5px;background:var(--bg);color:va
   </div>
 
   <!-- ============================================================
+       TARJETAS DE CRÉDITO
+  ============================================================ -->
+  <div id="page-tarjetas" class="page">
+    <div class="section-h">Tarjetas de Crédito</div>
+    <div class="section-sub">Control inteligente de límites, utilización y fechas de pago</div>
+    <div style="display:flex;gap:8px;margin-bottom:20px">
+      <button class="btn btn-primary" onclick="openModal('modal-tarjeta')"><i class="fa-solid fa-plus"></i> Nueva Tarjeta</button>
+      <button class="btn btn-ghost" onclick="openModal('modal-cargo-tarjeta')"><i class="fa-solid fa-cart-plus"></i> Registrar Cargo</button>
+    </div>
+    <div class="g-65">
+      <div>
+        <div id="tarjetas-lista" class="mb16"></div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Movimientos</span>
+            <select class="form-control" style="width:auto;font-size:12px;padding:5px 10px" id="filtro-tarjeta-mov" onchange="renderTarjetas()">
+              <option value="">Todas las tarjetas</option>
+            </select>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table class="table-modern">
+              <thead><tr><th>Concepto</th><th>Tarjeta</th><th>Fecha</th><th>Monto</th><th>Tipo</th><th></th></tr></thead>
+              <tbody id="tbody-movs-tarjeta"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card mb16">
+          <div class="card-header"><span class="card-title">Resumen Global</span></div>
+          <div class="card-body" id="tarjetas-resumen"></div>
+        </div>
+        <div class="card mb16">
+          <div class="card-header"><span class="card-title">Recomendación IA</span></div>
+          <div class="card-body" id="tarjetas-recomendacion"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Utilización por Tarjeta</span></div>
+          <div class="card-body"><div class="chart-wrap-sm"><canvas id="chart-tarjetas-util"></canvas></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PRÉSTAMOS
+  ============================================================ -->
+  <div id="page-prestamos" class="page">
+    <div class="section-h">Préstamos Inteligentes</div>
+    <div class="section-sub">Calcula intereses, CAT y proyección de pago automáticamente</div>
+    <div style="display:flex;gap:8px;margin-bottom:20px">
+      <button class="btn btn-primary" onclick="openModal('modal-prestamo')"><i class="fa-solid fa-plus"></i> Nuevo Préstamo</button>
+    </div>
+    <div class="g-65">
+      <div>
+        <div id="prestamos-lista" class="mb16"></div>
+      </div>
+      <div>
+        <div class="card mb16">
+          <div class="card-header"><span class="card-title">Resumen de Deuda</span></div>
+          <div class="card-body" id="prestamos-resumen"></div>
+        </div>
+        <div class="card mb16">
+          <div class="card-header"><span class="card-title">Estrategia de Pago IA</span></div>
+          <div class="card-body" id="prestamos-estrategia"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Costo Total vs Capital</span></div>
+          <div class="card-body"><div class="chart-wrap-sm"><canvas id="chart-prestamos-costo"></canvas></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
        CALENDARIO
   ============================================================ -->
   <div id="page-calendario" class="page">
@@ -893,7 +1005,7 @@ body{font-family:var(--font-body);font-size:13.5px;background:var(--bg);color:va
       </div>
       <div>
         <div class="config-panel mb16">
-          <div style="font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--accent);margin-bottom:16px;">⚡ Conectar Firebase</div>
+          <div style="font-family:'Inter',Arial,sans-serif;font-size:14px;font-weight:700;color:var(--accent);margin-bottom:16px;">⚡ Conectar Firebase</div>
           <div class="config-step"><div class="step-num">1</div><div><div class="step-title">Crea proyecto en Firebase</div><div class="step-text">Visita <a href="https://console.firebase.google.com" target="_blank" style="color:var(--accent)">console.firebase.google.com</a> y crea un nuevo proyecto</div></div></div>
           <div class="config-step"><div class="step-num">2</div><div><div class="step-title">Activa Authentication + Firestore</div><div class="step-text">En tu proyecto, activa <strong>Authentication (Email/Password)</strong> y <strong>Cloud Firestore</strong></div></div></div>
           <div class="config-step"><div class="step-num">3</div><div><div class="step-title">Obtén tu configuración</div><div class="step-text">Ve a <strong>Configuración del proyecto → Tus apps → Web app</strong> y copia el objeto <code>firebaseConfig</code></div></div></div>
@@ -986,65 +1098,301 @@ service cloud.firestore {
         <div class="form-group"><label class="form-label">Método de pago</label>
           <select class="form-control" id="g-metodo"><option>Efectivo</option><option>Tarjeta Débito</option><option>Tarjeta Crédito</option><option>Transferencia</option><option>OXXO</option></select>
         </div>
-        <div class="form-group"><label class="form-label">Notas (opcional)</label><input type="text" class="form-control" id="g-notas" placeholder="Detalle adicional"></div>
+        <div class="form-group"><label class="form-label">Se paga con (fuente de ingreso)</label>
+          <select class="form-control" id="g-fuente-ingreso">
+            <option value="">Sin asignar</option>
+          </select>
+        </div>
       </div>
+      <div class="form-group"><label class="form-label">Notas (opcional)</label><input type="text" class="form-control" id="g-notas" placeholder="Detalle adicional"></div>
     </div>
     <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-gasto')">Cancelar</button><button class="btn btn-primary" onclick="agregarGasto()">Guardar</button></div>
   </div>
 </div>
 
-<!-- DEUDA -->
+<!-- MODAL ÚNICO INTELIGENTE -->
 <div class="modal-bg" id="modal-deuda">
   <div class="modal modal-lg">
-    <div class="modal-header"><span class="modal-title">Registrar Deuda / Crédito</span><button class="modal-close" onclick="closeModal('modal-deuda')"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-header">
+      <span class="modal-title" id="modal-deuda-title">Agregar Compromiso Financiero</span>
+      <button class="modal-close" onclick="closeModal('modal-deuda')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <!-- Selector de tipo principal -->
+      <div style="margin-bottom:18px">
+        <label class="form-label">¿Qué quieres agregar?</label>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+          <div class="tipo-btn active" data-tipo="prestamo" onclick="seleccionarTipo('prestamo',this)" style="padding:10px 8px;border-radius:10px;border:2px solid var(--accent);background:var(--accent-glow2);cursor:pointer;text-align:center">
+            <i class="fa-solid fa-hand-holding-dollar" style="font-size:16px;color:var(--accent);display:block;margin-bottom:5px"></i>
+            <div style="font-size:11.5px;font-weight:600;color:var(--accent)">Préstamo</div>
+          </div>
+          <div class="tipo-btn" data-tipo="tarjeta" onclick="seleccionarTipo('tarjeta',this)" style="padding:10px 8px;border-radius:10px;border:2px solid var(--border);cursor:pointer;text-align:center">
+            <i class="fa-solid fa-credit-card" style="font-size:16px;color:var(--text2);display:block;margin-bottom:5px"></i>
+            <div style="font-size:11.5px;font-weight:600;color:var(--text2)">Tarjeta</div>
+          </div>
+          <div class="tipo-btn" data-tipo="gasto_fijo" onclick="seleccionarTipo('gasto_fijo',this)" style="padding:10px 8px;border-radius:10px;border:2px solid var(--border);cursor:pointer;text-align:center">
+            <i class="fa-solid fa-receipt" style="font-size:16px;color:var(--text2);display:block;margin-bottom:5px"></i>
+            <div style="font-size:11.5px;font-weight:600;color:var(--text2)">Gasto Fijo</div>
+          </div>
+          <div class="tipo-btn" data-tipo="deuda" onclick="seleccionarTipo('deuda',this)" style="padding:10px 8px;border-radius:10px;border:2px solid var(--border);cursor:pointer;text-align:center">
+            <i class="fa-solid fa-file-invoice-dollar" style="font-size:16px;color:var(--text2);display:block;margin-bottom:5px"></i>
+            <div style="font-size:11.5px;font-weight:600;color:var(--text2)">Deuda/Abono</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORM PRÉSTAMO -->
+      <div id="form-prestamo">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Nombre / Institución</label><input type="text" class="form-control" id="u-pr-nombre" placeholder="ej. Crédito nómina BBVA"></div>
+          <div class="form-group"><label class="form-label">Subtipo</label>
+            <select class="form-control" id="u-pr-subtipo">
+              <option value="nomina">Crédito Nómina</option><option value="personal">Préstamo Personal</option>
+              <option value="hipoteca">Hipoteca</option><option value="auto">Crédito Auto</option><option value="otro">Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Monto solicitado ($)</label><input type="number" class="form-control" id="u-pr-monto" placeholder="ej. 50000" oninput="calcUnificadoAuto()"></div>
+          <div class="form-group"><label class="form-label">Tasa interés anual (%)</label><input type="number" class="form-control" id="u-pr-tasa" placeholder="ej. 24" step="0.1" oninput="calcUnificadoAuto()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Plazo (quincenas)</label><input type="number" class="form-control" id="u-pr-plazo" placeholder="ej. 24" min="1" oninput="calcUnificadoAuto()"></div>
+          <div class="form-group"><label class="form-label">Pago quincenal ($)</label><input type="number" class="form-control" id="u-pr-pago" placeholder="Se calcula automático" step="0.01" oninput="calcUnificadoAuto()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Quincenas ya pagadas</label><input type="number" class="form-control" id="u-pr-pagadas" value="0" min="0"></div>
+          <div class="form-group"><label class="form-label">Fecha de primer pago</label><input type="date" class="form-control" id="u-pr-fechapago" placeholder="Día exacto de pago"></div>
+        </div>
+      </div>
+
+      <!-- FORM TARJETA -->
+      <div id="form-tarjeta" style="display:none">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Nombre / Apodo</label><input type="text" class="form-control" id="u-tc-nombre" placeholder="ej. Visa Oro BBVA"></div>
+          <div class="form-group"><label class="form-label">Banco</label>
+            <select class="form-control" id="u-tc-banco">
+              <option>BBVA</option><option>Citibanamex</option><option>Santander</option><option>HSBC</option>
+              <option>Banorte</option><option>Scotiabank</option><option>Inbursa</option><option>American Express</option><option>Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Límite de crédito ($)</label><input type="number" class="form-control" id="u-tc-limite" placeholder="ej. 30000" oninput="calcUnificadoAuto()"></div>
+          <div class="form-group"><label class="form-label">Saldo actual adeudado ($)</label><input type="number" class="form-control" id="u-tc-saldo" placeholder="0.00" value="0" oninput="calcUnificadoAuto()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Día de corte</label><input type="number" class="form-control" id="u-tc-corte" placeholder="ej. 5" min="1" max="31" oninput="calcUnificadoAuto()"></div>
+          <div class="form-group"><label class="form-label">Día de pago</label><input type="number" class="form-control" id="u-tc-pago" placeholder="ej. 25" min="1" max="31"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Tasa de interés anual (%)</label><input type="number" class="form-control" id="u-tc-tasa" placeholder="ej. 36" step="0.1"></div>
+          <div class="form-group"><label class="form-label">Color</label>
+            <select class="form-control" id="u-tc-color">
+              <option value="#0099e6">Azul</option><option value="#7c3aed">Morado</option><option value="#e5334a">Rojo</option>
+              <option value="#d97706">Naranja</option><option value="#00a876">Verde</option><option value="#1a1d23">Negro</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORM GASTO FIJO -->
+      <div id="form-gasto_fijo" style="display:none">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Concepto</label><input type="text" class="form-control" id="u-gf-concepto" placeholder="ej. Renta, Luz, Internet"></div>
+          <div class="form-group"><label class="form-label">Monto ($)</label><input type="number" class="form-control" id="u-gf-monto" placeholder="0.00" step="0.01"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Categoría</label>
+            <select class="form-control" id="u-gf-categoria">
+              <option>Vivienda</option><option>Alimentación</option><option>Transporte</option><option>Salud</option>
+              <option>Educación</option><option>Servicios</option><option>Entretenimiento</option><option>Otro</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Frecuencia</label>
+            <select class="form-control" id="u-gf-frecuencia">
+              <option value="Quincenal">Quincenal</option><option value="Mensual">Mensual</option><option value="Semanal">Semanal</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Día de pago</label><input type="number" class="form-control" id="u-gf-diapago" placeholder="ej. 1, 15, 30" min="1" max="31"></div>
+          <div class="form-group"><label class="form-label">Método de pago</label>
+            <select class="form-control" id="u-gf-metodo"><option>Efectivo</option><option>Transferencia</option><option>Tarjeta Débito</option><option>Domiciliación</option></select>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORM DEUDA/ABONO -->
+      <div id="form-deuda" style="display:none">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Nombre / Concepto</label><input type="text" class="form-control" id="u-d-nombre" placeholder="ej. Deuda familiar, Abonos tienda"></div>
+          <div class="form-group"><label class="form-label">Subtipo</label>
+            <select class="form-control" id="u-d-subtipo"><option value="abonos">Pagos en Abonos</option><option value="familiar">Deuda Familiar</option><option value="otro">Otro</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Total adeudado ($)</label><input type="number" class="form-control" id="u-d-total" placeholder="0.00" step="0.01" oninput="calcUnificadoAuto()"></div>
+          <div class="form-group"><label class="form-label">Pago quincenal ($)</label><input type="number" class="form-control" id="u-d-cuota" placeholder="Se calcula" step="0.01" oninput="calcUnificadoAuto()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Número de quincenas</label><input type="number" class="form-control" id="u-d-quincenas" placeholder="Se calcula" min="1" oninput="calcUnificadoAuto()"></div>
+          <div class="form-group"><label class="form-label">Día de pago</label><input type="number" class="form-control" id="u-d-diapago" placeholder="ej. 1, 15" min="1" max="31"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Quincenas ya pagadas</label><input type="number" class="form-control" id="u-d-pagadas" value="0" min="0"></div>
+          <div class="form-group"><label class="form-label">Fecha inicio</label><input type="month" class="form-control" id="u-d-inicio"></div>
+        </div>
+      </div>
+
+      <!-- Preview inteligente unificado -->
+      <div id="u-preview" style="display:none;background:var(--bg3);border-radius:12px;padding:14px;margin-top:12px">
+        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Análisis automático</div>
+        <div id="u-preview-content"></div>
+        <div id="u-preview-impacto" style="margin-top:10px;padding:10px;background:rgba(0,153,230,0.06);border-radius:8px;font-size:12px;color:var(--text2);line-height:1.6"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-deuda')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarUnificado()"><i class="fa-solid fa-bolt"></i> <span id="btn-guardar-label">Guardar préstamo</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- TARJETA DE CRÉDITO -->
+<div class="modal-bg" id="modal-tarjeta">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Nueva Tarjeta de Crédito</span><button class="modal-close" onclick="closeModal('modal-tarjeta')"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="modal-body">
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Nombre / Concepto</label><input type="text" class="form-control" id="d-nombre" placeholder="ej. Prestamo banco, Crédito nómina"></div>
-        <div class="form-group"><label class="form-label">Tipo</label>
-          <select class="form-control" id="d-tipo">
-            <option value="credito">Tarjeta de Crédito</option>
-            <option value="prestamo">Préstamo / Nómina</option>
-            <option value="abonos">Pagos en Abonos</option>
-            <option value="hipoteca">Hipoteca</option>
-            <option value="otro">Otro</option>
+        <div class="form-group"><label class="form-label">Nombre / Apodo</label><input type="text" class="form-control" id="tc-nombre" placeholder="ej. Visa Oro BBVA"></div>
+        <div class="form-group"><label class="form-label">Banco</label>
+          <select class="form-control" id="tc-banco">
+            <option>BBVA</option><option>Citibanamex</option><option>Santander</option><option>HSBC</option>
+            <option>Banorte</option><option>Scotiabank</option><option>Inbursa</option><option>American Express</option><option>Otro</option>
           </select>
         </div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Saldo total adeudado ($)</label><input type="number" class="form-control" id="d-total" placeholder="0.00" step="0.01" oninput="calcularDeudaAuto()"></div>
-        <div class="form-group"><label class="form-label">Cuota quincenal ($)</label><input type="number" class="form-control" id="d-cuota" placeholder="Se calcula automáticamente" step="0.01" oninput="calcularDeudaAuto()"></div>
+        <div class="form-group"><label class="form-label">Límite de crédito ($)</label><input type="number" class="form-control" id="tc-limite" placeholder="ej. 30000" oninput="calcTarjetaPreview()"></div>
+        <div class="form-group"><label class="form-label">Saldo actual adeudado ($)</label><input type="number" class="form-control" id="tc-saldo" placeholder="0.00" value="0" oninput="calcTarjetaPreview()"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Número de quincenas total</label><input type="number" class="form-control" id="d-quincenas" placeholder="Se calcula automáticamente" min="1" oninput="calcularDeudaAuto()"></div>
-        <div class="form-group"><label class="form-label">Tasa de interés anual (% — opcional)</label><input type="number" class="form-control" id="d-tasa" placeholder="ej. 36" step="0.1" oninput="calcularDeudaAuto()"></div>
+        <div class="form-group"><label class="form-label">Día de corte</label><input type="number" class="form-control" id="tc-corte" placeholder="ej. 5" min="1" max="31" oninput="calcTarjetaPreview()"></div>
+        <div class="form-group"><label class="form-label">Día de pago</label><input type="number" class="form-control" id="tc-pago" placeholder="ej. 25" min="1" max="31" oninput="calcTarjetaPreview()"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Quincenas ya pagadas</label><input type="number" class="form-control" id="d-pagadas" placeholder="0" min="0" value="0"></div>
-        <div class="form-group"><label class="form-label">Fecha inicio</label><input type="month" class="form-control" id="d-inicio"></div>
+        <div class="form-group"><label class="form-label">Tasa de interés anual (%)</label><input type="number" class="form-control" id="tc-tasa" placeholder="ej. 36" step="0.1" oninput="calcTarjetaPreview()"></div>
+        <div class="form-group"><label class="form-label">Color</label>
+          <select class="form-control" id="tc-color">
+            <option value="#0099e6">Azul</option><option value="#7c3aed">Morado</option><option value="#e5334a">Rojo</option>
+            <option value="#d97706">Naranja</option><option value="#00a876">Verde</option><option value="#1a1d23">Negro</option>
+          </select>
+        </div>
       </div>
-      <!-- Auto calc preview -->
-      <div id="deuda-preview" style="background:var(--bg3);border-radius:10px;padding:14px;margin-top:6px;display:none">
-        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Análisis automático</div>
-        <div class="g3" style="gap:10px">
+      <div id="tc-preview" style="display:none;background:var(--bg3);border-radius:10px;padding:14px;margin-top:6px">
+        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">Vista previa del análisis</div>
+        <div class="g3" style="gap:8px">
           <div style="text-align:center;background:var(--bg4);border-radius:8px;padding:10px">
-            <div class="mono" style="font-size:16px;font-weight:500;color:var(--text)" id="dp-cuota">$0</div>
-            <div style="font-size:10.5px;color:var(--text3);margin-top:3px">Cuota /Q</div>
+            <div class="mono" style="font-size:15px;font-weight:500" id="tcp-disponible">$0</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">Disponible</div>
           </div>
           <div style="text-align:center;background:var(--bg4);border-radius:8px;padding:10px">
-            <div class="mono" style="font-size:16px;font-weight:500;color:var(--text)" id="dp-q">0 Q</div>
-            <div style="font-size:10.5px;color:var(--text3);margin-top:3px">Quincenas</div>
+            <div class="mono" style="font-size:15px;font-weight:500" id="tcp-util">0%</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">Utilización</div>
           </div>
           <div style="text-align:center;background:var(--bg4);border-radius:8px;padding:10px">
-            <div class="mono" style="font-size:16px;font-weight:500;color:var(--orange)" id="dp-interes">$0</div>
-            <div style="font-size:10.5px;color:var(--text3);margin-top:3px">Total intereses</div>
+            <div class="mono" style="font-size:15px;font-weight:500" id="tcp-diasCorte">— días</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">Para corte</div>
           </div>
         </div>
-        <div style="margin-top:12px;padding:10px;background:rgba(0,153,230,0.06);border-radius:8px">
-          <div style="font-size:12px;color:var(--text2)" id="dp-impacto">Calculando impacto...</div>
+        <div id="tcp-recomendacion" style="margin-top:10px;font-size:12px;padding:8px 10px;border-radius:8px"></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-tarjeta')">Cancelar</button><button class="btn btn-primary" onclick="guardarTarjeta()"><i class="fa-solid fa-credit-card"></i> Guardar tarjeta</button></div>
+  </div>
+</div>
+
+<!-- CARGO A TARJETA -->
+<div class="modal-bg" id="modal-cargo-tarjeta">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Registrar Cargo a Tarjeta</span><button class="modal-close" onclick="closeModal('modal-cargo-tarjeta')"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Concepto</label><input type="text" class="form-control" id="cg-concepto" placeholder="ej. Súper, Gasolina"></div>
+        <div class="form-group"><label class="form-label">Monto ($)</label><input type="number" class="form-control" id="cg-monto" placeholder="0.00" step="0.01"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Tarjeta</label><select class="form-control" id="cg-tarjeta"></select></div>
+        <div class="form-group"><label class="form-label">Fecha</label><input type="date" class="form-control" id="cg-fecha"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Categoría</label>
+          <select class="form-control" id="cg-categoria">
+            <option>Alimentación</option><option>Transporte</option><option>Entretenimiento</option><option>Ropa</option>
+            <option>Salud</option><option>Servicios</option><option>Vivienda</option><option>Otro</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Tipo</label>
+          <select class="form-control" id="cg-tipo"><option value="cargo">Cargo</option><option value="pago">Pago/Abono</option></select>
         </div>
       </div>
     </div>
-    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-deuda')">Cancelar</button><button class="btn btn-primary" onclick="agregarDeuda()"><i class="fa-solid fa-bolt"></i> Guardar y calcular corrida</button></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-cargo-tarjeta')">Cancelar</button><button class="btn btn-primary" onclick="guardarCargo()"><i class="fa-solid fa-bolt"></i> Registrar</button></div>
+  </div>
+</div>
+
+<!-- PRÉSTAMO -->
+<div class="modal-bg" id="modal-prestamo">
+  <div class="modal modal-lg">
+    <div class="modal-header"><span class="modal-title">Nuevo Préstamo</span><button class="modal-close" onclick="closeModal('modal-prestamo')"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nombre / Institución</label><input type="text" class="form-control" id="pr-nombre" placeholder="ej. Crédito nómina BBVA"></div>
+        <div class="form-group"><label class="form-label">Tipo</label>
+          <select class="form-control" id="pr-tipo">
+            <option value="nomina">Crédito Nómina</option><option value="personal">Préstamo Personal</option>
+            <option value="hipoteca">Hipoteca</option><option value="auto">Crédito Auto</option><option value="otro">Otro</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Monto solicitado ($)</label><input type="number" class="form-control" id="pr-monto" placeholder="ej. 50000" oninput="calcPrestamoAuto()"></div>
+        <div class="form-group"><label class="form-label">Tasa de interés anual (%)</label><input type="number" class="form-control" id="pr-tasa" placeholder="ej. 24" step="0.1" oninput="calcPrestamoAuto()"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Plazo (quincenas)</label><input type="number" class="form-control" id="pr-plazo" placeholder="ej. 24" min="1" oninput="calcPrestamoAuto()"></div>
+        <div class="form-group"><label class="form-label">Pago quincenal ($)</label><input type="number" class="form-control" id="pr-pago" placeholder="Se calcula automático" step="0.01" oninput="calcPrestamoAuto()"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Quincenas ya pagadas</label><input type="number" class="form-control" id="pr-pagadas" value="0" min="0"></div>
+        <div class="form-group"><label class="form-label">Fecha de inicio</label><input type="month" class="form-control" id="pr-inicio"></div>
+      </div>
+      <!-- Preview inteligente -->
+      <div id="pr-preview" style="display:none;background:var(--bg3);border-radius:12px;padding:16px;margin-top:8px">
+        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">Análisis inteligente del préstamo</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
+          <div style="text-align:center;background:var(--bg4);border-radius:8px;padding:10px">
+            <div class="mono" style="font-size:14px;font-weight:500;color:var(--accent)" id="prp-pago">$0</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">Pago /Q</div>
+          </div>
+          <div style="text-align:center;background:var(--bg4);border-radius:8px;padding:10px">
+            <div class="mono" style="font-size:14px;font-weight:500;color:var(--orange)" id="prp-interes">$0</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">Total intereses</div>
+          </div>
+          <div style="text-align:center;background:var(--bg4);border-radius:8px;padding:10px">
+            <div class="mono" style="font-size:14px;font-weight:500;color:var(--red)" id="prp-total">$0</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">Costo total</div>
+          </div>
+          <div style="text-align:center;background:var(--bg4);border-radius:8px;padding:10px">
+            <div class="mono" style="font-size:14px;font-weight:500;color:var(--purple)" id="prp-cat">0%</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">CAT aprox.</div>
+          </div>
+        </div>
+        <div id="prp-impacto" style="padding:10px;background:rgba(0,153,230,0.06);border-radius:8px;font-size:12px;color:var(--text2);line-height:1.6"></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-prestamo')">Cancelar</button><button class="btn btn-primary" onclick="guardarPrestamo()"><i class="fa-solid fa-bolt"></i> Guardar y agregar a corrida</button></div>
   </div>
 </div>
 
@@ -1062,7 +1410,7 @@ const CATS_COLORS = {
 
 let ST = {
   perfil: { nombre:'', email:'', ingresoBase:0, metaAhorro:15, umbralAlerta:80 },
-  ingresos: [], gastos: [], deudas: [],
+  ingresos: [], gastos: [], deudas: [], tarjetas: [], cargosTarjeta: [], prestamos: [],
   alertas: [], firebaseConfig: null, uid: null
 };
 
@@ -1136,11 +1484,10 @@ function switchAuthTab(mode){
 async function handleAuth(){
   const email = document.getElementById('auth-email').value.trim();
   const pass  = document.getElementById('auth-password').value;
-  const income= parseFloat(document.getElementById('auth-income').value)||0;
   const errEl = document.getElementById('auth-error');
   errEl.style.display='none';
   if(!email||!pass){ errEl.textContent='Completa los campos requeridos'; errEl.style.display='block'; return; }
-  if(!window._FB){ demoLogin(email,income); return; }
+  if(!window._FB){ demoLogin(email); return; }
   try {
     const { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword } = window._FB;
     let cred;
@@ -1151,23 +1498,20 @@ async function handleAuth(){
       const name = document.getElementById('auth-name').value.trim();
       ST.perfil.nombre = name;
       ST.perfil.email = email;
-      if(income>0) ST.perfil.ingresoBase = income;
     }
     ST.uid = cred.user.uid;
     ST.perfil.email = email;
-    if(income>0) ST.perfil.ingresoBase = income;
     await loadFromFirebase(ST.uid);
     enterApp();
   } catch(e){
-    errEl.textContent = e.message.replace('Firebase:','').replace('(auth/wrong-password).','Contraseña incorrecta').replace('(auth/user-not-found).','Usuario no encontrado').replace('(auth/email-already-in-use).','Correo ya registrado');
+    errEl.textContent = e.message.replace('Firebase:','').replace('(auth/wrong-password).','Contraseña incorrecta').replace('(auth/user-not-found).','Usuario no encontrado').replace('(auth/email-already-in-use).','Correo ya registrado').replace('(auth/invalid-credential).','Correo o contraseña incorrectos');
     errEl.style.display='block';
   }
 }
-function demoLogin(email='demo@sema.local', income=0){
+function demoLogin(email='demo@sema.local'){
   ST.uid = 'local-' + Date.now();
   ST.perfil.email = email || 'demo@sema.local';
   ST.perfil.nombre = ST.perfil.nombre || 'Usuario Demo';
-  if(income>0) ST.perfil.ingresoBase = income;
   enterApp();
 }
 function enterApp(){
@@ -1190,6 +1534,7 @@ function cerrarSesion(){
 const PAGE_TITLES = {
   dashboard:'Dashboard', corrida:'Corrida Quincenal', prediccion:'IA Predictiva',
   ingresos:'Ingresos', gastos:'Gastos', deudas:'Deudas & Crédito',
+  tarjetas:'Tarjetas de Crédito', prestamos:'Préstamos',
   calendario:'Calendario', estadisticas:'Estadísticas', config:'Configuración'
 };
 let currentPage = 'dashboard';
@@ -1208,6 +1553,8 @@ function navigate(page, el){
   if(page==='ingresos') renderIngresos();
   if(page==='gastos') renderGastos();
   if(page==='deudas') renderDeudas();
+  if(page==='tarjetas') renderTarjetas();
+  if(page==='prestamos') renderPrestamos();
   if(page==='estadisticas') renderEstadisticas();
   if(page==='calendario') renderCalendario();
   if(page==='config') renderConfig();
@@ -1299,7 +1646,10 @@ function calcFijosQ(){
 }
 
 function calcCuotasQ(){
-  return ST.deudas.filter(d=>d.activa).reduce((s,d)=>s+(parseFloat(d.cuota)||0),0);
+  const deudas = ST.deudas.filter(d=>d.activa).reduce((s,d)=>s+(parseFloat(d.cuota)||0),0);
+  const prest  = ST.prestamos.filter(p=>p.activa).reduce((s,p)=>s+(parseFloat(p.pago)||0),0);
+  // Evitar doble conteo (préstamos ya se agregan a deudas)
+  return deudas;
 }
 
 // ── Corrida quincenal inteligente ──
@@ -1456,7 +1806,6 @@ function refreshDashboard(){
   document.getElementById('hs-label').textContent = `${hs.label} — Score ${hs.score}/100`;
   document.getElementById('hs-badge').className = `badge ${hs.clase}`;
   document.getElementById('hs-badge').textContent = hs.label;
-  // Ring
   const circumference = 289;
   const dashOffset = circumference - (hs.score/100)*circumference;
   document.getElementById('health-arc').style.strokeDashoffset = dashOffset;
@@ -1485,7 +1834,100 @@ function refreshDashboard(){
     ? recents.map(g=>`<tr><td>${g.concepto}</td><td><span class="badge badge-blue">${g.categoria}</span></td><td class="mono" style="color:var(--red)">${fmt(g.monto)}</td></tr>`).join('')
     : '<tr><td colspan="3" style="text-align:center;color:var(--text3);padding:20px">Sin gastos registrados</td></tr>';
 
+  // Fuentes de ingreso con disponible
+  renderFuentesIngreso();
   renderDashCharts();
+}
+
+function renderFuentesIngreso(){
+  const now = new Date();
+  const mesQ = now.getMonth()+1, anoQ = now.getFullYear(), qQ = now.getDate()<=15?1:2;
+  // Ingresos de la quincena actual
+  const ingQ = ST.ingresos.filter(i=>i.mes===mesQ&&i.ano===anoQ&&i.quincena===qQ);
+  // Si no hay de esta quincena, tomar los más recientes
+  const ingBase = ingQ.length ? ingQ : ST.ingresos.slice(-6);
+  const bodyEl = document.getElementById('dash-fuentes-body');
+  if(!bodyEl) return;
+  if(!ingBase.length){
+    bodyEl.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Sin ingresos registrados. <a href="#" onclick="openModal(\'modal-ingreso\')" style="color:var(--accent)">Agrega tu primer ingreso →</a></div>';
+    return;
+  }
+  // Gastos asignados por fuente
+  const totalFijos  = calcFijosQ();
+  const totalCuotas = calcCuotasQ();
+  const totalCompromisos = totalFijos + totalCuotas;
+  const totalIngresos = ingBase.reduce((s,i)=>s+i.monto,0);
+  // Gastos con fuente asignada
+  const gastosPorFuente = {};
+  ST.gastos.filter(g=>g.fuenteIngreso&&['Quincenal','Mensual','Semanal'].includes(g.frecuencia)).forEach(g=>{
+    let montoQ = g.frecuencia==='Quincenal'?g.monto:g.frecuencia==='Mensual'?g.monto/2:g.monto*2;
+    gastosPorFuente[g.fuenteIngreso]=(gastosPorFuente[g.fuenteIngreso]||0)+montoQ;
+  });
+  // Gastos sin fuente asignada — distribuir proporcionalmente
+  const totalAsignado = Object.values(gastosPorFuente).reduce((s,v)=>s+v,0);
+  const sinAsignar = Math.max(0, totalCompromisos - totalAsignado);
+
+  bodyEl.innerHTML = `
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:var(--bg3)">
+            <th style="padding:10px 18px;text-align:left;font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border)">Fuente de Ingreso</th>
+            <th style="padding:10px 18px;text-align:right;font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border)">Ingreso /Q</th>
+            <th style="padding:10px 18px;text-align:right;font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border)">Gastos asignados</th>
+            <th style="padding:10px 18px;text-align:right;font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border)">Compromisos</th>
+            <th style="padding:10px 18px;text-align:right;font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border)">Disponible</th>
+            <th style="padding:10px 18px;text-align:left;font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid var(--border)">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${ingBase.map(i=>{
+            const gastosAsig = gastosPorFuente[i.fuente]||0;
+            // Compromisos proporcionales sin asignar
+            const proporcional = totalIngresos>0?(i.monto/totalIngresos)*sinAsignar:0;
+            const totalUsado = gastosAsig + proporcional;
+            const disponible = i.monto - totalUsado;
+            const pct = i.monto>0?Math.min(100,totalUsado/i.monto*100):0;
+            const color = disponible<0?'var(--red)':pct>80?'var(--orange)':'var(--green)';
+            const badge = disponible<0?'<span class="badge badge-red">Déficit</span>':pct>80?'<span class="badge badge-orange">Ajustado</span>':'<span class="badge badge-green">OK</span>';
+            return `<tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:12px 18px">
+                <div style="font-weight:600;font-size:13px;color:var(--text)">${i.fuente}</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:2px">Q${i.quincena} ${MESES[i.mes-1]} ${i.ano}</div>
+              </td>
+              <td style="padding:12px 18px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent);font-weight:600">${fmt(i.monto)}</td>
+              <td style="padding:12px 18px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text2)">${fmt(gastosAsig)}</td>
+              <td style="padding:12px 18px;text-align:right">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--orange)">${fmt(proporcional)}</div>
+                <div style="font-size:10px;color:var(--text3)">proporcional</div>
+              </td>
+              <td style="padding:12px 18px;text-align:right">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:${color}">${fmt(disponible)}</div>
+                <div style="height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:5px;width:80px;margin-left:auto">
+                  <div style="height:100%;border-radius:2px;background:${color};width:${pct.toFixed(0)}%"></div>
+                </div>
+              </td>
+              <td style="padding:12px 18px">${badge}</td>
+            </tr>`;
+          }).join('')}
+          <tr style="background:var(--bg3)">
+            <td style="padding:10px 18px;font-size:11px;font-weight:700;color:var(--text3)">TOTAL</td>
+            <td style="padding:10px 18px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent)">${fmt(totalIngresos)}</td>
+            <td style="padding:10px 18px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700">${fmt(totalAsignado)}</td>
+            <td style="padding:10px 18px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--orange)">${fmt(totalCompromisos)}</td>
+            <td style="padding:10px 18px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:800;color:${totalIngresos-totalCompromisos-totalAsignado<0?'var(--red)':'var(--green)'}">${fmt(totalIngresos-totalCompromisos)}</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>`;
+
+  // Actualizar select de fuente en modal gasto
+  const sel = document.getElementById('g-fuente-ingreso');
+  if(sel){
+    const fuentesUnicas=[...new Set(ST.ingresos.map(i=>i.fuente))];
+    sel.innerHTML='<option value="">Sin asignar</option>'+fuentesUnicas.map(f=>`<option value="${f}">${f}</option>`).join('');
+  }
 }
 
 function renderDashCharts(){
@@ -1534,28 +1976,78 @@ function recalcularCorrida(){
   document.getElementById('pr-margen').style.color = libre<0?'var(--red)':libre/base<0.15?'var(--orange)':'var(--green)';
   document.getElementById('pr-margen-pct').textContent = `${fmtPct(pctLibre)} del ingreso`;
 
-  document.getElementById('tbody-corrida').innerHTML = corrida.map(q=>{
+  // Construir detalle de compromisos por quincena
+  const gastosFijos = ST.gastos.filter(g=>!g.esDeuda&&['Quincenal','Mensual','Semanal'].includes(g.frecuencia));
+  const deudasActivas = ST.deudas.filter(d=>d.activa);
+
+  document.getElementById('tbody-corrida').innerHTML = corrida.map((q,qIdx)=>{
     const barPct = Math.min(100,q.pctUso).toFixed(1);
     const barColor = q.pctUso>=90?'var(--red)':q.pctUso>=75?'var(--orange)':'var(--green)';
     const badge = q.estado==='deficit'?'<span class="badge badge-red">Déficit</span>':q.estado==='ajustado'?'<span class="badge badge-orange">Ajustado</span>':'<span class="badge badge-green">OK</span>';
+
+    // Fecha de pago de esta quincena (día 1 para Q1, día 16 para Q2)
+    const diaPago = q.q===1?'1':q.q===2?'16':'—';
+    const fechaPago = `${diaPago}/${String(q.mes).padStart(2,'0')}/${q.ano}`;
+
+    // Detalle línea por línea de compromisos
+    const lineas = [];
+
+    // Gastos fijos
+    gastosFijos.forEach(g=>{
+      let montoQ=0;
+      if(g.frecuencia==='Quincenal') montoQ=g.monto;
+      else if(g.frecuencia==='Mensual') montoQ=g.monto/2;
+      else if(g.frecuencia==='Semanal') montoQ=g.monto*2;
+      const diaConcepto = g.diaPago?` · día ${g.diaPago}`:'';
+      lineas.push(`<div style="display:flex;justify-content:space-between;font-size:11px;padding:1px 0">
+        <span style="color:var(--text2)">${g.concepto}<span style="color:var(--text3)">${diaConcepto}</span></span>
+        <span class="mono" style="color:var(--red);margin-left:10px">${fmt(montoQ)}</span>
+      </div>`);
+    });
+
+    // Deudas/préstamos activos en esta quincena
+    deudasActivas.forEach((d,di)=>{
+      const pagadasActual=(d.pagadas||0)+qIdx;
+      if(pagadasActual>=(d.quincenas||1)) return; // ya liquidada
+      const diaD = d.fechaPago?new Date(d.fechaPago).getDate():d.diaPago||'—';
+      const restantes=(d.quincenas||1)-(d.pagadas||0)-qIdx;
+      lineas.push(`<div style="display:flex;justify-content:space-between;font-size:11px;padding:1px 0">
+        <span style="color:var(--text2)">${d.nombre}<span style="color:var(--text3)"> · día ${diaD} · ${restantes}Q rest.</span></span>
+        <span class="mono" style="color:var(--orange);margin-left:10px">${fmt(d.cuota)}</span>
+      </div>`);
+    });
+
+    // Gastos únicos de este período
+    const unicosQ = ST.gastos.filter(g=>!g.esDeuda&&g.frecuencia==='Único'&&g.mes===q.mes&&g.ano===q.ano&&g.quincena===q.q);
+    unicosQ.forEach(g=>{
+      lineas.push(`<div style="display:flex;justify-content:space-between;font-size:11px;padding:1px 0">
+        <span style="color:var(--accent)">${g.concepto} <span style="color:var(--text3)">(único)</span></span>
+        <span class="mono" style="color:var(--accent);margin-left:10px">${fmt(g.monto)}</span>
+      </div>`);
+    });
+
     return `<tr class="row-${q.estado}">
       <td style="color:var(--text3);font-size:11px">${q.idx}</td>
-      <td style="font-weight:600;font-size:12.5px">${q.label}</td>
+      <td style="font-weight:600;font-size:12.5px;white-space:nowrap">${q.label}</td>
+      <td class="mono" style="font-size:11px;color:var(--text2);white-space:nowrap">${fechaPago}</td>
       <td class="mono" style="color:var(--accent)">${fmt(q.ingrBase)}</td>
-      <td class="mono" style="color:var(--text2)">${fmt(q.fijosQ)}</td>
-      <td class="mono" style="color:var(--orange)">${q.cuotasQ>0?fmt(q.cuotasQ):'<span style="color:var(--text3)">—</span>'}</td>
-      <td class="mono" style="color:var(--accent)">${q.unicosQ>0?fmt(q.unicosQ):'<span style="color:var(--text3)">—</span>'}</td>
+      <td style="min-width:220px">${lineas.length?lineas.join(''):'<span style="color:var(--text3);font-size:11px">Sin compromisos</span>'}</td>
       <td class="mono" style="font-weight:600">${fmt(q.totalEgreso)}</td>
-      <td><div class="pct-bar"><div class="pct-track"><div class="pct-fill" style="width:${barPct}%;background:${barColor}"></div></div><span style="font-size:11px;color:var(--text2);font-family:var(--font-mono)">${barPct}%</span></div></td>
+      <td>
+        <div class="pct-bar">
+          <div class="pct-track"><div class="pct-fill" style="width:${barPct}%;background:${barColor}"></div></div>
+          <span style="font-size:11px;color:var(--text2);font-family:var(--font-mono)">${barPct}%</span>
+        </div>
+      </td>
       <td class="mono" style="font-weight:700;color:${q.saldo<0?'var(--red)':q.saldo/q.ingrBase<0.1?'var(--orange)':'var(--green)'}">${fmt(q.saldo)}</td>
       <td>${badge}</td>
     </tr>`;
   }).join('') + `<tr class="row-total">
-    <td></td><td style="font-size:11px;font-weight:700;color:var(--text3)">TOTAL ${n} Q</td>
+    <td></td>
+    <td style="font-size:11px;font-weight:700;color:var(--text3)">TOTAL ${n} Q</td>
+    <td></td>
     <td class="mono" style="color:var(--accent);font-weight:700">${fmt(corrida.reduce((s,q)=>s+q.ingrBase,0))}</td>
-    <td class="mono" style="font-weight:700">${fmt(corrida.reduce((s,q)=>s+q.fijosQ,0))}</td>
-    <td class="mono" style="color:var(--orange);font-weight:700">${fmt(corrida.reduce((s,q)=>s+q.cuotasQ,0))}</td>
-    <td class="mono" style="font-weight:700">${fmt(corrida.reduce((s,q)=>s+q.unicosQ,0))}</td>
+    <td></td>
     <td class="mono" style="font-weight:700">${fmt(corrida.reduce((s,q)=>s+q.totalEgreso,0))}</td>
     <td></td>
     <td class="mono" style="font-size:15px;font-weight:800;color:${corrida.reduce((s,q)=>s+q.saldo,0)>=0?'var(--green)':'var(--red)'}">${fmt(corrida.reduce((s,q)=>s+q.saldo,0))}</td>
@@ -1686,7 +2178,7 @@ function renderDebtTimeline(){
       <div class="debt-progress"><div class="debt-progress-fill" style="width:${pct}%"></div></div>
       <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--text3);margin-top:3px">
         <span>${pagadas} de ${total} quincenas pagadas (${pct}%)</span>
-        <button style="border:none;background:none;font-size:11px;color:var(--accent);cursor:pointer;font-family:var(--font-body)" onclick="marcarPagada(${d.id})">+ Marcar cuota pagada</button>
+        <button style="border:none;background:none;font-size:11px;color:var(--accent);cursor:pointer;font-family:'Inter',Arial,sans-serif" onclick="marcarPagada(${d.id})">+ Marcar cuota pagada</button>
       </div>
       <div class="debt-stats">
         <div class="debt-stat"><div class="debt-stat-val mono">${fmt(d.cuota)}</div><div class="debt-stat-lbl">Cuota /Q</div></div>
@@ -1799,17 +2291,18 @@ function renderIngresos(){
 // GASTOS CRUD
 // ============================================================
 function agregarGasto(){
-  const concepto  = document.getElementById('g-concepto').value.trim();
-  const monto     = parseFloat(document.getElementById('g-monto').value);
-  const categoria = document.getElementById('g-categoria').value;
-  const frecuencia= document.getElementById('g-frecuencia').value;
+  const concepto     = document.getElementById('g-concepto').value.trim();
+  const monto        = parseFloat(document.getElementById('g-monto').value);
+  const categoria    = document.getElementById('g-categoria').value;
+  const frecuencia   = document.getElementById('g-frecuencia').value;
   const q   = parseInt(document.getElementById('g-q').value);
   const mes = parseInt(document.getElementById('g-mes').value);
   const ano = parseInt(document.getElementById('g-ano').value);
-  const metodo = document.getElementById('g-metodo').value;
-  const notas  = document.getElementById('g-notas').value;
+  const metodo        = document.getElementById('g-metodo').value;
+  const notas         = document.getElementById('g-notas').value;
+  const fuenteIngreso = document.getElementById('g-fuente-ingreso')?.value||'';
   if(!concepto||!monto||monto<=0){ toast('Completa los campos requeridos','error'); return; }
-  ST.gastos.push({ id:Date.now(), concepto, monto, categoria, frecuencia, quincena:q, mes, ano, metodo, notas, esDeuda:false });
+  ST.gastos.push({ id:Date.now(), concepto, monto, categoria, frecuencia, quincena:q, mes, ano, metodo, notas, fuenteIngreso, esDeuda:false });
   saveState();
   closeModal('modal-gasto');
   toast('Gasto registrado','success');
@@ -1848,66 +2341,183 @@ function renderGastos(){
 function renderTablaGastos(){ renderGastos(); }
 
 // ============================================================
-// DEUDAS CRUD + ALGORITMO INTELIGENTE
+// MODAL UNIFICADO INTELIGENTE
 // ============================================================
-function calcularDeudaAuto(){
-  const total   = parseFloat(document.getElementById('d-total').value)||0;
-  const cuota   = parseFloat(document.getElementById('d-cuota').value)||0;
-  const quince  = parseInt(document.getElementById('d-quincenas').value)||0;
-  const tasa    = parseFloat(document.getElementById('d-tasa').value)||0;
-  const prev = document.getElementById('deuda-preview');
-  if(!total && !cuota && !quince){ prev.style.display='none'; return; }
-  prev.style.display='block';
-  let cuotaCalc=cuota, quinceCalc=quince, interesCalc=0;
-  // Tasa bimestral (quincenal ≈ mensual/2)
-  const tasaQ = tasa>0 ? tasa/(100*24) : 0; // tasa quincenal
-  if(total>0 && quince>0 && cuota===0){
-    // Calcular cuota con interés (amortización francesa)
-    if(tasaQ>0) cuotaCalc = total*tasaQ/(1-Math.pow(1+tasaQ,-quince));
-    else cuotaCalc = total/quince;
-    document.getElementById('d-cuota').value = cuotaCalc.toFixed(2);
-  } else if(total>0 && cuota>0 && quince===0){
-    if(tasaQ>0){
-      quinceCalc = Math.ceil(-Math.log(1-total*tasaQ/cuota)/Math.log(1+tasaQ));
-    } else {
-      quinceCalc = Math.ceil(total/cuota);
-    }
-    document.getElementById('d-quincenas').value = quinceCalc;
-  } else if(cuota>0 && quince>0 && total===0){
-    // ya tenemos todo
-  }
-  cuotaCalc = parseFloat(document.getElementById('d-cuota').value)||cuota;
-  quinceCalc= parseInt(document.getElementById('d-quincenas').value)||quince;
-  interesCalc = Math.max(0, cuotaCalc*quinceCalc - total);
-  document.getElementById('dp-cuota').textContent = fmt(cuotaCalc);
-  document.getElementById('dp-q').textContent = `${quinceCalc} Q`;
-  document.getElementById('dp-interes').textContent = fmt(interesCalc);
-  const base = calcIngresoBase();
-  const pctImpacto = base>0?cuotaCalc/base*100:0;
-  const libreActual = base - calcFijosQ() - calcCuotasQ();
-  document.getElementById('dp-impacto').innerHTML = `Esta deuda usará <strong style="color:var(--accent)">${fmtPct(pctImpacto)}</strong> de tu ingreso base por quincena. Con tu margen libre actual de <strong style="color:var(--green)">${fmt(libreActual)}</strong>, ${cuotaCalc<=libreActual?'<span style="color:var(--green)">puedes cubrirla cómodamente</span>':'<span style="color:var(--red)">EXCEDE tu margen libre — revisa tus gastos</span>'}.`;
+let _tipoActual = 'prestamo';
+
+function seleccionarTipo(tipo, el){
+  _tipoActual = tipo;
+  // Reset UI
+  document.querySelectorAll('.tipo-btn').forEach(b=>{
+    b.style.border='2px solid var(--border)';
+    b.querySelectorAll('i,div').forEach(x=>{ x.style.color='var(--text2)'; });
+  });
+  el.style.border='2px solid var(--accent)';
+  el.style.background='var(--accent-glow2)';
+  el.querySelectorAll('i,div').forEach(x=>{ x.style.color='var(--accent)'; });
+  // Mostrar el form correcto
+  ['prestamo','tarjeta','gasto_fijo','deuda'].forEach(t=>{
+    document.getElementById(`form-${t}`).style.display = t===tipo?'block':'none';
+  });
+  // Labels
+  const labels = {
+    prestamo:'Guardar préstamo', tarjeta:'Guardar tarjeta',
+    gasto_fijo:'Guardar gasto fijo', deuda:'Guardar deuda'
+  };
+  document.getElementById('btn-guardar-label').textContent = labels[tipo]||'Guardar';
+  document.getElementById('u-preview').style.display='none';
 }
 
-function agregarDeuda(){
-  const nombre   = document.getElementById('d-nombre').value.trim();
-  const tipo     = document.getElementById('d-tipo').value;
-  const total    = parseFloat(document.getElementById('d-total').value)||0;
-  const cuota    = parseFloat(document.getElementById('d-cuota').value)||0;
-  const quincenas= parseInt(document.getElementById('d-quincenas').value)||1;
-  const tasa     = parseFloat(document.getElementById('d-tasa').value)||0;
-  const pagadas  = parseInt(document.getElementById('d-pagadas').value)||0;
-  const inicio   = document.getElementById('d-inicio').value;
-  if(!nombre||!cuota||!quincenas){ toast('Completa nombre, cuota y número de quincenas','error'); return; }
-  const deuda = { id:Date.now(), nombre, tipo, total, cuota, quincenas, tasa, pagadas, inicio, activa:true };
-  ST.deudas.push(deuda);
-  // Agregar como gasto de tipo deuda para el historial
-  saveState();
-  closeModal('modal-deuda');
-  toast('Deuda registrada. Corrida recalculada automáticamente.','success');
-  if(currentPage==='deudas') renderDeudas();
-  if(currentPage==='dashboard') refreshDashboard();
-  recalcularCorrida();
+function calcUnificadoAuto(){
+  const prev = document.getElementById('u-preview');
+  const content = document.getElementById('u-preview-content');
+  const impacto = document.getElementById('u-preview-impacto');
+  const base = calcIngresoBase();
+  const libre = base - calcFijosQ() - calcCuotasQ();
+
+  if(_tipoActual==='prestamo'){
+    const monto = parseFloat(document.getElementById('u-pr-monto').value)||0;
+    const tasa  = parseFloat(document.getElementById('u-pr-tasa').value)||0;
+    const plazo = parseInt(document.getElementById('u-pr-plazo').value)||0;
+    let pago    = parseFloat(document.getElementById('u-pr-pago').value)||0;
+    if(!monto && !pago){ prev.style.display='none'; return; }
+    const tasaQ = tasa>0?tasa/(100*24):0;
+    if(monto>0&&plazo>0&&!pago){
+      pago = tasaQ>0?monto*tasaQ/(1-Math.pow(1+tasaQ,-plazo)):monto/plazo;
+      document.getElementById('u-pr-pago').value=pago.toFixed(2);
+    }
+    let plazoCalc=plazo;
+    if(monto>0&&pago>0&&!plazo){
+      plazoCalc=tasaQ>0?Math.ceil(-Math.log(1-monto*tasaQ/pago)/Math.log(1+tasaQ)):Math.ceil(monto/pago);
+      document.getElementById('u-pr-plazo').value=plazoCalc;
+    }
+    const intereses=Math.max(0,pago*(plazoCalc||plazo)-monto);
+    const cat=tasaQ>0?(Math.pow(1+tasaQ,24)-1)*100:0;
+    prev.style.display='block';
+    content.innerHTML=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+      <div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:14px;color:var(--accent)">${fmt(pago)}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Pago /Q</div></div>
+      <div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:14px;color:var(--orange)">${fmt(intereses)}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Intereses</div></div>
+      <div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:14px;color:var(--red)">${fmt(monto+intereses)}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Costo total</div></div>
+      <div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:14px;color:var(--purple)">${cat.toFixed(1)}%</div><div style="font-size:10px;color:var(--text3);margin-top:2px">CAT aprox.</div></div>
+    </div>`;
+    impacto.innerHTML=`Representa <strong style="color:var(--accent)">${fmtPct(base>0?pago/base*100:0)}</strong> de tu ingreso. Margen libre: <strong style="color:${libre>=pago?'var(--green)':'var(--red)'}">${fmt(libre)}</strong> — ${libre>=pago?'<span style="color:var(--green)">lo puedes cubrir</span>':'<span style="color:var(--red)">excede tu margen disponible</span>'}.`;
+  }
+
+  if(_tipoActual==='tarjeta'){
+    const limite = parseFloat(document.getElementById('u-tc-limite').value)||0;
+    const saldo  = parseFloat(document.getElementById('u-tc-saldo').value)||0;
+    if(!limite){ prev.style.display='none'; return; }
+    const disp=limite-saldo, util=limite>0?saldo/limite*100:0;
+    const corte=parseInt(document.getElementById('u-tc-corte').value)||0;
+    const diasCorte=corte?diasParaFecha(corte):0;
+    prev.style.display='block';
+    content.innerHTML=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+      <div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:14px;color:var(--green)">${fmt(disp)}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Disponible</div></div>
+      <div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:14px;color:${util>70?'var(--red)':util>30?'var(--orange)':'var(--green)'}">${util.toFixed(1)}%</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Utilización</div></div>
+      <div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:14px;color:${diasCorte<=5?'var(--red)':'var(--text)'}">${diasCorte} días</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Para corte</div></div>
+    </div>`;
+    impacto.innerHTML = util>70?'⚠ Utilización alta. No se recomienda usar esta tarjeta hasta abonar.':util>30?'⚡ Utilización moderada. Úsala con precaución.':'✓ Tarjeta en zona saludable. Puedes usarla sin problema.';
+    impacto.style.color=util>70?'var(--red)':util>30?'var(--orange)':'var(--green)';
+  }
+
+  if(_tipoActual==='deuda'){
+    const total  = parseFloat(document.getElementById('u-d-total').value)||0;
+    const cuota  = parseFloat(document.getElementById('u-d-cuota').value)||0;
+    let quince   = parseInt(document.getElementById('u-d-quincenas').value)||0;
+    if(!total&&!cuota){ prev.style.display='none'; return; }
+    if(total>0&&cuota>0&&!quince){ quince=Math.ceil(total/cuota); document.getElementById('u-d-quincenas').value=quince; }
+    else if(total>0&&quince>0&&!cuota){ const c=total/quince; document.getElementById('u-d-cuota').value=c.toFixed(2); }
+    prev.style.display='block';
+    content.innerHTML=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+      <div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:14px;color:var(--accent)">${fmt(parseFloat(document.getElementById('u-d-cuota').value)||cuota)}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Pago /Q</div></div>
+      <div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:14px;color:var(--text)">${quince||'—'} Q</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Quincenas</div></div>
+      <div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:14px;color:var(--orange)">${fmt(total)}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Total</div></div>
+    </div>`;
+    const cuotaFinal=parseFloat(document.getElementById('u-d-cuota').value)||cuota;
+    impacto.innerHTML=`Pago quincenal de <strong style="color:var(--accent)">${fmt(cuotaFinal)}</strong>. Margen libre: <strong style="color:${libre>=cuotaFinal?'var(--green)':'var(--red)'}">${fmt(libre)}</strong> — ${libre>=cuotaFinal?'<span style="color:var(--green)">lo puedes cubrir</span>':'<span style="color:var(--red)">excede tu margen</span>'}.`;
+    impacto.style.color='var(--text2)';
+  }
 }
+
+function guardarUnificado(){
+  const now = new Date();
+  const mesActual = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+
+  if(_tipoActual==='prestamo'){
+    const nombre  = document.getElementById('u-pr-nombre').value.trim();
+    const subtipo = document.getElementById('u-pr-subtipo').value;
+    const monto   = parseFloat(document.getElementById('u-pr-monto').value)||0;
+    const tasa    = parseFloat(document.getElementById('u-pr-tasa').value)||0;
+    const plazo   = parseInt(document.getElementById('u-pr-plazo').value)||0;
+    const pago    = parseFloat(document.getElementById('u-pr-pago').value)||0;
+    const pagadas = parseInt(document.getElementById('u-pr-pagadas').value)||0;
+    const fechaPago = document.getElementById('u-pr-fechapago').value;
+    if(!nombre||!pago||!plazo){ toast('Completa nombre, pago y plazo','error'); return; }
+    const tasaQ=tasa>0?tasa/(100*24):0;
+    const interesTotal=Math.max(0,pago*plazo-monto);
+    const catAprox=tasaQ>0?(Math.pow(1+tasaQ,24)-1)*100:0;
+    const id=Date.now();
+    ST.prestamos.push({ id, nombre, tipo:subtipo, monto, tasa, plazo, pago, pagadas, fechaPago, interesTotal, catAprox, activa:true });
+    ST.deudas.push({ id:id+1, nombre:`Préstamo: ${nombre}`, tipo:'prestamo', total:monto, cuota:pago, quincenas:plazo, tasa, pagadas, fechaPago, activa:true });
+    saveState(); closeModal('modal-deuda');
+    toast('Préstamo guardado y agregado a la corrida','success');
+    renderPrestamos(); recalcularCorrida();
+
+  } else if(_tipoActual==='tarjeta'){
+    const nombre = document.getElementById('u-tc-nombre').value.trim();
+    const banco  = document.getElementById('u-tc-banco').value;
+    const limite = parseFloat(document.getElementById('u-tc-limite').value)||0;
+    const saldo  = parseFloat(document.getElementById('u-tc-saldo').value)||0;
+    const corte  = parseInt(document.getElementById('u-tc-corte').value)||0;
+    const pago   = parseInt(document.getElementById('u-tc-pago').value)||0;
+    const tasa   = parseFloat(document.getElementById('u-tc-tasa').value)||0;
+    const color  = document.getElementById('u-tc-color').value;
+    if(!nombre||!limite){ toast('Completa nombre y límite','error'); return; }
+    ST.tarjetas.push({ id:Date.now(), nombre, banco, limite, saldo, corte, pago, tasa, color, activa:true });
+    saveState(); closeModal('modal-deuda');
+    toast('Tarjeta registrada','success');
+    renderTarjetas();
+
+  } else if(_tipoActual==='gasto_fijo'){
+    const concepto   = document.getElementById('u-gf-concepto').value.trim();
+    const monto      = parseFloat(document.getElementById('u-gf-monto').value)||0;
+    const categoria  = document.getElementById('u-gf-categoria').value;
+    const frecuencia = document.getElementById('u-gf-frecuencia').value;
+    const diaPago    = document.getElementById('u-gf-diapago').value;
+    const metodo     = document.getElementById('u-gf-metodo').value;
+    if(!concepto||!monto){ toast('Completa concepto y monto','error'); return; }
+    ST.gastos.push({ id:Date.now(), concepto, monto, categoria, frecuencia,
+      quincena: now.getDate()<=15?1:2, mes:now.getMonth()+1, ano:now.getFullYear(),
+      metodo, notas:'', esDeuda:false, diaPago });
+    saveState(); closeModal('modal-deuda');
+    toast('Gasto fijo registrado','success');
+    renderGastos(); recalcularCorrida();
+
+  } else if(_tipoActual==='deuda'){
+    const nombre   = document.getElementById('u-d-nombre').value.trim();
+    const subtipo  = document.getElementById('u-d-subtipo').value;
+    const total    = parseFloat(document.getElementById('u-d-total').value)||0;
+    const cuota    = parseFloat(document.getElementById('u-d-cuota').value)||0;
+    const quincenas= parseInt(document.getElementById('u-d-quincenas').value)||0;
+    const pagadas  = parseInt(document.getElementById('u-d-pagadas').value)||0;
+    const diaPago  = document.getElementById('u-d-diapago').value;
+    const inicio   = document.getElementById('u-d-inicio').value||mesActual;
+    if(!nombre||!cuota||!quincenas){ toast('Completa nombre, pago y quincenas','error'); return; }
+    ST.deudas.push({ id:Date.now(), nombre, tipo:subtipo, total, cuota, quincenas, tasa:0, pagadas, diaPago, inicio, activa:true });
+    saveState(); closeModal('modal-deuda');
+    toast('Deuda registrada','success');
+    renderDeudas(); recalcularCorrida();
+  }
+
+  document.getElementById('u-preview').style.display='none';
+  refreshDashboard();
+}
+
+// Mantener compatibilidad con llamadas anteriores
+function calcularDeudaAuto(){ calcUnificadoAuto(); }
+function agregarDeuda(){ guardarUnificado(); }
+
+
 function eliminarDeuda(id){
   ST.deudas = ST.deudas.filter(d=>d.id!==id);
   saveState(); renderDeudas(); refreshDashboard(); recalcularCorrida();
@@ -2154,6 +2764,20 @@ function exportCorridaPDF(){
 // ============================================================
 // INIT APP
 // ============================================================
+// ============================================================
+// SIDEBAR TOGGLE
+// ============================================================
+function toggleSidebar(){
+  const sb   = document.getElementById('sidebar');
+  const main = document.querySelector('.main');
+  const icon = document.getElementById('sb-toggle-icon');
+  const collapsed = sb.classList.toggle('collapsed');
+  main.classList.toggle('expanded', collapsed);
+  icon.className = collapsed ? 'fa-solid fa-chevron-right' : 'fa-solid fa-chevron-left';
+  ST._sidebarCollapsed = collapsed;
+  saveToLocal();
+}
+
 function initApp(){
   initSelects();
   document.getElementById('user-name-sidebar').textContent = ST.perfil.nombre||'Usuario';
@@ -2161,14 +2785,33 @@ function initApp(){
   document.getElementById('user-avatar').textContent = (ST.perfil.nombre||'U')[0].toUpperCase();
   const now=new Date();
   document.getElementById('quincena-pill').textContent=`Q${now.getDate()<=15?1:2} · ${MESES[now.getMonth()]} ${now.getFullYear()}`;
+  const prInicio=document.getElementById('pr-inicio');
+  if(prInicio) prInicio.value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  // Restore sidebar state
+  if(ST._sidebarCollapsed){
+    const sb=document.getElementById('sidebar');
+    const main=document.querySelector('.main');
+    const icon=document.getElementById('sb-toggle-icon');
+    sb.classList.add('collapsed');
+    main.classList.add('expanded');
+    if(icon) icon.className='fa-solid fa-chevron-right';
+  }
   refreshDashboard();
   // check firebase
-  if(!window._FB || window.FIREBASE_CONFIG?.apiKey==='YOUR_API_KEY'){
+  if(!window._FB){
     document.getElementById('sync-dot').className='sync-dot offline';
     document.getElementById('sync-label').textContent='Modo local';
   }
   // setup quincena strips
   buildQStrip('strip-ingresos');
+  // populate fuente select on gasto modal open
+  document.getElementById('modal-gasto')?.addEventListener('click',()=>{
+    const sel=document.getElementById('g-fuente-ingreso');
+    if(sel){
+      const fuentesUnicas=[...new Set(ST.ingresos.map(i=>i.fuente))];
+      sel.innerHTML='<option value="">Sin asignar</option>'+fuentesUnicas.map(f=>`<option value="${f}">${f}</option>`).join('');
+    }
+  });
 }
 
 function buildQStrip(id){
@@ -2197,6 +2840,454 @@ else {
   if(window._FB){
     window._FB.onAuthStateChanged(window._FB.auth, user=>{
       if(user){ ST.uid=user.uid; ST.perfil.email=user.email; loadFromFirebase(user.uid).then(()=>enterApp()); }
+    });
+  }
+}
+
+// ============================================================
+// TARJETAS DE CRÉDITO
+// ============================================================
+function calcTarjetaPreview(){
+  const limite = parseFloat(document.getElementById('tc-limite').value)||0;
+  const saldo  = parseFloat(document.getElementById('tc-saldo').value)||0;
+  const corte  = parseInt(document.getElementById('tc-corte').value)||0;
+  if(!limite) { document.getElementById('tc-preview').style.display='none'; return; }
+  document.getElementById('tc-preview').style.display='block';
+  const disponible = limite - saldo;
+  const util = limite>0 ? saldo/limite*100 : 0;
+  const hoy = new Date();
+  const diaHoy = hoy.getDate();
+  let diasCorte = corte>=diaHoy ? corte-diaHoy : (new Date(hoy.getFullYear(),hoy.getMonth()+1,corte)-hoy)/(1000*60*60*24);
+  diasCorte = Math.round(diasCorte);
+  document.getElementById('tcp-disponible').textContent = fmt(disponible);
+  document.getElementById('tcp-disponible').style.color = disponible<limite*0.3?'var(--red)':disponible<limite*0.5?'var(--orange)':'var(--green)';
+  document.getElementById('tcp-util').textContent = fmtPct(util);
+  document.getElementById('tcp-util').style.color = util>70?'var(--red)':util>30?'var(--orange)':'var(--green)';
+  document.getElementById('tcp-diasCorte').textContent = `${diasCorte} días`;
+  document.getElementById('tcp-diasCorte').style.color = diasCorte<=5?'var(--red)':diasCorte<=10?'var(--orange)':'var(--text)';
+  const rec = document.getElementById('tcp-recomendacion');
+  if(util>70){ rec.style.background='rgba(229,51,74,0.08)';rec.style.color='var(--red)';rec.textContent='⚠ Utilización alta. No se recomienda usar esta tarjeta hasta abonar.'; }
+  else if(util>30){ rec.style.background='rgba(217,119,6,0.08)';rec.style.color='var(--orange)';rec.textContent='⚡ Utilización moderada. Úsala con precaución y abona antes del corte.'; }
+  else { rec.style.background='rgba(0,168,118,0.08)';rec.style.color='var(--green)';rec.textContent='✓ Tarjeta en zona saludable. Puedes usarla sin problema.'; }
+}
+
+function guardarTarjeta(){
+  const nombre = document.getElementById('tc-nombre').value.trim();
+  const banco  = document.getElementById('tc-banco').value;
+  const limite = parseFloat(document.getElementById('tc-limite').value)||0;
+  const saldo  = parseFloat(document.getElementById('tc-saldo').value)||0;
+  const corte  = parseInt(document.getElementById('tc-corte').value)||0;
+  const pago   = parseInt(document.getElementById('tc-pago').value)||0;
+  const tasa   = parseFloat(document.getElementById('tc-tasa').value)||0;
+  const color  = document.getElementById('tc-color').value;
+  if(!nombre||!limite){ toast('Completa nombre y límite','error'); return; }
+  ST.tarjetas.push({ id:Date.now(), nombre, banco, limite, saldo, corte, pago, tasa, color, activa:true });
+  saveState();
+  closeModal('modal-tarjeta');
+  toast('Tarjeta registrada','success');
+  renderTarjetas();
+  // Reset form
+  ['tc-nombre','tc-limite','tc-saldo','tc-corte','tc-pago','tc-tasa'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('tc-preview').style.display='none';
+}
+
+function guardarCargo(){
+  const concepto  = document.getElementById('cg-concepto').value.trim();
+  const monto     = parseFloat(document.getElementById('cg-monto').value)||0;
+  const tarjetaId = parseInt(document.getElementById('cg-tarjeta').value)||0;
+  const fecha     = document.getElementById('cg-fecha').value;
+  const categoria = document.getElementById('cg-categoria').value;
+  const tipo      = document.getElementById('cg-tipo').value;
+  if(!concepto||!monto||!tarjetaId){ toast('Completa todos los campos','error'); return; }
+  const cargo = { id:Date.now(), concepto, monto, tarjetaId, fecha, categoria, tipo };
+  ST.cargosTarjeta.push(cargo);
+  // Actualizar saldo de la tarjeta
+  const t = ST.tarjetas.find(t=>t.id===tarjetaId);
+  if(t){ t.saldo = tipo==='cargo' ? (t.saldo||0)+monto : Math.max(0,(t.saldo||0)-monto); }
+  saveState();
+  closeModal('modal-cargo-tarjeta');
+  toast(`${tipo==='cargo'?'Cargo':'Pago'} registrado`,'success');
+  renderTarjetas();
+}
+
+function eliminarTarjeta(id){
+  if(!confirm('¿Eliminar esta tarjeta y sus movimientos?')) return;
+  ST.tarjetas = ST.tarjetas.filter(t=>t.id!==id);
+  ST.cargosTarjeta = ST.cargosTarjeta.filter(c=>c.tarjetaId!==id);
+  saveState(); renderTarjetas();
+}
+
+function calcUtilTarjeta(t){
+  const cargos = ST.cargosTarjeta.filter(c=>c.tarjetaId===t.id);
+  const totalCargos = cargos.filter(c=>c.tipo==='cargo').reduce((s,c)=>s+c.monto,0);
+  const totalPagos  = cargos.filter(c=>c.tipo==='pago').reduce((s,c)=>s+c.monto,0);
+  const saldoReal = Math.max(0,(t.saldo||0)+totalCargos-totalPagos);
+  const util = t.limite>0 ? saldoReal/t.limite*100 : 0;
+  return { saldoReal, util, disponible: t.limite-saldoReal };
+}
+
+function diasParaFecha(dia){
+  const hoy = new Date();
+  const diaHoy = hoy.getDate();
+  if(dia>diaHoy){ return dia-diaHoy; }
+  const proxMes = new Date(hoy.getFullYear(),hoy.getMonth()+1,dia);
+  return Math.round((proxMes-hoy)/(1000*60*60*24));
+}
+
+let chartTarjetasUtil=null;
+function renderTarjetas(){
+  const lista = document.getElementById('tarjetas-lista');
+  if(!lista) return;
+  // Populate cargo select
+  const cgSel = document.getElementById('cg-tarjeta');
+  if(cgSel){ cgSel.innerHTML=ST.tarjetas.map(t=>`<option value="${t.id}">${t.nombre}</option>`).join(''); }
+  const filtroSel = document.getElementById('filtro-tarjeta-mov');
+  if(filtroSel){ filtroSel.innerHTML='<option value="">Todas las tarjetas</option>'+ST.tarjetas.map(t=>`<option value="${t.id}">${t.nombre}</option>`).join(''); }
+  // Set default date for cargo
+  const cgFecha = document.getElementById('cg-fecha');
+  if(cgFecha&&!cgFecha.value) cgFecha.value=new Date().toISOString().slice(0,10);
+
+  if(!ST.tarjetas.length){
+    lista.innerHTML='<div class="card"><div class="card-body" style="text-align:center;padding:40px;color:var(--text3)">Sin tarjetas registradas. Agrega tu primera tarjeta.</div></div>';
+  } else {
+    lista.innerHTML = ST.tarjetas.map(t=>{
+      const {saldoReal,util,disponible} = calcUtilTarjeta(t);
+      const diasCorte = diasParaFecha(t.corte||1);
+      const diasPago  = diasParaFecha(t.pago||1);
+      const utilColor = util>70?'var(--red)':util>30?'var(--orange)':'var(--green)';
+      const recText   = util>70?'⚠ Utilización alta — evita nuevos cargos':util>30?'⚡ Uso moderado — abona antes del corte':'✓ Tarjeta disponible para usar';
+      const recColor  = util>70?'var(--red)':util>30?'var(--orange)':'var(--green)';
+      return `<div class="card mb16">
+        <div class="card-body">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:42px;height:28px;background:${t.color||'#0099e6'};border-radius:5px;display:flex;align-items:center;justify-content:center">
+                <i class="fa-solid fa-credit-card" style="color:#fff;font-size:12px"></i>
+              </div>
+              <div>
+                <div style="font-weight:600;font-size:13.5px;color:var(--text)">${t.nombre}</div>
+                <div style="font-size:11.5px;color:var(--text2)">${t.banco} · Corte día ${t.corte||'—'} · Pago día ${t.pago||'—'}</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-ghost btn-sm" onclick="openModal('modal-cargo-tarjeta');document.getElementById('cg-tarjeta').value=${t.id}">+ Cargo</button>
+              <button class="btn btn-danger btn-sm" onclick="eliminarTarjeta(${t.id})"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
+            <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center">
+              <div class="mono" style="font-size:14px;color:var(--text);font-weight:500">${fmt(t.limite)}</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px">Límite</div>
+            </div>
+            <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center">
+              <div class="mono" style="font-size:14px;color:${utilColor};font-weight:500">${fmt(saldoReal)}</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px">Saldo usado</div>
+            </div>
+            <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center">
+              <div class="mono" style="font-size:14px;color:var(--green);font-weight:500">${fmt(disponible)}</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px">Disponible</div>
+            </div>
+            <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center">
+              <div class="mono" style="font-size:14px;color:${diasCorte<=5?'var(--red)':diasCorte<=10?'var(--orange)':'var(--text)'};font-weight:500">${diasCorte}d</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px">Para corte</div>
+            </div>
+          </div>
+          <div style="margin-bottom:6px;display:flex;justify-content:space-between;font-size:11.5px">
+            <span style="color:var(--text2)">Utilización</span>
+            <span style="font-weight:600;color:${utilColor}">${util.toFixed(1)}% de ${fmt(t.limite)}</span>
+          </div>
+          <div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-bottom:10px">
+            <div style="height:100%;border-radius:3px;background:${utilColor};width:${Math.min(100,util).toFixed(1)}%;transition:width .4s"></div>
+          </div>
+          <div style="padding:8px 10px;background:${util>70?'rgba(229,51,74,0.06)':util>30?'rgba(217,119,6,0.06)':'rgba(0,168,118,0.06)'};border-radius:7px;font-size:12px;color:${recColor};font-weight:500">${recText}</div>
+          ${diasPago<=7?`<div style="margin-top:8px;padding:8px 10px;background:rgba(229,51,74,0.06);border-radius:7px;font-size:12px;color:var(--red);font-weight:500">⏰ ¡Fecha de pago en ${diasPago} días! No olvides pagar.</div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Movimientos
+  const filtroTarjeta = document.getElementById('filtro-tarjeta-mov')?.value;
+  const movs = ST.cargosTarjeta.filter(c=>!filtroTarjeta||c.tarjetaId==filtroTarjeta).sort((a,b)=>b.id-a.id).slice(0,50);
+  document.getElementById('tbody-movs-tarjeta').innerHTML = movs.length
+    ? movs.map(c=>{
+        const t=ST.tarjetas.find(t=>t.id===c.tarjetaId);
+        return `<tr>
+          <td style="font-weight:500">${c.concepto}</td>
+          <td><span class="badge badge-blue">${t?t.nombre:'—'}</span></td>
+          <td style="color:var(--text2)">${c.fecha||'—'}</td>
+          <td class="mono" style="color:${c.tipo==='cargo'?'var(--red)':'var(--green)'}">${c.tipo==='cargo'?'-':'+'} ${fmt(c.monto)}</td>
+          <td><span class="badge ${c.tipo==='cargo'?'badge-red':'badge-green'}">${c.tipo==='cargo'?'Cargo':'Pago'}</span></td>
+          <td><button class="btn btn-danger btn-sm" onclick="eliminarCargo(${c.id})"><i class="fa-solid fa-trash"></i></button></td>
+        </tr>`;
+      }).join('')
+    : '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px">Sin movimientos</td></tr>';
+
+  // Resumen global
+  const totalLimite = ST.tarjetas.reduce((s,t)=>s+t.limite,0);
+  const totalUsado  = ST.tarjetas.reduce((s,t)=>s+calcUtilTarjeta(t).saldoReal,0);
+  const totalDisp   = totalLimite - totalUsado;
+  const utilGlobal  = totalLimite>0?totalUsado/totalLimite*100:0;
+  document.getElementById('tarjetas-resumen').innerHTML = `
+    <div style="text-align:center;padding:8px 0 16px">
+      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Crédito total disponible</div>
+      <div class="mono" style="font-size:28px;font-weight:500;color:var(--green)">${fmt(totalDisp)}</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:4px">de ${fmt(totalLimite)} límite total · ${utilGlobal.toFixed(1)}% utilizado</div>
+    </div>
+    <div style="height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-bottom:14px">
+      <div style="height:100%;border-radius:3px;background:${utilGlobal>70?'var(--red)':utilGlobal>30?'var(--orange)':'var(--green)'};width:${Math.min(100,utilGlobal).toFixed(1)}%"></div>
+    </div>
+    ${ST.tarjetas.map(t=>{
+      const {saldoReal,util}=calcUtilTarjeta(t);
+      return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px">
+        <div style="display:flex;align-items:center;gap:7px">
+          <span style="width:8px;height:8px;border-radius:50%;background:${t.color};display:inline-block"></span>
+          <span style="color:var(--text2)">${t.nombre}</span>
+        </div>
+        <div style="text-align:right">
+          <div class="mono" style="color:${util>70?'var(--red)':util>30?'var(--orange)':'var(--green)'}">${util.toFixed(0)}%</div>
+          <div style="font-size:10.5px;color:var(--text3)">${fmt(saldoReal)} / ${fmt(t.limite)}</div>
+        </div>
+      </div>`;
+    }).join('')}`;
+
+  // Recomendación IA global
+  const recEl = document.getElementById('tarjetas-recomendacion');
+  if(recEl){
+    const recs=[];
+    const mejorTarjeta = ST.tarjetas.filter(t=>calcUtilTarjeta(t).util<30).sort((a,b)=>calcUtilTarjeta(b).disponible-calcUtilTarjeta(a).disponible)[0];
+    if(mejorTarjeta) recs.push({icon:'fa-circle-check',color:'var(--green)',text:`Usa preferentemente <strong>${mejorTarjeta.nombre}</strong> — tiene la menor utilización y mayor disponible (${fmt(calcUtilTarjeta(mejorTarjeta).disponible)}).`});
+    const tarjetasCriticas = ST.tarjetas.filter(t=>calcUtilTarjeta(t).util>70);
+    tarjetasCriticas.forEach(t=>recs.push({icon:'fa-triangle-exclamation',color:'var(--red)',text:`<strong>${t.nombre}</strong> está al ${calcUtilTarjeta(t).util.toFixed(0)}% de utilización. Abona antes del corte día ${t.corte}.`}));
+    const proxCorte = ST.tarjetas.filter(t=>diasParaFecha(t.corte||1)<=7);
+    proxCorte.forEach(t=>recs.push({icon:'fa-clock',color:'var(--orange)',text:`<strong>${t.nombre}</strong>: corte en ${diasParaFecha(t.corte||1)} días. Evita cargos grandes hasta después del corte.`}));
+    if(!recs.length) recs.push({icon:'fa-circle-check',color:'var(--green)',text:'Todas tus tarjetas están en zona saludable.'});
+    recEl.innerHTML=recs.map(r=>`<div class="ai-insight" style="margin-bottom:8px"><div class="ai-insight-head"><i class="fa-solid ${r.icon}" style="color:${r.color};font-size:13px"></i><div class="ai-insight-title" style="color:${r.color}">IA</div></div><div class="ai-insight-body">${r.text}</div></div>`).join('');
+  }
+
+  // Chart utilización
+  if(chartTarjetasUtil) chartTarjetasUtil.destroy();
+  if(ST.tarjetas.length){
+    chartTarjetasUtil = new Chart(document.getElementById('chart-tarjetas-util'),{
+      type:'bar',data:{
+        labels:ST.tarjetas.map(t=>t.nombre),
+        datasets:[
+          {label:'Usado',data:ST.tarjetas.map(t=>calcUtilTarjeta(t).saldoReal),backgroundColor:ST.tarjetas.map(t=>t.color||'#0099e6'),borderRadius:4},
+          {label:'Disponible',data:ST.tarjetas.map(t=>calcUtilTarjeta(t).disponible),backgroundColor:'rgba(0,0,0,0.06)',borderRadius:4}
+        ]
+      },options:{responsive:true,maintainAspectRatio:false,stacked:true,plugins:{legend:{labels:{color:'#5a6172',font:{size:11}}}},scales:{x:{stacked:true,ticks:{color:'#9aa0ae'},grid:{color:'rgba(0,0,0,0.05)'}},y:{stacked:true,ticks:{color:'#9aa0ae',callback:v=>fmt(v)},grid:{color:'rgba(0,0,0,0.06)'}}}}
+    });
+  }
+}
+
+function eliminarCargo(id){
+  const c = ST.cargosTarjeta.find(c=>c.id===id);
+  if(c){
+    const t = ST.tarjetas.find(t=>t.id===c.tarjetaId);
+    if(t) t.saldo = c.tipo==='cargo'?Math.max(0,(t.saldo||0)-c.monto):(t.saldo||0)+c.monto;
+    ST.cargosTarjeta = ST.cargosTarjeta.filter(x=>x.id!==id);
+  }
+  saveState(); renderTarjetas();
+}
+
+// ============================================================
+// PRÉSTAMOS INTELIGENTES
+// ============================================================
+function calcPrestamoAuto(){
+  const monto  = parseFloat(document.getElementById('pr-monto').value)||0;
+  const tasa   = parseFloat(document.getElementById('pr-tasa').value)||0;
+  const plazo  = parseInt(document.getElementById('pr-plazo').value)||0;
+  const pagoIn = parseFloat(document.getElementById('pr-pago').value)||0;
+  const prev = document.getElementById('pr-preview');
+  if(!monto && !pagoIn) { prev.style.display='none'; return; }
+  prev.style.display='block';
+  // Tasa quincenal
+  const tasaQ = tasa>0 ? tasa/(100*24) : 0;
+  let pagoCalc=pagoIn, plazoCalc=plazo, interesTotal=0, costoTotal=0;
+  if(monto>0 && plazo>0 && pagoIn===0){
+    if(tasaQ>0) pagoCalc = monto*tasaQ/(1-Math.pow(1+tasaQ,-plazo));
+    else pagoCalc = monto/plazo;
+    document.getElementById('pr-pago').value = pagoCalc.toFixed(2);
+  } else if(monto>0 && pagoIn>0 && plazo===0){
+    if(tasaQ>0) plazoCalc = Math.ceil(-Math.log(1-monto*tasaQ/pagoIn)/Math.log(1+tasaQ));
+    else plazoCalc = Math.ceil(monto/pagoIn);
+    document.getElementById('pr-plazo').value = plazoCalc;
+  }
+  pagoCalc  = parseFloat(document.getElementById('pr-pago').value)||0;
+  plazoCalc = parseInt(document.getElementById('pr-plazo').value)||0;
+  costoTotal = pagoCalc * plazoCalc;
+  interesTotal = Math.max(0, costoTotal - monto);
+  // CAT aproximado (anualización simple)
+  const catAprox = tasaQ>0 ? ((Math.pow(1+tasaQ,24)-1)*100) : (monto>0&&plazoCalc>0?interesTotal/monto/(plazoCalc/24)*100:0);
+  document.getElementById('prp-pago').textContent = fmt(pagoCalc);
+  document.getElementById('prp-interes').textContent = fmt(interesTotal);
+  document.getElementById('prp-total').textContent = fmt(costoTotal);
+  document.getElementById('prp-cat').textContent = `${catAprox.toFixed(1)}%`;
+  const base = calcIngresoBase();
+  const pctImpacto = base>0?pagoCalc/base*100:0;
+  const libre = base - calcFijosQ() - calcCuotasQ();
+  document.getElementById('prp-impacto').innerHTML =
+    `Este préstamo representa <strong style="color:var(--accent)">${fmtPct(pctImpacto)}</strong> de tu ingreso base y <strong style="color:var(--orange)">${fmt(interesTotal)}</strong> en intereses totales.<br>
+     Con tu margen libre actual de <strong style="color:${libre>=pagoCalc?'var(--green)':'var(--red)'}">${fmt(libre)}</strong> — ${libre>=pagoCalc?'<span style="color:var(--green)">puedes cubrirlo cómodamente</span>':'<span style="color:var(--red)">EXCEDE tu margen disponible</span>'}.
+     Pagarías <strong>${fmt(costoTotal)}</strong> en total por un capital de <strong>${fmt(monto)}</strong>.`;
+}
+
+function guardarPrestamo(){
+  const nombre  = document.getElementById('pr-nombre').value.trim();
+  const tipo    = document.getElementById('pr-tipo').value;
+  const monto   = parseFloat(document.getElementById('pr-monto').value)||0;
+  const tasa    = parseFloat(document.getElementById('pr-tasa').value)||0;
+  const plazo   = parseInt(document.getElementById('pr-plazo').value)||0;
+  const pago    = parseFloat(document.getElementById('pr-pago').value)||0;
+  const pagadas = parseInt(document.getElementById('pr-pagadas').value)||0;
+  const inicio  = document.getElementById('pr-inicio').value;
+  if(!nombre||!pago||!plazo){ toast('Completa nombre, pago y plazo','error'); return; }
+  const tasaQ = tasa>0?tasa/(100*24):0;
+  const interesTotal = Math.max(0,pago*plazo-monto);
+  const catAprox = tasaQ>0?((Math.pow(1+tasaQ,24)-1)*100):0;
+  const prestamo = { id:Date.now(), nombre, tipo, monto, tasa, plazo, pago, pagadas, inicio, interesTotal, catAprox, activa:true };
+  ST.prestamos.push(prestamo);
+  // También agregar como deuda en la corrida automáticamente
+  ST.deudas.push({ id:prestamo.id+1, nombre:`Préstamo: ${nombre}`, tipo:'prestamo', total:monto, cuota:pago, quincenas:plazo, tasa, pagadas, inicio, activa:true });
+  saveState();
+  closeModal('modal-prestamo');
+  toast('Préstamo guardado y agregado a la corrida automáticamente','success');
+  renderPrestamos();
+  recalcularCorrida();
+  // Reset
+  ['pr-nombre','pr-monto','pr-tasa','pr-plazo','pr-pago'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('pr-pagadas').value='0';
+  document.getElementById('pr-preview').style.display='none';
+}
+
+function eliminarPrestamo(id){
+  if(!confirm('¿Eliminar este préstamo?')) return;
+  ST.prestamos = ST.prestamos.filter(p=>p.id!==id);
+  ST.deudas    = ST.deudas.filter(d=>d.id!==id+1);
+  saveState(); renderPrestamos(); recalcularCorrida();
+}
+
+function marcarPagoPrestamo(id){
+  const p = ST.prestamos.find(p=>p.id===id);
+  if(!p) return;
+  p.pagadas=(p.pagadas||0)+1;
+  const d = ST.deudas.find(d=>d.id===id+1);
+  if(d) d.pagadas=p.pagadas;
+  if(p.pagadas>=p.plazo){ p.activa=false; if(d) d.activa=false; toast(`"${p.nombre}" ¡LIQUIDADO! 🎉`,'success'); }
+  else toast(`Pago marcado. Restan ${p.plazo-p.pagadas} quincenas`,'info');
+  saveState(); renderPrestamos(); recalcularCorrida();
+}
+
+let chartPrestCosto=null;
+function renderPrestamos(){
+  const lista = document.getElementById('prestamos-lista');
+  if(!lista) return;
+  const activos = ST.prestamos.filter(p=>p.activa);
+  const todos   = ST.prestamos;
+  if(!todos.length){
+    lista.innerHTML='<div class="card"><div class="card-body" style="text-align:center;padding:40px;color:var(--text3)">Sin préstamos registrados. Agrega tu primer préstamo.</div></div>';
+  } else {
+    lista.innerHTML = todos.map(p=>{
+      const pagadas=p.pagadas||0, restantes=p.plazo-pagadas;
+      const pct=Math.round(pagadas/p.plazo*100);
+      const saldoPend=p.pago*restantes;
+      const meses=(restantes/2).toFixed(1);
+      return `<div class="card mb16" style="${!p.activa?'opacity:0.55':''}">
+        <div class="card-body">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+            <div>
+              <div style="font-weight:600;font-size:13.5px;color:var(--text)">${p.nombre} ${!p.activa?'<span class="badge badge-green">Liquidado</span>':''}</div>
+              <div style="font-size:11.5px;color:var(--text2);margin-top:2px">${p.tipo} · Tasa ${p.tasa||0}% anual · CAT ~${(p.catAprox||0).toFixed(1)}%</div>
+            </div>
+            <div style="display:flex;gap:6px">
+              ${p.activa?`<button class="btn btn-success btn-sm" onclick="marcarPagoPrestamo(${p.id})">+ Pago</button>`:''}
+              <button class="btn btn-danger btn-sm" onclick="eliminarPrestamo(${p.id})"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
+            <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center">
+              <div class="mono" style="font-size:13px;color:var(--accent)">${fmt(p.pago)}</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px">Pago /Q</div>
+            </div>
+            <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center">
+              <div class="mono" style="font-size:13px;color:var(--orange)">${fmt(saldoPend)}</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px">Saldo pendiente</div>
+            </div>
+            <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center">
+              <div class="mono" style="font-size:13px;color:var(--red)">${fmt(p.interesTotal||0)}</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px">Total intereses</div>
+            </div>
+            <div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center">
+              <div class="mono" style="font-size:13px;color:${restantes<=3?'var(--green)':'var(--text)'}">${meses} meses</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px">Para liquidar</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:5px">
+            <span style="color:var(--text2)">Progreso de pago</span>
+            <span style="color:var(--text);font-weight:600">${pagadas} / ${p.plazo} quincenas (${pct}%)</span>
+          </div>
+          <div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden">
+            <div style="height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--green));width:${pct}%;transition:width .4s"></div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Resumen
+  const totalDeuda  = activos.reduce((s,p)=>s+p.pago*(p.plazo-(p.pagadas||0)),0);
+  const totalPagoQ  = activos.reduce((s,p)=>s+p.pago,0);
+  const totalIntereses = activos.reduce((s,p)=>s+(p.interesTotal||0),0);
+  document.getElementById('prestamos-resumen').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px">
+        <span style="color:var(--text2)">Préstamos activos</span><span class="mono">${activos.length}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px">
+        <span style="color:var(--text2)">Pago total /Q</span><span class="mono" style="color:var(--orange)">${fmt(totalPagoQ)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px">
+        <span style="color:var(--text2)">Saldo pendiente total</span><span class="mono" style="color:var(--red)">${fmt(totalDeuda)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:12.5px">
+        <span style="color:var(--text2)">Total intereses a pagar</span><span class="mono" style="color:var(--red)">${fmt(totalIntereses)}</span>
+      </div>
+    </div>`;
+
+  // Estrategia IA (Avalanche)
+  const estratEl = document.getElementById('prestamos-estrategia');
+  if(estratEl){
+    const ordenados = [...activos].sort((a,b)=>(b.tasa||0)-(a.tasa||0));
+    if(!ordenados.length){ estratEl.innerHTML='<div style="color:var(--text3);font-size:12.5px;text-align:center;padding:16px">Sin préstamos activos</div>'; }
+    else {
+      estratEl.innerHTML=`
+        <div class="ai-insight" style="margin-bottom:10px">
+          <div class="ai-insight-head"><div class="ai-pulse"></div><div class="ai-insight-title">Estrategia Avalanche</div></div>
+          <div class="ai-insight-body">Paga el mínimo en todos y destina el dinero extra al préstamo con mayor tasa. Esto reduce el costo total de intereses.</div>
+        </div>
+        ${ordenados.map((p,i)=>`
+          <div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+            <div style="width:22px;height:22px;border-radius:50%;background:${i===0?'var(--red)':i===1?'var(--orange)':'var(--bg3)'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${i<=1?'#fff':'var(--text2)'};flex-shrink:0">${i+1}</div>
+            <div style="flex:1">
+              <div style="font-size:12.5px;font-weight:600;color:var(--text)">${p.nombre}</div>
+              <div style="font-size:11px;color:var(--text2)">${p.tasa||0}% anual · ${fmt(p.pago)}/Q</div>
+            </div>
+            ${i===0?'<span class="badge badge-red">Prioridad</span>':''}
+          </div>`).join('')}`;
+    }
+  }
+
+  // Chart costo vs capital
+  if(chartPrestCosto) chartPrestCosto.destroy();
+  if(activos.length){
+    chartPrestCosto = new Chart(document.getElementById('chart-prestamos-costo'),{
+      type:'bar',data:{
+        labels:activos.map(p=>p.nombre),
+        datasets:[
+          {label:'Capital',data:activos.map(p=>p.monto||0),backgroundColor:'rgba(0,153,230,0.5)',borderRadius:4},
+          {label:'Intereses',data:activos.map(p=>p.interesTotal||0),backgroundColor:'rgba(229,51,74,0.5)',borderRadius:4}
+        ]
+      },options:{responsive:true,maintainAspectRatio:false,stacked:true,plugins:{legend:{labels:{color:'#5a6172',font:{size:11}}}},scales:{x:{stacked:true,ticks:{color:'#9aa0ae'},grid:{color:'rgba(0,0,0,0.04)'}},y:{stacked:true,ticks:{color:'#9aa0ae',callback:v=>fmt(v)},grid:{color:'rgba(0,0,0,0.05)'}}}}
     });
   }
 }
