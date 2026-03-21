@@ -364,6 +364,8 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
 .table-modern thead th{padding:9px 16px;text-align:left;font-size:10.5px;font-weight:700;letter-spacing:0.05em;color:var(--text3);text-transform:uppercase;background:var(--bg3);border-bottom:1px solid var(--border);}
 .table-modern tbody td{padding:10px 16px;border-bottom:1px solid var(--border);vertical-align:middle;}
 .table-modern tbody tr:hover{background:var(--bg3);}
+.table-modern tbody tr[onclick]:hover{background:rgba(0,153,230,0.05);cursor:pointer;}
+.corrida-table tbody tr:hover{background:var(--bg3);}
 .table-modern tbody tr:last-child td{border-bottom:none;}
 
 /* ── SECTION HEADERS ── */
@@ -1459,6 +1461,99 @@ service cloud.firestore {
   </div>
 </div>
 
+<!-- EDITAR GASTO -->
+<div class="modal-bg" id="modal-edit-gasto">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Editar Gasto</span>
+      <button class="modal-close" onclick="closeModal('modal-edit-gasto')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="eg-id">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Concepto</label><input type="text" class="form-control" id="eg-concepto"></div>
+        <div class="form-group"><label class="form-label">Monto ($)</label><input type="number" class="form-control" id="eg-monto" step="0.01"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Categoría</label>
+          <select class="form-control" id="eg-categoria">
+            <option>Vivienda</option><option>Alimentación</option><option>Transporte</option><option>Salud</option>
+            <option>Educación</option><option>Entretenimiento</option><option>Ropa</option><option>Servicios</option>
+            <option>Tarjetas de Crédito</option><option>Préstamos</option><option>Ahorro</option><option>Otro</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Frecuencia</label>
+          <select class="form-control" id="eg-frecuencia">
+            <option>Quincenal</option><option>Mensual</option><option>Semanal</option><option>Único</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row-3">
+        <div class="form-group"><label class="form-label">Quincena</label>
+          <select class="form-control" id="eg-q"><option value="1">Q1</option><option value="2">Q2</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Mes</label><select class="form-control" id="eg-mes"></select></div>
+        <div class="form-group"><label class="form-label">Año</label><select class="form-control" id="eg-ano"></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Método de pago</label>
+          <select class="form-control" id="eg-metodo">
+            <option>Efectivo</option><option>Tarjeta Débito</option><option>Tarjeta Crédito</option><option>Transferencia</option><option>OXXO</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Fuente de ingreso</label>
+          <select class="form-control" id="eg-fuente"></select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Notas</label><input type="text" class="form-control" id="eg-notas" placeholder="Detalle adicional"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" onclick="eliminarGastoEdit()"><i class="fa-solid fa-trash"></i> Eliminar</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-edit-gasto')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarEditGasto()"><i class="fa-solid fa-check"></i> Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDITAR DEUDA -->
+<div class="modal-bg" id="modal-edit-deuda">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <span class="modal-title">Editar Deuda</span>
+      <button class="modal-close" onclick="closeModal('modal-edit-deuda')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ed-id">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nombre / Concepto</label><input type="text" class="form-control" id="ed-nombre"></div>
+        <div class="form-group"><label class="form-label">Tipo</label>
+          <select class="form-control" id="ed-tipo">
+            <option value="credito">Tarjeta de Crédito</option><option value="prestamo">Préstamo / Nómina</option>
+            <option value="abonos">Pagos en Abonos</option><option value="hipoteca">Hipoteca</option><option value="otro">Otro</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Saldo total adeudado ($)</label><input type="number" class="form-control" id="ed-total" step="0.01"></div>
+        <div class="form-group"><label class="form-label">Cuota quincenal ($)</label><input type="number" class="form-control" id="ed-cuota" step="0.01"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Quincenas totales</label><input type="number" class="form-control" id="ed-quincenas" min="1"></div>
+        <div class="form-group"><label class="form-label">Quincenas pagadas</label><input type="number" class="form-control" id="ed-pagadas" min="0"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Tasa interés anual (%)</label><input type="number" class="form-control" id="ed-tasa" step="0.1"></div>
+        <div class="form-group"><label class="form-label">Día de pago</label><input type="number" class="form-control" id="ed-diapago" min="1" max="31" placeholder="ej. 1, 15"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" onclick="eliminarDeudaEdit()"><i class="fa-solid fa-trash"></i> Eliminar</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-edit-deuda')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarEditDeuda()"><i class="fa-solid fa-check"></i> Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ============================================================
 // STATE
@@ -2504,6 +2599,97 @@ function eliminarGasto(id){
   saveState(); renderGastos(); refreshDashboard();
   if(currentPage==='tarjetas') renderTarjetas();
 }
+
+// ── EDITAR GASTO ──
+function abrirEditGasto(id){
+  const g = ST.gastos.find(g=>g.id===id);
+  if(!g) return;
+  document.getElementById('eg-id').value = id;
+  document.getElementById('eg-concepto').value = g.concepto||'';
+  document.getElementById('eg-monto').value = g.monto||'';
+  document.getElementById('eg-categoria').value = g.categoria||'Otro';
+  document.getElementById('eg-frecuencia').value = g.frecuencia||'Quincenal';
+  document.getElementById('eg-q').value = g.quincena||1;
+  document.getElementById('eg-notas').value = g.notas||'';
+  document.getElementById('eg-metodo').value = g.metodo||'Efectivo';
+  const mesEl = document.getElementById('eg-mes');
+  mesEl.innerHTML = MESES.map((m,i)=>`<option value="${i+1}" ${i+1===g.mes?'selected':''}>${m}</option>`).join('');
+  const now = new Date();
+  const anoEl = document.getElementById('eg-ano');
+  anoEl.innerHTML = '';
+  for(let y=now.getFullYear()-2;y<=now.getFullYear()+1;y++){
+    const o=document.createElement('option');o.value=y;o.textContent=y;if(y===g.ano)o.selected=true;anoEl.appendChild(o);
+  }
+  const fuenteEl = document.getElementById('eg-fuente');
+  const fuentes = [...new Set(ST.ingresos.map(i=>i.fuente).filter(Boolean))];
+  fuenteEl.innerHTML='<option value="">Sin asignar</option>'+fuentes.map(f=>`<option value="${f}" ${f===g.fuenteIngreso?'selected':''}>${f}</option>`).join('');
+  openModal('modal-edit-gasto');
+}
+function guardarEditGasto(){
+  const id = parseInt(document.getElementById('eg-id').value);
+  const g  = ST.gastos.find(g=>g.id===id);
+  if(!g) return;
+  g.concepto      = document.getElementById('eg-concepto').value.trim();
+  g.monto         = parseFloat(document.getElementById('eg-monto').value)||0;
+  g.categoria     = document.getElementById('eg-categoria').value;
+  g.frecuencia    = document.getElementById('eg-frecuencia').value;
+  g.quincena      = parseInt(document.getElementById('eg-q').value);
+  g.mes           = parseInt(document.getElementById('eg-mes').value);
+  g.ano           = parseInt(document.getElementById('eg-ano').value);
+  g.metodo        = document.getElementById('eg-metodo').value;
+  g.notas         = document.getElementById('eg-notas').value;
+  g.fuenteIngreso = document.getElementById('eg-fuente').value;
+  saveState();
+  closeModal('modal-edit-gasto');
+  toast('Gasto actualizado','success');
+  renderGastos(); refreshDashboard(); recalcularCorrida();
+}
+function eliminarGastoEdit(){
+  const id = parseInt(document.getElementById('eg-id').value);
+  closeModal('modal-edit-gasto');
+  eliminarGasto(id);
+  toast('Gasto eliminado','info');
+}
+
+// ── EDITAR DEUDA ──
+function abrirEditDeuda(id){
+  const d = ST.deudas.find(d=>d.id===id);
+  if(!d) return;
+  document.getElementById('ed-id').value = id;
+  document.getElementById('ed-nombre').value    = d.nombre||'';
+  document.getElementById('ed-tipo').value      = d.tipo||'otro';
+  document.getElementById('ed-total').value     = d.total||'';
+  document.getElementById('ed-cuota').value     = d.cuota||'';
+  document.getElementById('ed-quincenas').value = d.quincenas||'';
+  document.getElementById('ed-pagadas').value   = d.pagadas||0;
+  document.getElementById('ed-tasa').value      = d.tasa||'';
+  document.getElementById('ed-diapago').value   = d.diaPago||'';
+  openModal('modal-edit-deuda');
+}
+function guardarEditDeuda(){
+  const id = parseInt(document.getElementById('ed-id').value);
+  const d  = ST.deudas.find(d=>d.id===id);
+  if(!d) return;
+  d.nombre    = document.getElementById('ed-nombre').value.trim();
+  d.tipo      = document.getElementById('ed-tipo').value;
+  d.total     = parseFloat(document.getElementById('ed-total').value)||0;
+  d.cuota     = parseFloat(document.getElementById('ed-cuota').value)||0;
+  d.quincenas = parseInt(document.getElementById('ed-quincenas').value)||1;
+  d.pagadas   = parseInt(document.getElementById('ed-pagadas').value)||0;
+  d.tasa      = parseFloat(document.getElementById('ed-tasa').value)||0;
+  d.diaPago   = document.getElementById('ed-diapago').value;
+  d.activa    = d.pagadas < d.quincenas;
+  saveState();
+  closeModal('modal-edit-deuda');
+  toast('Deuda actualizada','success');
+  renderDeudas(); refreshDashboard(); recalcularCorrida();
+}
+function eliminarDeudaEdit(){
+  const id = parseInt(document.getElementById('ed-id').value);
+  closeModal('modal-edit-deuda');
+  eliminarDeuda(id);
+  toast('Deuda eliminada','info');
+}
 function renderGastos(){
   const f_mes  = document.getElementById('f-mes-gasto')?.value;
   const f_ano  = document.getElementById('f-ano-gasto')?.value;
@@ -2521,7 +2707,7 @@ function renderGastos(){
         const metodoLabel = tarjeta
           ? `<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:${tarjeta.color||'#0099e6'};display:inline-block"></span>${tarjeta.nombre}</span>`
           : g.metodo;
-        return `<tr>
+        return `<tr style="cursor:pointer" onclick="abrirEditGasto(${g.id})" title="Clic para editar">
           <td style="font-weight:500">${g.concepto}</td>
           <td><span class="badge" style="background:${CATS_COLORS[g.categoria]||'#6b7280'}22;color:${CATS_COLORS[g.categoria]||'#6b7280'}">${g.categoria}</span></td>
           <td><span class="badge badge-blue">${g.frecuencia}</span></td>
@@ -2529,7 +2715,7 @@ function renderGastos(){
           <td>${MESES[g.mes-1]||''} ${g.ano}</td>
           <td class="mono" style="color:var(--red)">${fmt(g.monto)}</td>
           <td style="font-size:12px">${metodoLabel}</td>
-          <td><button class="btn btn-danger btn-sm" onclick="eliminarGasto(${g.id})"><i class="fa-solid fa-trash"></i></button></td>
+          <td onclick="event.stopPropagation()"><button class="btn btn-danger btn-sm" onclick="eliminarGasto(${g.id})"><i class="fa-solid fa-trash"></i></button></td>
         </tr>`;
       }).join('')
     : '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:20px">Sin gastos registrados</td></tr>';
@@ -2749,6 +2935,7 @@ function renderDeudas(){
             </div>
             <div style="display:flex;gap:6px;align-items:center">
               ${d.activa?`<button class="btn btn-success btn-sm" onclick="marcarPagada(${d.id})">+ Cuota</button>`:''}
+              <button class="btn btn-ghost btn-sm" onclick="abrirEditDeuda(${d.id})" title="Editar"><i class="fa-solid fa-pen"></i></button>
               <button class="btn btn-danger btn-sm" onclick="eliminarDeuda(${d.id})"><i class="fa-solid fa-trash"></i></button>
             </div>
           </div>
