@@ -1372,22 +1372,22 @@ service cloud.firestore {
       <div id="form-disposicion" style="display:none">
         <div style="background:rgba(229,51,74,0.06);border:1px solid rgba(229,51,74,0.2);border-radius:9px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--text2)">
           <i class="fa-solid fa-triangle-exclamation" style="color:var(--red);margin-right:6px"></i>
-          El retiro genera interés desde el primer día y una comisión inmediata. Se descuenta de la línea de crédito de la tarjeta.
+          El retiro genera interés desde el primer día y comisión inmediata. Ingresa cuánto puedes pagar por cuota y en cuántos plazos — el sistema calcula el monto que puedes retirar.
         </div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Descripción</label><input type="text" class="form-control" id="u-dis-concepto" placeholder="ej. Emergencia, Gasto urgente"></div>
-          <div class="form-group"><label class="form-label">Monto retirado ($)</label><input type="number" class="form-control" id="u-dis-monto" placeholder="ej. 5000" step="0.01" oninput="calcUnificadoAuto()"></div>
-        </div>
-        <div class="form-row">
+          <div class="form-group"><label class="form-label">Descripción</label><input type="text" class="form-control" id="u-dis-concepto" placeholder="ej. Emergencia, Reparación"></div>
           <div class="form-group"><label class="form-label">Tarjeta de crédito</label>
             <select class="form-control" id="u-dis-tarjeta" onchange="calcUnificadoAuto()">
               <option value="">Selecciona tarjeta...</option>
             </select>
           </div>
-          <div class="form-group"><label class="form-label">Tasa interés anual (%)</label><input type="number" class="form-control" id="u-dis-tasa" placeholder="Se toma de la tarjeta" step="0.1" oninput="calcUnificadoAuto()"></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Pagar en cuántas quincenas</label><input type="number" class="form-control" id="u-dis-quincenas" placeholder="ej. 6" min="1" oninput="calcUnificadoAuto()"></div>
+          <div class="form-group"><label class="form-label">Cuota por pago ($)</label><input type="number" class="form-control" id="u-dis-cuota" placeholder="ej. 500" step="0.01" oninput="calcUnificadoAuto()"></div>
+          <div class="form-group"><label class="form-label">Número de plazos (quincenas)</label><input type="number" class="form-control" id="u-dis-plazos" placeholder="ej. 12" min="1" oninput="calcUnificadoAuto()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Tasa interés anual (%)</label><input type="number" class="form-control" id="u-dis-tasa" placeholder="Se toma de la tarjeta" step="0.1" oninput="calcUnificadoAuto()"></div>
           <div class="form-group"><label class="form-label">Día de pago</label><input type="number" class="form-control" id="u-dis-diapago" placeholder="ej. 20" min="1" max="31"></div>
         </div>
       </div>
@@ -3175,27 +3175,39 @@ function calcUnificadoAuto(){
   }
 
   if(_tipoActual==='disposicion'){
-    const monto  = parseFloat(document.getElementById('u-dis-monto').value)||0;
+    const cuota  = parseFloat(document.getElementById('u-dis-cuota').value)||0;
+    const plazos = parseInt(document.getElementById('u-dis-plazos').value)||0;
     const tasa   = parseFloat(document.getElementById('u-dis-tasa').value)||0;
-    const numQ   = parseInt(document.getElementById('u-dis-quincenas').value)||6;
     const tid    = parseInt(document.getElementById('u-dis-tarjeta').value)||0;
-    if(!monto){ prev.style.display='none'; return; }
+    if(!cuota||!plazos){ prev.style.display='none'; return; }
     const t = ST.tarjetas.find(t=>t.id===tid);
-    const comision = monto*0.06; // 6% comisión típica
+    // Con cuota fija y tasa, calcular cuánto capital puedes retirar
+    // cuota = M * r / (1-(1+r)^-n)  →  M = cuota * (1-(1+r)^-n) / r
     const tasaQ = tasa>0?tasa/(100*24):0;
-    const cuotaQ = numQ>0?(tasaQ>0?monto*tasaQ/(1-Math.pow(1+tasaQ,-numQ)):monto/numQ):monto;
-    const totalIntereses = Math.max(0,cuotaQ*numQ-monto);
-    const costoReal = monto+comision+totalIntereses;
-    const u = t?calcUtilTarjeta(t):{disponible:0};
-    const dispTras = t?(u.disponible-monto):0;
+    let montoRetiro;
+    if(tasaQ>0){
+      montoRetiro = cuota * (1-Math.pow(1+tasaQ,-plazos)) / tasaQ;
+    } else {
+      montoRetiro = cuota * plazos;
+    }
+    const comision = montoRetiro * 0.06;
+    const totalPagar = cuota * plazos;
+    const totalIntereses = Math.max(0, totalPagar - montoRetiro);
+    const costoReal = totalPagar + comision;
+    const u = t ? calcUtilTarjeta(t) : {disponible:0, util:0};
+    const dispTras = t ? (u.disponible - montoRetiro - comision) : 0;
+
     prev.style.display='block';
-    content.innerHTML = '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">' +
-      '<div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:13px;color:var(--accent)">'+fmt(cuotaQ)+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Pago /Q</div></div>' +
+    content.innerHTML =
+      '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">' +
+      '<div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:13px;color:var(--green)">'+fmt(montoRetiro)+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Puedes retirar</div></div>' +
       '<div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:13px;color:var(--red)">'+fmt(comision)+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Comisión 6%</div></div>' +
       '<div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:13px;color:var(--orange)">'+fmt(totalIntereses)+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Intereses</div></div>' +
-      '<div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:13px;color:var(--red)">'+fmt(costoReal)+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Costo real</div></div>' +
+      '<div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:13px;color:var(--red)">'+fmt(costoReal)+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Costo total</div></div>' +
       '</div>';
-    impacto.innerHTML = '⚠ El retiro de '+fmt(monto)+' tiene una comisión inmediata de '+fmt(comision)+' (6%) e intereses desde el primer día. '+(t&&dispTras<0?'<span style="color:var(--red)">Excede el disponible de '+t.nombre+'.</span>':t?'Disponible tras cargo: <strong>'+fmt(dispTras)+'</strong>.':'Selecciona una tarjeta.');
+    impacto.innerHTML = 'Pagando '+fmt(cuota)+' x '+plazos+' plazos puedes retirar <strong style="color:var(--green)">'+fmt(montoRetiro)+'</strong>. '
+      + 'Comisión inmediata: <strong style="color:var(--red)">'+fmt(comision)+'</strong>. '
+      + (t ? (dispTras<0 ? '<span style="color:var(--red)">Excede el disponible de '+t.nombre+'.</span>' : 'Disponible tras cargo: <strong>'+fmt(dispTras)+'</strong>.') : 'Selecciona una tarjeta.');
     impacto.style.color='var(--text2)';
   }
 }
@@ -3317,32 +3329,30 @@ function guardarUnificado(){
 
   } else if(_tipoActual==='disposicion'){
     const concepto = document.getElementById('u-dis-concepto').value.trim();
-    const monto    = parseFloat(document.getElementById('u-dis-monto').value)||0;
+    const cuota    = parseFloat(document.getElementById('u-dis-cuota').value)||0;
+    const plazos   = parseInt(document.getElementById('u-dis-plazos').value)||0;
     const tid      = parseInt(document.getElementById('u-dis-tarjeta').value)||0;
     const tasa     = parseFloat(document.getElementById('u-dis-tasa').value)||0;
-    const numQ     = parseInt(document.getElementById('u-dis-quincenas').value)||6;
     const diaPago  = document.getElementById('u-dis-diapago').value;
-    if(!concepto||!monto||!tid){ toast('Completa concepto, monto y tarjeta','error'); return; }
+    if(!concepto||!cuota||!plazos||!tid){ toast('Completa todos los campos','error'); return; }
     const t = ST.tarjetas.find(t=>t.id===tid);
     if(!t){ toast('Tarjeta no encontrada','error'); return; }
-    // Comisión del 6%
-    const comision = monto*0.06;
-    const montoTotal = monto + comision;
-    // Descontar de la línea de crédito (monto + comisión)
+    // Calcular monto que puede retirar
+    const tasaQ = tasa>0?tasa/(100*24):0;
+    const montoRetiro = tasaQ>0 ? cuota*(1-Math.pow(1+tasaQ,-plazos))/tasaQ : cuota*plazos;
+    const comision = montoRetiro*0.06;
+    const montoTotal = montoRetiro + comision;
+    // Descontar de la línea de crédito
     t.saldo = (parseFloat(t.saldo)||0) + montoTotal;
-    // Registrar cargo
     const cargoId = Date.now();
     ST.cargosTarjeta.push({ id:cargoId, concepto:'Disposición: '+concepto, monto:montoTotal, tarjetaId:tid, fecha:new Date().toISOString().slice(0,10), tipo:'cargo', categoria:'Disposición' });
-    // Amortización francesa con la tasa
-    const tasaQ = tasa>0?tasa/(100*24):0;
-    const cuotaQ = numQ>0?(tasaQ>0?montoTotal*tasaQ/(1-Math.pow(1+tasaQ,-numQ)):montoTotal/numQ):montoTotal;
     ST.deudas.push({
       id: cargoId+1,
       nombre: 'Disposición: '+concepto+' ('+t.nombre+')',
       tipo: 'disposicion',
       total: montoTotal,
-      cuota: cuotaQ,
-      quincenas: numQ,
+      cuota: cuota,
+      quincenas: plazos,
       tasa,
       pagadas: 0,
       diaPago,
@@ -3351,7 +3361,7 @@ function guardarUnificado(){
       tarjetaId: tid
     });
     saveState(); closeModal('modal-deuda');
-    toast('Disposición registrada — Comisión '+fmt(comision)+' + intereses. Cargo aplicado a '+t.nombre,'success');
+    toast('Disposición registrada — Retiras '+fmt(montoRetiro)+' | Comisión '+fmt(comision)+' | '+plazos+' pagos de '+fmt(cuota),'success');
     renderDeudas(); renderTarjetas(); recalcularCorrida();
   }
 
