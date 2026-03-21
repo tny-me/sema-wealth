@@ -364,7 +364,9 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
 .table-modern thead th{padding:9px 16px;text-align:left;font-size:10.5px;font-weight:700;letter-spacing:0.05em;color:var(--text3);text-transform:uppercase;background:var(--bg3);border-bottom:1px solid var(--border);}
 .table-modern tbody td{padding:10px 16px;border-bottom:1px solid var(--border);vertical-align:middle;}
 .table-modern tbody tr:hover{background:var(--bg3);}
-.table-modern tbody tr[onclick]:hover{background:rgba(0,153,230,0.05);cursor:pointer;}
+.table-modern tbody tr[onclick]{cursor:pointer;}
+.table-modern tbody tr[onclick]:hover td{background:rgba(0,153,230,0.06);}
+.table-modern tbody tr:last-child td{border-bottom:none;}
 .corrida-table tbody tr:hover{background:var(--bg3);}
 .table-modern tbody tr:last-child td{border-bottom:none;}
 
@@ -1298,14 +1300,24 @@ service cloud.firestore {
         </div>
         <div class="form-row">
           <div class="form-group"><label class="form-label">Total adeudado ($)</label><input type="number" class="form-control" id="u-d-total" placeholder="0.00" step="0.01" oninput="calcUnificadoAuto()"></div>
-          <div class="form-group"><label class="form-label">Pago quincenal ($)</label><input type="number" class="form-control" id="u-d-cuota" placeholder="Se calcula" step="0.01" oninput="calcUnificadoAuto()"></div>
+          <div class="form-group">
+            <label class="form-label">Frecuencia de pago</label>
+            <select class="form-control" id="u-d-frecuencia" onchange="actualizarLabelDeuda();calcUnificadoAuto()">
+              <option value="quincenal">Quincenal (cada 15 días)</option>
+              <option value="mensual">Mensual (cada mes)</option>
+              <option value="semanal">Semanal (cada semana)</option>
+            </select>
+          </div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Número de quincenas</label><input type="number" class="form-control" id="u-d-quincenas" placeholder="Se calcula" min="1" oninput="calcUnificadoAuto()"></div>
+          <div class="form-group"><label class="form-label" id="u-d-cuota-label">Pago quincenal ($)</label><input type="number" class="form-control" id="u-d-cuota" placeholder="Se calcula" step="0.01" oninput="calcUnificadoAuto()"></div>
+          <div class="form-group"><label class="form-label" id="u-d-quincenas-label">Número de quincenas</label><input type="number" class="form-control" id="u-d-quincenas" placeholder="Se calcula" min="1" oninput="calcUnificadoAuto()"></div>
+        </div>
+        <div class="form-row">
           <div class="form-group"><label class="form-label">Día de pago</label><input type="number" class="form-control" id="u-d-diapago" placeholder="ej. 1, 15" min="1" max="31"></div>
+          <div class="form-group"><label class="form-label">Pagos ya realizados</label><input type="number" class="form-control" id="u-d-pagadas" value="0" min="0"></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Quincenas ya pagadas</label><input type="number" class="form-control" id="u-d-pagadas" value="0" min="0"></div>
           <div class="form-group"><label class="form-label">Fecha inicio</label><input type="month" class="form-control" id="u-d-inicio"></div>
         </div>
       </div>
@@ -2425,6 +2437,42 @@ function eliminarIngreso(id){
   ST.ingresos = ST.ingresos.filter(i=>i.id!==id);
   saveState(); renderIngresos(); refreshDashboard();
 }
+function abrirEditIngreso(id){
+  const i = ST.ingresos.find(i=>i.id===id);
+  if(!i) return;
+  // Reusar modal de ingreso con los datos cargados
+  document.getElementById('i-fuente').value = i.fuente||'';
+  document.getElementById('i-monto').value  = i.monto||'';
+  document.getElementById('i-q').value      = i.quincena||1;
+  const mesEl = document.getElementById('i-mes');
+  if(mesEl) mesEl.value = i.mes||1;
+  const anoEl = document.getElementById('i-ano');
+  if(anoEl) anoEl.value = i.ano||new Date().getFullYear();
+  // Guardar id en un campo oculto temporal
+  document.getElementById('modal-ingreso').dataset.editId = id;
+  document.querySelector('#modal-ingreso .modal-title').textContent = 'Editar Ingreso';
+  document.querySelector('#modal-ingreso .modal-footer .btn-primary').textContent = 'Guardar cambios';
+  document.querySelector('#modal-ingreso .modal-footer .btn-primary').onclick = guardarEditIngreso;
+  openModal('modal-ingreso');
+}
+function guardarEditIngreso(){
+  const id = parseInt(document.getElementById('modal-ingreso').dataset.editId);
+  const ing = ST.ingresos.find(i=>i.id===id);
+  if(!ing) return;
+  ing.fuente   = document.getElementById('i-fuente').value.trim();
+  ing.monto    = parseFloat(document.getElementById('i-monto').value)||0;
+  ing.quincena = parseInt(document.getElementById('i-q').value);
+  ing.mes      = parseInt(document.getElementById('i-mes').value);
+  ing.ano      = parseInt(document.getElementById('i-ano').value);
+  saveState();
+  closeModal('modal-ingreso');
+  // Restaurar modal a modo agregar
+  document.querySelector('#modal-ingreso .modal-title').textContent = 'Registrar Ingreso';
+  document.querySelector('#modal-ingreso .modal-footer .btn-primary').textContent = 'Guardar';
+  document.querySelector('#modal-ingreso .modal-footer .btn-primary').onclick = agregarIngreso;
+  toast('Ingreso actualizado','success');
+  renderIngresos(); refreshDashboard();
+}
 function renderIngresos(){
   const tbody = document.getElementById('tabla-ingresos');
   if(!tbody) return;
@@ -2435,7 +2483,10 @@ function renderIngresos(){
         <td>${MESES[i.mes-1]||''}</td>
         <td>${i.ano}</td>
         <td class="mono" style="color:var(--green)">${fmt(i.monto)}</td>
-        <td><button class="btn btn-danger btn-sm" onclick="eliminarIngreso(${i.id})"><i class="fa-solid fa-trash"></i></button></td>
+        <td style="display:flex;gap:5px">
+          <button class="btn btn-ghost btn-sm" onclick="abrirEditIngreso(${i.id})" title="Editar"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="eliminarIngreso(${i.id})" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+        </td>
       </tr>`).join('')
     : '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px">Sin ingresos registrados</td></tr>';
   // Chart distribución por fuente
@@ -2715,7 +2766,10 @@ function renderGastos(){
           <td>${MESES[g.mes-1]||''} ${g.ano}</td>
           <td class="mono" style="color:var(--red)">${fmt(g.monto)}</td>
           <td style="font-size:12px">${metodoLabel}</td>
-          <td onclick="event.stopPropagation()"><button class="btn btn-danger btn-sm" onclick="eliminarGasto(${g.id})"><i class="fa-solid fa-trash"></i></button></td>
+          <td style="display:flex;gap:5px" onclick="event.stopPropagation()">
+            <button class="btn btn-ghost btn-sm" onclick="abrirEditGasto(${g.id})" title="Editar"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="eliminarGasto(${g.id})" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+          </td>
         </tr>`;
       }).join('')
     : '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:20px">Sin gastos registrados</td></tr>';
@@ -2805,18 +2859,30 @@ function calcUnificadoAuto(){
   if(_tipoActual==='deuda'){
     const total  = parseFloat(document.getElementById('u-d-total').value)||0;
     const cuota  = parseFloat(document.getElementById('u-d-cuota').value)||0;
-    let quince   = parseInt(document.getElementById('u-d-quincenas').value)||0;
+    const freq   = document.getElementById('u-d-frecuencia')?.value||'quincenal';
+    let periodos = parseInt(document.getElementById('u-d-quincenas').value)||0;
     if(!total&&!cuota){ prev.style.display='none'; return; }
-    if(total>0&&cuota>0&&!quince){ quince=Math.ceil(total/cuota); document.getElementById('u-d-quincenas').value=quince; }
-    else if(total>0&&quince>0&&!cuota){ const c=total/quince; document.getElementById('u-d-cuota').value=c.toFixed(2); }
+    // Calcular periodos faltantes
+    if(total>0&&cuota>0&&!periodos){ periodos=Math.ceil(total/cuota); document.getElementById('u-d-quincenas').value=periodos; }
+    else if(total>0&&periodos>0&&!cuota){ const c=total/periodos; document.getElementById('u-d-cuota').value=c.toFixed(2); }
+    // Convertir a equivalente quincenal para la corrida
+    const cuotaFinal = parseFloat(document.getElementById('u-d-cuota').value)||cuota;
+    let cuotaQ = cuotaFinal;
+    if(freq==='mensual') cuotaQ = cuotaFinal/2;
+    else if(freq==='semanal') cuotaQ = cuotaFinal*2;
+    // Convertir periodos a quincenas
+    let quinceTotal = periodos;
+    if(freq==='mensual') quinceTotal = periodos*2;
+    else if(freq==='semanal') quinceTotal = Math.ceil(periodos/2);
     prev.style.display='block';
-    content.innerHTML=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-      <div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:14px;color:var(--accent)">${fmt(parseFloat(document.getElementById('u-d-cuota').value)||cuota)}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Pago /Q</div></div>
-      <div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:14px;color:var(--text)">${quince||'—'} Q</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Quincenas</div></div>
-      <div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:14px;color:var(--orange)">${fmt(total)}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Total</div></div>
+    const freqLabel = freq==='mensual'?'mes':freq==='semanal'?'semana':'quincena';
+    content.innerHTML=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+      <div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:13px;color:var(--accent)">${fmt(cuotaFinal)}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Pago /${freqLabel}</div></div>
+      <div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:13px;color:var(--green)">${fmt(cuotaQ)}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Equiv. /Q</div></div>
+      <div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:13px;color:var(--text)">${periodos||'—'} ${freqLabel}s</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Plazo</div></div>
+      <div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:13px;color:var(--orange)">${fmt(total)}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Total</div></div>
     </div>`;
-    const cuotaFinal=parseFloat(document.getElementById('u-d-cuota').value)||cuota;
-    impacto.innerHTML=`Pago quincenal de <strong style="color:var(--accent)">${fmt(cuotaFinal)}</strong>. Margen libre: <strong style="color:${libre>=cuotaFinal?'var(--green)':'var(--red)'}">${fmt(libre)}</strong> — ${libre>=cuotaFinal?'<span style="color:var(--green)">lo puedes cubrir</span>':'<span style="color:var(--red)">excede tu margen</span>'}.`;
+    impacto.innerHTML=`Equivale a <strong style="color:var(--accent)">${fmt(cuotaQ)}</strong> quincenal en la corrida. Margen libre: <strong style="color:${libre>=cuotaQ?'var(--green)':'var(--red)'}">${fmt(libre)}</strong> — ${libre>=cuotaQ?'<span style="color:var(--green)">lo puedes cubrir</span>':'<span style="color:var(--red)">excede tu margen</span>'}.`;
     impacto.style.color='var(--text2)';
   }
 }
@@ -2880,14 +2946,20 @@ function guardarUnificado(){
     const subtipo  = document.getElementById('u-d-subtipo').value;
     const total    = parseFloat(document.getElementById('u-d-total').value)||0;
     const cuota    = parseFloat(document.getElementById('u-d-cuota').value)||0;
-    const quincenas= parseInt(document.getElementById('u-d-quincenas').value)||0;
+    const periodos = parseInt(document.getElementById('u-d-quincenas').value)||0;
     const pagadas  = parseInt(document.getElementById('u-d-pagadas').value)||0;
     const diaPago  = document.getElementById('u-d-diapago').value;
     const inicio   = document.getElementById('u-d-inicio').value||mesActual;
-    if(!nombre||!cuota||!quincenas){ toast('Completa nombre, pago y quincenas','error'); return; }
-    ST.deudas.push({ id:Date.now(), nombre, tipo:subtipo, total, cuota, quincenas, tasa:0, pagadas, diaPago, inicio, activa:true });
+    const freq     = document.getElementById('u-d-frecuencia')?.value||'quincenal';
+    if(!nombre||!cuota||!periodos){ toast('Completa nombre, pago y número de periodos','error'); return; }
+    // Convertir a quincenas para la corrida
+    let cuotaQ = cuota;
+    let quinceTotal = periodos;
+    if(freq==='mensual'){ cuotaQ=cuota/2; quinceTotal=periodos*2; }
+    else if(freq==='semanal'){ cuotaQ=cuota*2; quinceTotal=Math.ceil(periodos/2); }
+    ST.deudas.push({ id:Date.now(), nombre, tipo:subtipo, total, cuota:cuotaQ, cuotaOriginal:cuota, frecuencia:freq, quincenas:quinceTotal, tasa:0, pagadas, diaPago, inicio, activa:true });
     saveState(); closeModal('modal-deuda');
-    toast('Deuda registrada','success');
+    toast(`Deuda registrada — ${fmt(cuota)}/${freq==='mensual'?'mes':freq==='semanal'?'semana':'quincena'} → ${fmt(cuotaQ)}/Q en corrida`,'success');
     renderDeudas(); recalcularCorrida();
   }
 
@@ -2898,6 +2970,20 @@ function guardarUnificado(){
 // Mantener compatibilidad con llamadas anteriores
 function calcularDeudaAuto(){ calcUnificadoAuto(); }
 function agregarDeuda(){ guardarUnificado(); }
+
+function actualizarLabelDeuda(){
+  const freq = document.getElementById('u-d-frecuencia')?.value || 'quincenal';
+  const labels = {
+    quincenal: { cuota: 'Pago quincenal ($)', periodos: 'Número de quincenas' },
+    mensual:   { cuota: 'Pago mensual ($)',   periodos: 'Número de meses' },
+    semanal:   { cuota: 'Pago semanal ($)',   periodos: 'Número de semanas' }
+  };
+  const l = labels[freq] || labels.quincenal;
+  const lc = document.getElementById('u-d-cuota-label');
+  const lq = document.getElementById('u-d-quincenas-label');
+  if(lc) lc.textContent = l.cuota;
+  if(lq) lq.textContent = l.periodos;
+}
 
 
 function eliminarDeuda(id){
@@ -2931,7 +3017,7 @@ function renderDeudas(){
           <div class="debt-card-top">
             <div>
               <div class="debt-name">${d.nombre} ${!d.activa?'<span class="badge badge-green">Liquidada</span>':''}</div>
-              <div class="debt-meta">${d.tipo} · Tasa ${d.tasa||0}% anual</div>
+              <div class="debt-meta">${d.tipo} · Tasa ${d.tasa||0}% anual${d.frecuencia&&d.frecuencia!=='quincenal'?` · Pago ${d.frecuencia} (${fmt(d.cuotaOriginal||d.cuota)})`:''}</div>
             </div>
             <div style="display:flex;gap:6px;align-items:center">
               ${d.activa?`<button class="btn btn-success btn-sm" onclick="marcarPagada(${d.id})">+ Cuota</button>`:''}
