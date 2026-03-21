@@ -294,16 +294,16 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
 .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
 
 /* ── MODAL ── */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);backdrop-filter:blur(3px);z-index:200;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;align-items:center;justify-content:center;padding:16px;}
 .modal-bg.open{display:flex;}
-.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;width:100%;max-width:580px;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.18);margin:auto;max-height:calc(100vh - 40px);}
-.modal-lg{max-width:780px;}
-.modal-header{flex-shrink:0;padding:22px 26px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:580px;max-height:calc(100vh - 32px);display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.22);}
+.modal-lg{max-width:760px;}
+.modal-header{flex-shrink:0;padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
 .modal-title{font-family:'Inter',Arial,sans-serif;font-size:15px;font-weight:700;color:var(--text);}
 .modal-close{width:28px;height:28px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center;}
 .modal-close:hover{background:var(--bg4);color:var(--text);}
-.modal-body{padding:22px 26px;overflow-y:auto;flex:1;}
-.modal-footer{flex-shrink:0;padding:14px 26px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;background:var(--bg2);border-radius:0 0 20px 20px;}
+.modal-body{flex:1;overflow-y:auto;padding:20px 24px;min-height:0;}
+.modal-footer{flex-shrink:0;padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--bg2);border-radius:0 0 16px 16px;}
 
 /* ── CHART CONTAINERS ── */
 .chart-wrap{position:relative;height:220px;}
@@ -369,6 +369,12 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
 .table-modern tbody tr:last-child td{border-bottom:none;}
 .corrida-table tbody tr:hover{background:var(--bg3);}
 .table-modern tbody tr:last-child td{border-bottom:none;}
+.corrida-check{width:16px;height:16px;border-radius:4px;border:2px solid var(--border2);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;background:var(--bg2);}
+.corrida-check.checked{background:var(--green);border-color:var(--green);}
+.corrida-check.checked::after{content:'✓';color:#fff;font-size:10px;font-weight:700;}
+.q-selall{font-size:10px;font-weight:600;color:var(--accent);cursor:pointer;white-space:nowrap;margin-left:6px;}
+.q-selall:hover{text-decoration:underline;}
+.linea-checked{opacity:0.4;text-decoration:line-through;color:var(--text3)!important;}
 
 /* ── SECTION HEADERS ── */
 .section-h{font-family:'Inter',Arial,sans-serif;font-size:18px;font-weight:800;letter-spacing:-0.5px;margin-bottom:4px;}
@@ -617,14 +623,19 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
           <button class="btn btn-ghost btn-sm" onclick="exportCorridaPDF()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
         </div>
       </div>
+      <!-- Quincenas cerradas (historial) -->
+      <div id="corrida-historial" style="display:none;padding:10px 16px;background:var(--bg3);border-bottom:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Quincenas cerradas</div>
+        <div id="corrida-historial-lista" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+      </div>
       <div class="card-body" style="padding:0">
         <div class="corrida-table-wrap">
           <table class="corrida-table">
             <thead>
               <tr>
+                <th style="width:36px"></th>
                 <th>#</th>
                 <th>Quincena</th>
-                <th>Fecha Pago</th>
                 <th>Ingreso</th>
                 <th>Detalle de Compromisos</th>
                 <th>Total Egreso</th>
@@ -1688,7 +1699,9 @@ const CATS_COLORS = {
 let ST = {
   perfil: { nombre:'', email:'', ingresoBase:0, metaAhorro:15, umbralAlerta:80 },
   ingresos: [], gastos: [], deudas: [], tarjetas: [], cargosTarjeta: [], prestamos: [],
-  alertas: [], firebaseConfig: null, uid: null
+  alertas: [], firebaseConfig: null, uid: null,
+  corridaChecks: {},   // { "qKey": { "itemKey": true/false } }
+  corridaCerradas: []  // [ { label, mes, ano, q, resumen } ]
 };
 
 function loadState(){
@@ -2333,6 +2346,43 @@ function renderDashCharts(){
 // CORRIDA QUINCENAL
 // ============================================================
 let chartCorridaSaldo=null, chartCorridaStack=null;
+// ============================================================
+// CORRIDA — CHECKS Y CIERRE DE QUINCENA
+// ============================================================
+function toggleCorridaCheck(qKey, iKey){
+  if(!ST.corridaChecks) ST.corridaChecks = {};
+  if(!ST.corridaChecks[qKey]) ST.corridaChecks[qKey] = {};
+  ST.corridaChecks[qKey][iKey] = !ST.corridaChecks[qKey][iKey];
+  saveToLocal();
+  recalcularCorrida();
+}
+
+function seleccionarTodosQ(qKey, marcar){
+  if(!ST.corridaChecks) ST.corridaChecks = {};
+  if(!ST.corridaChecks[qKey]) ST.corridaChecks[qKey] = {};
+  Object.keys(ST.corridaChecks[qKey]).forEach(k=>{
+    ST.corridaChecks[qKey][k] = marcar;
+  });
+  saveToLocal();
+  recalcularCorrida();
+}
+
+function cerrarQuincena(qKey, label){
+  if(!ST.corridaCerradas) ST.corridaCerradas = [];
+  if(!ST.corridaCerradas.includes(qKey)) ST.corridaCerradas.push(qKey);
+  saveToLocal();
+  toast('Quincena "'+label+'" cerrada — subió la siguiente','success');
+  recalcularCorrida();
+}
+
+function reabrirQuincena(qKey){
+  if(!ST.corridaCerradas) return;
+  ST.corridaCerradas = ST.corridaCerradas.filter(k=>k!==qKey);
+  saveToLocal();
+  toast('Quincena reabierta','info');
+  recalcularCorrida();
+}
+
 function recalcularCorrida(){
   const n = parseInt(document.getElementById('corrida-n')?.value||12);
   const corrida = generarCorrida(n);
@@ -2347,102 +2397,97 @@ function recalcularCorrida(){
   document.getElementById('pr-margen').style.color = libre<0?'var(--red)':libre/base<0.15?'var(--orange)':'var(--green)';
   document.getElementById('pr-margen-pct').textContent = `${fmtPct(pctLibre)} del ingreso`;
 
+  if(!ST.corridaChecks) ST.corridaChecks = {};
+  if(!ST.corridaCerradas) ST.corridaCerradas = [];
+
+  // Mostrar historial de quincenas cerradas
+  const hEl = document.getElementById('corrida-historial');
+  const listaEl = document.getElementById('corrida-historial-lista');
+  if(listaEl && ST.corridaCerradas.length){
+    hEl.style.display='block';
+    listaEl.innerHTML = ST.corridaCerradas.map(qk=>{
+      const parts=qk.split('-'); const qNum=parts[2],mes=parseInt(parts[1]),ano=parts[0];
+      const lbl=(qNum==='1'?'1-15':'16-31')+' '+MESES[mes-1]+' '+ano;
+      return '<div style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:var(--green-glow);border:1px solid rgba(0,168,118,0.25);border-radius:20px;font-size:11px;font-weight:600;color:var(--green);cursor:pointer" onclick="reabrirQuincena(\''+qk+'\')" title="Clic para reabrir"><i class="fa-solid fa-lock" style="font-size:9px"></i> '+lbl+' <i class="fa-solid fa-xmark" style="font-size:9px;margin-left:3px;opacity:0.6"></i></div>';
+    }).join('');
+  } else if(hEl){ hEl.style.display='none'; }
+
   // Construir detalle de compromisos por quincena
   const gastosFijos = ST.gastos.filter(g=>!g.esDeuda&&!g.yaPagado&&['Quincenal','Mensual','Semanal'].includes(g.frecuencia));
   const deudasActivas = ST.deudas.filter(d=>d.activa);
 
-  document.getElementById('tbody-corrida').innerHTML = corrida.map((q,qIdx)=>{
+  // Filtrar quincenas cerradas
+  const corridaVisible = corrida.filter(q=>!ST.corridaCerradas.includes(q.ano+'-'+q.mes+'-'+q.q));
+
+  document.getElementById('tbody-corrida').innerHTML = corridaVisible.map((q)=>{
+    const qIdxReal = corrida.indexOf(q);
+    const qKey = q.ano+'-'+q.mes+'-'+q.q;
+    if(!ST.corridaChecks[qKey]) ST.corridaChecks[qKey]={};
+    const checks = ST.corridaChecks[qKey];
     const barPct = Math.min(100,q.pctUso).toFixed(1);
     const barColor = q.pctUso>=90?'var(--red)':q.pctUso>=75?'var(--orange)':'var(--green)';
     const badge = q.estado==='deficit'?'<span class="badge badge-red">Déficit</span>':q.estado==='ajustado'?'<span class="badge badge-orange">Ajustado</span>':'<span class="badge badge-green">OK</span>';
-
-    // Fecha de pago de esta quincena (día 1 para Q1, día 16 para Q2)
-    const diaPago = q.q===1?'1':q.q===2?'16':'—';
-    const fechaPago = `${diaPago}/${String(q.mes).padStart(2,'0')}/${q.ano}`;
-
-    // Detalle línea por línea de compromisos
-    const lineas = [];
-
-    // Gastos fijos — respetando la quincena correcta según día de pago
+    const items = [];
     gastosFijos.forEach(g=>{
-      if(g.frecuencia==='Quincenal'){
-        // Quincenal: aparece en ambas quincenas
-        const diaConcepto = g.diaPago?` · día ${g.diaPago}`:'';
-        lineas.push(`<div style="display:flex;justify-content:space-between;font-size:11px;padding:1px 0">
-          <span style="color:var(--text2)">${g.concepto}<span style="color:var(--text3)">${diaConcepto}</span></span>
-          <span class="mono" style="color:var(--red);margin-left:10px">${fmt(g.monto)}</span>
-        </div>`);
-      } else if(g.frecuencia==='Mensual'){
-        // Mensual: solo en la quincena donde cae su día de pago
-        const qGasto = quincenaDeGasto(g);
-        if(qGasto===q.q){
-          const diaConcepto = g.diaPago?` · día ${g.diaPago}`:'';
-          lineas.push(`<div style="display:flex;justify-content:space-between;font-size:11px;padding:1px 0">
-            <span style="color:var(--text2)">${g.concepto}<span style="color:var(--text3)">${diaConcepto} · mensual</span></span>
-            <span class="mono" style="color:var(--red);margin-left:10px">${fmt(g.monto)}</span>
-          </div>`);
-        }
-      } else if(g.frecuencia==='Semanal'){
-        lineas.push(`<div style="display:flex;justify-content:space-between;font-size:11px;padding:1px 0">
-          <span style="color:var(--text2)">${g.concepto}<span style="color:var(--text3)"> · semanal ×2</span></span>
-          <span class="mono" style="color:var(--red);margin-left:10px">${fmt(g.monto*2)}</span>
-        </div>`);
-      }
+      let show=false, monto=0;
+      if(g.frecuencia==='Quincenal'){show=true;monto=g.monto;}
+      else if(g.frecuencia==='Mensual'&&quincenaDeGasto(g)===q.q){show=true;monto=g.monto;}
+      else if(g.frecuencia==='Semanal'){show=true;monto=g.monto*2;}
+      if(!show) return;
+      const iKey='g_'+g.id;
+      if(checks[iKey]===undefined) checks[iKey]=false;
+      const done=!!checks[iKey];
+      const dLbl=g.diaPago?' · día '+g.diaPago:'';
+      items.push({iKey,monto,html:'<div style="display:flex;align-items:center;gap:6px;padding:2px 0"><div class="corrida-check'+(done?' checked':'')+'" onclick="toggleCorridaCheck(\''+qKey+'\',\''+iKey+'\')"></div><div style="flex:1;display:flex;justify-content:space-between;'+(done?'opacity:0.4;text-decoration:line-through':'')+'"><span style="color:var(--text2);font-size:11px">'+g.concepto+'<span style="color:var(--text3)">'+dLbl+'</span></span><span class="mono" style="color:var(--red);font-size:11px;margin-left:8px">'+fmt(monto)+'</span></div></div>'});
     });
-
-    // Deudas/préstamos activos — respetando quincena de pago si tiene día definido
-    deudasActivas.forEach((d,di)=>{
-      const pagadasActual=(d.pagadas||0)+qIdx;
-      if(pagadasActual>=(d.quincenas||1)) return;
-      const diaD = d.fechaPago?new Date(d.fechaPago).getDate():d.diaPago||null;
-      // Si tiene día definido, solo aparece en la quincena correcta
-      if(diaD){
-        const qDeuda = parseInt(diaD)<=15?1:2;
-        if(qDeuda!==q.q) return;
-      }
-      const restantes=(d.quincenas||1)-(d.pagadas||0)-qIdx;
-      lineas.push(`<div style="display:flex;justify-content:space-between;font-size:11px;padding:1px 0">
-        <span style="color:var(--text2)">${d.nombre}<span style="color:var(--text3)"> · ${diaD?`día ${diaD} · `:''}${restantes}Q rest.</span></span>
-        <span class="mono" style="color:var(--orange);margin-left:10px">${fmt(d.cuota)}</span>
-      </div>`);
+    deudasActivas.forEach(d=>{
+      const pagAct=(d.pagadas||0)+qIdxReal;
+      if(pagAct>=(d.quincenas||1)) return;
+      const diaD=d.fechaPago?new Date(d.fechaPago).getDate():d.diaPago||null;
+      if(diaD&&(parseInt(diaD)<=15?1:2)!==q.q) return;
+      const rest=(d.quincenas||1)-(d.pagadas||0)-qIdxReal;
+      const iKey='d_'+d.id;
+      if(checks[iKey]===undefined) checks[iKey]=false;
+      const done=!!checks[iKey];
+      items.push({iKey,monto:d.cuota,html:'<div style="display:flex;align-items:center;gap:6px;padding:2px 0"><div class="corrida-check'+(done?' checked':'')+'" onclick="toggleCorridaCheck(\''+qKey+'\',\''+iKey+'\')"></div><div style="flex:1;display:flex;justify-content:space-between;'+(done?'opacity:0.4;text-decoration:line-through':'')+'"><span style="color:var(--text2);font-size:11px">'+d.nombre+'<span style="color:var(--text3)"> · '+rest+'Q rest.</span></span><span class="mono" style="color:var(--orange);font-size:11px;margin-left:8px">'+fmt(d.cuota)+'</span></div></div>'});
     });
-
-    // Gastos únicos de este período
-    const unicosQ = ST.gastos.filter(g=>!g.esDeuda&&g.frecuencia==='Único'&&g.mes===q.mes&&g.ano===q.ano&&g.quincena===q.q);
+    const unicosQ=ST.gastos.filter(g=>!g.esDeuda&&g.frecuencia==='Único'&&g.mes===q.mes&&g.ano===q.ano&&g.quincena===q.q);
     unicosQ.forEach(g=>{
-      lineas.push(`<div style="display:flex;justify-content:space-between;font-size:11px;padding:1px 0">
-        <span style="color:var(--accent)">${g.concepto} <span style="color:var(--text3)">(único)</span></span>
-        <span class="mono" style="color:var(--accent);margin-left:10px">${fmt(g.monto)}</span>
-      </div>`);
+      const iKey='u_'+g.id;
+      if(checks[iKey]===undefined) checks[iKey]=false;
+      const done=!!checks[iKey];
+      items.push({iKey,monto:g.monto,html:'<div style="display:flex;align-items:center;gap:6px;padding:2px 0"><div class="corrida-check'+(done?' checked':'')+'" onclick="toggleCorridaCheck(\''+qKey+'\',\''+iKey+'\')"></div><div style="flex:1;display:flex;justify-content:space-between;'+(done?'opacity:0.4;text-decoration:line-through':'')+'"><span style="color:var(--accent);font-size:11px">'+g.concepto+' <span style="color:var(--text3)">(único)</span></span><span class="mono" style="color:var(--accent);font-size:11px;margin-left:8px">'+fmt(g.monto)+'</span></div></div>'});
     });
-
-    return `<tr class="row-${q.estado}">
-      <td style="color:var(--text3);font-size:11px">${q.idx}</td>
-      <td style="font-weight:600;font-size:12.5px;white-space:nowrap">${q.label}</td>
-      <td class="mono" style="font-size:11px;color:var(--text2);white-space:nowrap">${fechaPago}</td>
-      <td class="mono" style="color:var(--accent)">${fmt(q.ingrBase)}</td>
-      <td style="min-width:220px">${lineas.length?lineas.join(''):'<span style="color:var(--text3);font-size:11px">Sin compromisos</span>'}</td>
-      <td class="mono" style="font-weight:600">${fmt(q.totalEgreso)}</td>
-      <td>
-        <div class="pct-bar">
-          <div class="pct-track"><div class="pct-fill" style="width:${barPct}%;background:${barColor}"></div></div>
-          <span style="font-size:11px;color:var(--text2);font-family:var(--font-mono)">${barPct}%</span>
-        </div>
-      </td>
-      <td class="mono" style="font-weight:700;color:${q.saldo<0?'var(--red)':q.saldo/q.ingrBase<0.1?'var(--orange)':'var(--green)'}">${fmt(q.saldo)}</td>
-      <td>${badge}</td>
-    </tr>`;
-  }).join('') + `<tr class="row-total">
-    <td></td>
-    <td style="font-size:11px;font-weight:700;color:var(--text3)">TOTAL ${n} Q</td>
-    <td></td>
-    <td class="mono" style="color:var(--accent);font-weight:700">${fmt(corrida.reduce((s,q)=>s+q.ingrBase,0))}</td>
-    <td></td>
-    <td class="mono" style="font-weight:700">${fmt(corrida.reduce((s,q)=>s+q.totalEgreso,0))}</td>
-    <td></td>
-    <td class="mono" style="font-size:15px;font-weight:800;color:${corrida.reduce((s,q)=>s+q.saldo,0)>=0?'var(--green)':'var(--red)'}">${fmt(corrida.reduce((s,q)=>s+q.saldo,0))}</td>
-    <td></td>
-  </tr>`;
+    const allDone=items.length>0&&items.every(i=>!!checks[i.iKey]);
+    const checkedN=items.filter(i=>!!checks[i.iKey]).length;
+    const pendiente=items.filter(i=>!checks[i.iKey]).reduce((s,i)=>s+i.monto,0);
+    const saldoReal=q.ingrBase-pendiente;
+    const selAll=items.length>0?'<br><span class="q-selall" onclick="seleccionarTodosQ(\''+qKey+'\','+(allDone?'false':'true')+')">'+(allDone?'Desmarcar todos':'Marcar todos')+'</span>':'';
+    const cerrarBtn=allDone&&items.length>0?'<br><button class="btn btn-success btn-sm" style="margin-top:4px;font-size:10px;padding:3px 8px" onclick="cerrarQuincena(\''+qKey+'\',\''+q.label+'\')"><i class="fa-solid fa-lock"></i> Cerrar quincena</button>':'';
+    return '<tr class="row-'+(saldoReal<0?'deficit':q.pctUso>=ST.perfil.umbralAlerta?'ajustado':'ok')+'">'
+      +'<td style="vertical-align:top;padding-top:12px;font-size:10px;color:var(--text3);text-align:center">'+checkedN+'/'+items.length+'</td>'
+      +'<td style="font-weight:600;font-size:12px;vertical-align:top;white-space:nowrap">'+q.label+selAll+'</td>'
+      +'<td class="mono" style="color:var(--accent);vertical-align:top">'+fmt(q.ingrBase)+'</td>'
+      +'<td style="min-width:200px">'+(items.length?items.map(i=>i.html).join(''):'<span style="color:var(--text3);font-size:11px">Sin compromisos</span>')+'</td>'
+      +'<td class="mono" style="font-weight:600">'+fmt(pendiente)+'</td>'
+      +'<td><div class="pct-bar"><div class="pct-track"><div class="pct-fill" style="width:'+barPct+'%;background:'+barColor+'"></div></div><span style="font-size:11px;color:var(--text2)">'+barPct+'%</span></div></td>'
+      +'<td class="mono" style="font-weight:700;color:'+(saldoReal<0?'var(--red)':saldoReal/q.ingrBase<0.1?'var(--orange)':'var(--green)')+'">'+fmt(saldoReal)+'</td>'
+      +'<td>'+badge+cerrarBtn+'</td>'
+      +'</tr>';
+  }).join('')+'<tr class="row-total">'
+    +'<td></td><td colspan="2" style="font-size:11px;font-weight:700;color:var(--text3)">TOTAL '+n+' Q</td>'
+    +'<td class="mono" style="color:var(--accent);font-weight:700">'+fmt(corrida.reduce((s,q)=>s+q.ingrBase,0))+'</td>'
+    +'<td class="mono" style="font-weight:700">'+fmt(corridaVisible.reduce((s,q)=>{
+        const qKey=q.ano+'-'+q.mes+'-'+q.q;
+        const checks=ST.corridaChecks[qKey]||{};
+        const gastos2=ST.gastos.filter(g=>!g.esDeuda&&!g.yaPagado&&['Quincenal','Mensual','Semanal'].includes(g.frecuencia));
+        let pend=0;
+        gastos2.forEach(g=>{let m=0;if(g.frecuencia==='Quincenal')m=g.monto;else if(g.frecuencia==='Mensual'&&quincenaDeGasto(g)===q.q)m=g.monto;else if(g.frecuencia==='Semanal')m=g.monto*2;if(m&&!checks['g_'+g.id])pend+=m;});
+        return s+pend;
+      },0))+'</td>'
+    +'<td></td>'
+    +'<td class="mono" style="font-size:15px;font-weight:800;color:'+(corrida.reduce((s,q)=>s+q.saldo,0)>=0?'var(--green)':'var(--red)')+'">'+fmt(corrida.reduce((s,q)=>s+q.saldo,0))+'</td>'
+    +'<td></td></tr>';
 
   // Gráfica saldo
   if(chartCorridaSaldo) chartCorridaSaldo.destroy();
