@@ -1093,8 +1093,28 @@ service cloud.firestore {
         <div class="form-group"><label class="form-label">Fuente / Descripción</label><input type="text" class="form-control" id="i-fuente" placeholder="ej. Sueldo, Freelance"></div>
         <div class="form-group"><label class="form-label">Monto ($)</label><input type="number" class="form-control" id="i-monto" placeholder="0.00" step="0.01"></div>
       </div>
+      <div class="form-group">
+        <label class="form-label">Tipo de ingreso</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+          <div onclick="selIngTipo('fijo',this)" id="i-tipo-fijo" style="padding:10px 12px;border-radius:9px;border:2px solid var(--accent);background:var(--accent-glow2);cursor:pointer;display:flex;align-items:center;gap:8px">
+            <i class="fa-solid fa-rotate" style="color:var(--accent);font-size:13px"></i>
+            <div>
+              <div style="font-size:12.5px;font-weight:600;color:var(--accent)">Fijo / Recurrente</div>
+              <div style="font-size:10.5px;color:var(--text3)">Sueldo, pago quincenal fijo</div>
+            </div>
+          </div>
+          <div onclick="selIngTipo('variable',this)" id="i-tipo-variable" style="padding:10px 12px;border-radius:9px;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:8px">
+            <i class="fa-solid fa-bolt" style="color:var(--text2);font-size:13px"></i>
+            <div>
+              <div style="font-size:12.5px;font-weight:600;color:var(--text2)">Variable / Único</div>
+              <div style="font-size:10.5px;color:var(--text3)">Comisión, bono, pago extra</div>
+            </div>
+          </div>
+        </div>
+        <input type="hidden" id="i-tipo" value="fijo">
+      </div>
       <div class="form-row-3">
-        <div class="form-group"><label class="form-label">Quincena</label><select class="form-control" id="i-q"><option value="1">1-15</option><option value="2">16-31</option></select></div>
+        <div class="form-group"><label class="form-label">Período</label><select class="form-control" id="i-q"><option value="1">1-15</option><option value="2">16-31</option></select></div>
         <div class="form-group"><label class="form-label">Mes</label><select class="form-control" id="i-mes"></select></div>
         <div class="form-group"><label class="form-label">Año</label><select class="form-control" id="i-ano"></select></div>
       </div>
@@ -1173,6 +1193,15 @@ service cloud.firestore {
         </div>
       </div>
       <div class="form-group"><label class="form-label">Notas (opcional)</label><input type="text" class="form-control" id="g-notas" placeholder="Detalle adicional"></div>
+      <!-- Ya pagado -->
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg3);border-radius:9px;margin-top:4px;cursor:pointer" onclick="toggleYaPagado()">
+        <div id="g-pagado-check" style="width:18px;height:18px;border-radius:5px;border:2px solid var(--border2);background:var(--bg2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s"></div>
+        <input type="hidden" id="g-ya-pagado" value="0">
+        <div>
+          <div style="font-size:12.5px;font-weight:600;color:var(--text)">Ya lo pagué — no repetir en la corrida</div>
+          <div style="font-size:11px;color:var(--text3)">Si activas esto, el gasto queda registrado en el historial pero no aparece en quincenas futuras</div>
+        </div>
+      </div>
     </div>
     <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-gasto')">Cancelar</button><button class="btn btn-primary" onclick="agregarGasto()">Guardar</button></div>
   </div>
@@ -1596,6 +1625,11 @@ service cloud.firestore {
         </div>
       </div>
       <div class="form-group"><label class="form-label">Notas</label><input type="text" class="form-control" id="eg-notas" placeholder="Detalle adicional"></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg3);border-radius:9px;margin-top:4px;cursor:pointer" onclick="toggleEditYaPagado()">
+        <div id="eg-pagado-check" style="width:18px;height:18px;border-radius:5px;border:2px solid var(--border2);background:var(--bg2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s"></div>
+        <input type="hidden" id="eg-ya-pagado" value="0">
+        <div style="font-size:12.5px;font-weight:600;color:var(--text)">Ya lo pagué — no repetir en la corrida</div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-danger btn-sm" onclick="eliminarGastoEdit()"><i class="fa-solid fa-trash"></i> Eliminar</button>
@@ -1921,7 +1955,12 @@ function openModal(id){
     if(tarjRow) tarjRow.style.display='none';
     if(tarjInfo) tarjInfo.style.display='none';
     if(metodo) metodo.value='Efectivo';
-    // Poblar fuentes de ingreso — todas las fuentes únicas registradas
+    // Reset ya pagado
+    const yaPagado = document.getElementById('g-ya-pagado');
+    const check    = document.getElementById('g-pagado-check');
+    if(yaPagado){ yaPagado.value='0'; }
+    if(check){ check.style.background='var(--bg2)'; check.style.borderColor='var(--border2)'; check.innerHTML=''; }
+    // Poblar fuentes de ingreso
     const sel = document.getElementById('g-fuente-ingreso');
     if(sel){
       const fuentes = [...new Set(ST.ingresos.map(i=>i.fuente).filter(Boolean))];
@@ -2003,14 +2042,28 @@ function periodoDeGasto(diaPago){
 function calcIngresoBase(){
   if(ST.perfil.ingresoBase > 0) return ST.perfil.ingresoBase;
   const now = new Date();
-  // Promedio de últimas 4 quincenas
-  const rec = ST.ingresos.filter(i => {
+  // Solo ingresos FIJOS para la proyección — los variables no se repiten
+  const fijos = ST.ingresos.filter(i => {
+    const tipo = i.tipo || 'fijo'; // compatibilidad con registros anteriores
+    if(tipo !== 'fijo') return false;
     const d = new Date(i.ano, i.mes-1, i.quincena===1?7:22);
-    return (now - d) <= 1000*60*60*24*60;
+    return (now - d) <= 1000*60*60*24*90; // últimos 3 meses
   });
-  if(!rec.length) return 0;
+  if(!fijos.length){
+    // Fallback: si no hay fijos, usar todos (compatibilidad)
+    const todos = ST.ingresos.filter(i=>{
+      const d = new Date(i.ano, i.mes-1, i.quincena===1?7:22);
+      return (now - d) <= 1000*60*60*24*60;
+    });
+    if(!todos.length) return 0;
+    const groups = {};
+    todos.forEach(i=>{ const k=`${i.ano}-${i.mes}-${i.quincena}`; groups[k]=(groups[k]||0)+i.monto; });
+    const vals = Object.values(groups);
+    return vals.reduce((a,b)=>a+b,0)/vals.length;
+  }
+  // Agrupar por quincena y promediar
   const groups = {};
-  rec.forEach(i => { const k=`${i.ano}-${i.mes}-${i.quincena}`; groups[k]=(groups[k]||0)+i.monto; });
+  fijos.forEach(i=>{ const k=`${i.ano}-${i.mes}-${i.quincena}`; groups[k]=(groups[k]||0)+i.monto; });
   const vals = Object.values(groups);
   return vals.reduce((a,b)=>a+b,0)/vals.length;
 }
@@ -2043,7 +2096,7 @@ function calcCuotasQ(){
 function generarCorrida(n=12){
   const ingrBase = calcIngresoBase();
   const deudasActivas = ST.deudas.filter(d=>d.activa);
-  const gastosFijos = ST.gastos.filter(g=>!g.esDeuda && ['Quincenal','Mensual','Semanal'].includes(g.frecuencia));
+  const gastosFijos = ST.gastos.filter(g=>!g.esDeuda && !g.yaPagado && ['Quincenal','Mensual','Semanal'].includes(g.frecuencia));
   const hoy = new Date();
   const quincenas = [];
   let fecha = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()<=15?1:16);
@@ -2393,7 +2446,7 @@ function recalcularCorrida(){
   document.getElementById('pr-margen-pct').textContent = `${fmtPct(pctLibre)} del ingreso`;
 
   // Construir detalle de compromisos por quincena
-  const gastosFijos = ST.gastos.filter(g=>!g.esDeuda&&['Quincenal','Mensual','Semanal'].includes(g.frecuencia));
+  const gastosFijos = ST.gastos.filter(g=>!g.esDeuda&&!g.yaPagado&&['Quincenal','Mensual','Semanal'].includes(g.frecuencia));
   const deudasActivas = ST.deudas.filter(d=>d.activa);
 
   document.getElementById('tbody-corrida').innerHTML = corrida.map((q,qIdx)=>{
@@ -2660,18 +2713,57 @@ function simularEscenario(){
 // ============================================================
 // INGRESOS CRUD
 // ============================================================
+// ── Selector tipo ingreso ──
+function selIngTipo(tipo, el){
+  document.getElementById('i-tipo').value = tipo;
+  ['fijo','variable'].forEach(t=>{
+    const btn = document.getElementById('i-tipo-'+t);
+    if(t===tipo){
+      btn.style.border='2px solid var(--accent)';
+      btn.style.background='var(--accent-glow2)';
+      btn.querySelector('div div:first-child').style.color='var(--accent)';
+      btn.querySelector('i').style.color='var(--accent)';
+    } else {
+      btn.style.border='2px solid var(--border)';
+      btn.style.background='';
+      btn.querySelector('div div:first-child').style.color='var(--text2)';
+      btn.querySelector('i').style.color='var(--text2)';
+    }
+  });
+}
+
+// ── Ya pagado toggle ──
+function toggleYaPagado(){
+  const el = document.getElementById('g-ya-pagado');
+  const check = document.getElementById('g-pagado-check');
+  const val = el.value==='1'?'0':'1';
+  el.value = val;
+  if(val==='1'){
+    check.style.background='var(--green)';
+    check.style.borderColor='var(--green)';
+    check.innerHTML='<i class="fa-solid fa-check" style="color:#fff;font-size:10px"></i>';
+  } else {
+    check.style.background='var(--bg2)';
+    check.style.borderColor='var(--border2)';
+    check.innerHTML='';
+  }
+}
+
 function agregarIngreso(){
   const fuente = document.getElementById('i-fuente').value.trim();
   const monto  = parseFloat(document.getElementById('i-monto').value);
   const q    = parseInt(document.getElementById('i-q').value);
   const mes  = parseInt(document.getElementById('i-mes').value);
   const ano  = parseInt(document.getElementById('i-ano').value);
+  const tipo = document.getElementById('i-tipo')?.value||'fijo';
   if(!fuente||!monto||monto<=0){ toast('Completa todos los campos','error'); return; }
-  ST.ingresos.push({ id:Date.now(), fuente, monto, quincena:q, mes, ano });
-  ST.perfil.ingresoBase = 0; // recalcular desde datos
+  ST.ingresos.push({ id:Date.now(), fuente, monto, quincena:q, mes, ano, tipo });
+  ST.perfil.ingresoBase = 0;
   saveState();
   closeModal('modal-ingreso');
-  toast('Ingreso registrado','success');
+  // Reset tipo selector
+  selIngTipo('fijo', document.getElementById('i-tipo-fijo'));
+  toast(tipo==='fijo'?'Ingreso fijo registrado':'Ingreso variable registrado (solo esta quincena)','success');
   if(currentPage==='ingresos') renderIngresos();
   if(currentPage==='dashboard') refreshDashboard();
   recalcularCorrida();
@@ -2839,13 +2931,14 @@ function agregarGasto(){
   const notas         = document.getElementById('g-notas').value;
   const fuenteIngreso = document.getElementById('g-fuente-ingreso')?.value||'';
   const tarjetaId     = metodo==='Tarjeta Crédito' ? (parseInt(document.getElementById('g-tarjeta-sel')?.value)||0) : 0;
+  const yaPagado      = document.getElementById('g-ya-pagado')?.value==='1';
 
   if(!concepto||!monto||monto<=0){ toast('Completa los campos requeridos','error'); return; }
   if(metodo==='Tarjeta Crédito' && !tarjetaId && ST.tarjetas.length){
     toast('Selecciona la tarjeta con la que pagas','error'); return;
   }
 
-  const gasto = { id:Date.now(), concepto, monto, categoria, frecuencia, quincena:q, mes, ano, metodo, notas, fuenteIngreso, tarjetaId, esDeuda:false };
+  const gasto = { id:Date.now(), concepto, monto, categoria, frecuencia, quincena:q, mes, ano, metodo, notas, fuenteIngreso, tarjetaId, yaPagado, esDeuda:false };
   ST.gastos.push(gasto);
 
   // ── Auto-cargo a tarjeta ──
@@ -2917,8 +3010,19 @@ function abrirEditGasto(id){
   const fuenteEl = document.getElementById('eg-fuente');
   const fuentes = [...new Set(ST.ingresos.map(i=>i.fuente).filter(Boolean))];
   fuenteEl.innerHTML='<option value="">Sin asignar</option>'+fuentes.map(f=>`<option value="${f}" ${f===g.fuenteIngreso?'selected':''}>${f}</option>`).join('');
+  // Set yaPagado
+  const yp = g.yaPagado?'1':'0';
+  document.getElementById('eg-ya-pagado').value = yp;
+  const check = document.getElementById('eg-pagado-check');
+  if(yp==='1'){
+    check.style.background='var(--green)'; check.style.borderColor='var(--green)';
+    check.innerHTML='<i class="fa-solid fa-check" style="color:#fff;font-size:10px"></i>';
+  } else {
+    check.style.background='var(--bg2)'; check.style.borderColor='var(--border2)'; check.innerHTML='';
+  }
   openModal('modal-edit-gasto');
 }
+
 function guardarEditGasto(){
   const id = parseInt(document.getElementById('eg-id').value);
   const g  = ST.gastos.find(g=>g.id===id);
@@ -2933,6 +3037,7 @@ function guardarEditGasto(){
   g.metodo        = document.getElementById('eg-metodo').value;
   g.notas         = document.getElementById('eg-notas').value;
   g.fuenteIngreso = document.getElementById('eg-fuente').value;
+  g.yaPagado      = document.getElementById('eg-ya-pagado').value==='1';
   saveState();
   closeModal('modal-edit-gasto');
   toast('Gasto actualizado','success');
@@ -3001,8 +3106,8 @@ function renderGastos(){
         const metodoLabel = tarjeta
           ? `<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:${tarjeta.color||'#0099e6'};display:inline-block"></span>${tarjeta.nombre}</span>`
           : g.metodo;
-        return `<tr style="cursor:pointer" onclick="abrirEditGasto(${g.id})" title="Clic para editar">
-          <td style="font-weight:500">${g.concepto}</td>
+        return `<tr style="cursor:pointer;${g.yaPagado?'opacity:0.6':''};" onclick="abrirEditGasto(${g.id})" title="Clic para editar">
+          <td style="font-weight:500">${g.concepto}${g.yaPagado?' <span class="badge badge-green" style="font-size:10px">Pagado</span>':''}</td>
           <td><span class="badge" style="background:${CATS_COLORS[g.categoria]||'#6b7280'}22;color:${CATS_COLORS[g.categoria]||'#6b7280'}">${g.categoria}</span></td>
           <td><span class="badge badge-blue">${g.frecuencia}</span></td>
           <td><span class="badge badge-blue">${g.quincena===1?'1-15':'16-31'}</span></td>
