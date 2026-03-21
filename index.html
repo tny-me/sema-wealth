@@ -550,24 +550,6 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
         <div class="kpi-sub">Disponible real</div>
         <div class="kpi-trend" id="kpi-libre-pct">—</div>
       </div>
-      <div class="kpi" style="cursor:pointer;" onclick="navigate('prediccion',document.querySelector('[onclick*=prediccion]'))">
-        <div class="kpi-glow" style="background:radial-gradient(circle,var(--purple-glow),transparent)"></div>
-        <div class="kpi-label">Salud Financiera</div>
-        <div class="kpi-val mono" id="kpi-health" style="color:var(--purple)">—</div>
-        <div class="kpi-sub">Score IA</div>
-        <div class="kpi-trend neutral" id="kpi-health-badge">Ver análisis →</div>
-      </div>
-    </div>
-
-    <!-- Panel de fuentes de ingreso -->
-    <div class="card mb24" id="dash-fuentes-panel">
-      <div class="card-header">
-        <span class="card-title">Fuentes de Ingreso — Disponible por fuente</span>
-        <button class="btn btn-ghost btn-sm" onclick="openModal('modal-ingreso')"><i class="fa-solid fa-plus"></i> Agregar ingreso</button>
-      </div>
-      <div class="card-body" style="padding:0" id="dash-fuentes-body">
-        <div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Sin ingresos registrados esta quincena</div>
-      </div>
     </div>
 
     <div class="intel-grid mb24">
@@ -580,64 +562,16 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
           <div class="chart-wrap-lg"><canvas id="chart-flujo"></canvas></div>
         </div>
       </div>
-      <div>
-        <!-- Health Score -->
-        <div class="card mb16">
-          <div class="card-body" style="display:flex;align-items:center;gap:20px;">
-            <div class="health-ring">
-              <svg width="110" height="110" viewBox="0 0 110 110">
-                <circle cx="55" cy="55" r="46" fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="8"/>
-                <circle cx="55" cy="55" r="46" fill="none" stroke="url(#hg)" stroke-width="8"
-                  stroke-linecap="round" stroke-dasharray="289" id="health-arc" stroke-dashoffset="289"/>
-                <defs>
-                  <linearGradient id="hg" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stop-color="#00d4ff"/>
-                    <stop offset="100%" stop-color="#00e5a0"/>
-                  </linearGradient>
-                </defs>
-              </svg>
-              <div class="health-score">
-                <div class="health-num" id="hs-num">—</div>
-                <div class="health-lbl">/ 100</div>
-              </div>
-            </div>
-            <div>
-              <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px;">Score Financiero</div>
-              <div style="font-size:12px;color:var(--text2);line-height:1.6" id="hs-label">Calculando...</div>
-              <div id="hs-badge" class="badge badge-blue" style="margin-top:8px;">—</div>
-            </div>
-          </div>
-        </div>
-        <!-- Alerts -->
-        <div class="card">
-          <div class="card-header"><span class="card-title">Alertas Inteligentes</span><span class="badge badge-red" id="alert-count">0</span></div>
-          <div class="card-body" style="padding:14px;max-height:230px;overflow-y:auto;">
-            <div id="alert-list"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="g2 mb16">
       <div class="card">
         <div class="card-header"><span class="card-title">Distribución de Gastos</span></div>
         <div class="card-body"><div class="chart-wrap-sm"><canvas id="chart-donut"></canvas></div><div id="leyenda-donut" style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:5px"></div></div>
       </div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">Últimas Transacciones</span></div>
-        <div class="card-body" style="padding:0">
-          <table class="table-modern"><thead><tr><th>Concepto</th><th>Categoría</th><th>Monto</th></tr></thead><tbody id="tabla-recientes"></tbody></table>
-        </div>
-      </div>
     </div>
 
-    <!-- AI Insights Panel -->
     <div class="card mb16">
-      <div class="card-header">
-        <span class="card-title"><span class="ai-pulse" style="display:inline-block;margin-right:8px"></span>Análisis IA en tiempo real</span>
-      </div>
-      <div class="card-body">
-        <div id="ai-insights-list"></div>
+      <div class="card-header"><span class="card-title">Últimas Transacciones</span></div>
+      <div class="card-body" style="padding:0">
+        <table class="table-modern"><thead><tr><th>Concepto</th><th>Categoría</th><th>Monto</th></tr></thead><tbody id="tabla-recientes"></tbody></table>
       </div>
     </div>
 
@@ -1155,11 +1089,6 @@ service cloud.firestore {
         <div class="form-group"><label class="form-label">Método de pago</label>
           <select class="form-control" id="g-metodo" onchange="toggleTarjetaSelector(this.value)">
             <option>Efectivo</option><option>Tarjeta Débito</option><option value="Tarjeta Crédito">Tarjeta Crédito</option><option>Transferencia</option><option>OXXO</option>
-          </select>
-        </div>
-        <div class="form-group"><label class="form-label">Se paga con (fuente de ingreso)</label>
-          <select class="form-control" id="g-fuente-ingreso">
-            <option value="">Sin asignar</option>
           </select>
         </div>
       </div>
@@ -2263,48 +2192,21 @@ function refreshDashboard(){
   document.getElementById('kpi-fijos').textContent   = fmt(fijos);
   document.getElementById('kpi-cuotas').textContent  = fmt(cuotas);
   document.getElementById('kpi-libre').textContent   = fmt(libre);
-  document.getElementById('kpi-fijos-pct').innerHTML = `<span class="${fijos/base>0.5?'down':'neutral'}">${fmtPct(pctFijos*100)} del ingreso</span>`;
-  document.getElementById('kpi-cuotas-pct').innerHTML= `<span class="${cuotas/base>0.3?'down':'neutral'}">${fmtPct(pctCuotas*100)} del ingreso</span>`;
-  document.getElementById('kpi-libre-pct').innerHTML = `<span class="${libre<0?'down':libre/base>0.3?'up':'neutral'}">${fmtPct(pctLibre*100)} disponible</span>`;
-
-  const hs = calcHealthScore();
-  document.getElementById('kpi-health').textContent = hs.score;
-  document.getElementById('kpi-health').style.color = hs.score>=75?'var(--green)':hs.score>=50?'var(--orange)':'var(--red)';
-  document.getElementById('hs-num').textContent = hs.score;
-  document.getElementById('hs-num').style.color = hs.score>=75?'var(--green)':hs.score>=50?'var(--orange)':'var(--red)';
-  document.getElementById('hs-label').textContent = `${hs.label} — Score ${hs.score}/100`;
-  document.getElementById('hs-badge').className = `badge ${hs.clase}`;
-  document.getElementById('hs-badge').textContent = hs.label;
-  const circumference = 289;
-  const dashOffset = circumference - (hs.score/100)*circumference;
-  document.getElementById('health-arc').style.strokeDashoffset = dashOffset;
-
-  // Alerts
-  const alts = generarAlertas();
-  document.getElementById('alert-count').textContent = alts.filter(a=>a.tipo==='critical'||a.tipo==='warning').length;
-  document.getElementById('badge-alertas').textContent = alts.filter(a=>a.tipo==='critical'||a.tipo==='warning').length;
-  document.getElementById('alert-list').innerHTML = alts.map(a=>`
-    <div class="alert-item ${a.tipo}">
-      <i class="fa-solid ${a.icon} alert-icon" style="color:${a.tipo==='critical'?'var(--red)':a.tipo==='warning'?'var(--orange)':a.tipo==='ok'?'var(--green)':'var(--accent)'}"></i>
-      <div><div class="alert-title">${a.title}</div><div class="alert-desc">${a.desc}</div></div>
-    </div>`).join('');
-
-  // AI Insights
-  const ins = generarInsights();
-  document.getElementById('ai-insights-list').innerHTML = ins.length ? ins.map(i=>`
-    <div class="ai-insight">
-      <div class="ai-insight-head"><div class="ai-pulse"></div><div class="ai-insight-title">${i.title}</div></div>
-      <div class="ai-insight-body">${i.body}</div>
-    </div>`).join('') : '<div style="font-size:12.5px;color:var(--text2)">Agrega más datos para activar el análisis IA.</div>';
+  document.getElementById('kpi-fijos-pct').innerHTML = '<span class="'+(fijos/base>0.5?'down':'neutral')+'">'+ fmtPct(pctFijos*100)+' del ingreso</span>';
+  document.getElementById('kpi-cuotas-pct').innerHTML= '<span class="'+(cuotas/base>0.3?'down':'neutral')+'">'+fmtPct(pctCuotas*100)+' del ingreso</span>';
+  document.getElementById('kpi-libre-pct').innerHTML = '<span class="'+(libre<0?'down':libre/base>0.3?'up':'neutral')+'">'+fmtPct(pctLibre*100)+' disponible</span>';
 
   // Últimas transacciones
   const recents = [...ST.gastos].sort((a,b)=>b.id-a.id).slice(0,8);
   document.getElementById('tabla-recientes').innerHTML = recents.length
-    ? recents.map(g=>`<tr><td>${g.concepto}</td><td><span class="badge badge-blue">${g.categoria}</span></td><td class="mono" style="color:var(--red)">${fmt(g.monto)}</td></tr>`).join('')
+    ? recents.map(g=>'<tr><td>'+g.concepto+'</td><td><span class="badge badge-blue">'+g.categoria+'</span></td><td class="mono" style="color:var(--red)">'+fmt(g.monto)+'</td></tr>').join('')
     : '<tr><td colspan="3" style="text-align:center;color:var(--text3);padding:20px">Sin gastos registrados</td></tr>';
 
-  // Fuentes de ingreso con disponible
-  renderFuentesIngreso();
+  // Badge alertas en nav
+  const alertCount = ST.deudas.filter(d=>d.activa&&((d.quincenas-d.pagadas)<=2)).length;
+  const badgeEl = document.getElementById('badge-alertas');
+  if(badgeEl) badgeEl.textContent = alertCount;
+
   renderDashCharts();
 }
 
