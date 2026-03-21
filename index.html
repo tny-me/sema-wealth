@@ -1828,13 +1828,23 @@ function calcIngresoBase(){
 }
 
 function calcFijosQ(){
+  // Para el KPI del dashboard usamos el promedio quincenal real
   return ST.gastos.filter(g=>!g.esDeuda && ['Quincenal','Mensual','Semanal'].includes(g.frecuencia))
     .reduce((sum,g)=>{
       if(g.frecuencia==='Quincenal') return sum+g.monto;
-      if(g.frecuencia==='Mensual') return sum+g.monto/2;
+      if(g.frecuencia==='Mensual') return sum+g.monto/2; // promedio para KPI
       if(g.frecuencia==='Semanal') return sum+g.monto*2;
       return sum;
     },0);
+}
+
+// Determina en qué quincena cae un gasto mensual según su día de pago
+function quincenaDeGasto(g){
+  // Si tiene diaPago definido, úsalo; si no, usa g.quincena
+  if(g.diaPago){
+    return parseInt(g.diaPago)<=15 ? 1 : 2;
+  }
+  return g.quincena || 1;
 }
 
 function calcCuotasQ(){
@@ -1847,8 +1857,8 @@ function calcCuotasQ(){
 // ── Corrida quincenal inteligente ──
 function generarCorrida(n=12){
   const ingrBase = calcIngresoBase();
-  const fijosQ   = calcFijosQ();
   const deudasActivas = ST.deudas.filter(d=>d.activa);
+  const gastosFijos = ST.gastos.filter(g=>!g.esDeuda && ['Quincenal','Mensual','Semanal'].includes(g.frecuencia));
   const hoy = new Date();
   const quincenas = [];
   let fecha = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()<=15?1:16);
@@ -1858,29 +1868,58 @@ function generarCorrida(n=12){
     const ano  = fecha.getFullYear();
     const q    = fecha.getDate()<16?1:2;
     const idx  = i;
-    // Cuotas activas en esta iteración (algunas deudas se terminan)
+
+    // ── Gastos fijos para esta quincena específica ──
+    let fijosQ = 0;
+    gastosFijos.forEach(g=>{
+      if(g.frecuencia==='Quincenal'){
+        // Quincenal: aparece en AMBAS quincenas
+        fijosQ += g.monto;
+      } else if(g.frecuencia==='Mensual'){
+        // Mensual: solo aparece en la quincena donde cae su día de pago
+        const qGasto = quincenaDeGasto(g);
+        if(qGasto===q) fijosQ += g.monto;
+      } else if(g.frecuencia==='Semanal'){
+        // Semanal: se paga ~2 veces por quincena
+        fijosQ += g.monto*2;
+      }
+    });
+
+    // ── Cuotas de deudas activas en esta quincena ──
     const cuotasQ = deudasActivas.reduce((sum,d)=>{
-      const pagadas = (d.pagadas||0);
+      const pagadas  = (d.pagadas||0);
       const restantes = (d.quincenas||1) - pagadas;
-      return restantes > idx ? sum + (parseFloat(d.cuota)||0) : sum;
+      if(restantes <= idx) return sum;
+      // Si la deuda tiene día de pago, solo cae en la quincena correcta
+      if(d.diaPago){
+        const qDeuda = parseInt(d.diaPago)<=15 ? 1 : 2;
+        return qDeuda===q ? sum+(parseFloat(d.cuota)||0) : sum;
+      }
+      return sum+(parseFloat(d.cuota)||0);
     },0);
-    // Gastos únicos programados
-    const unicosQ = ST.gastos.filter(g=>g.esDeuda===false&&g.frecuencia==='Único'&&g.mes===mes&&g.ano===ano&&g.quincena===q)
-                              .reduce((s,g)=>s+g.monto,0);
+
+    // ── Gastos únicos de esta quincena ──
+    const unicosQ = ST.gastos.filter(g=>
+      g.esDeuda===false && g.frecuencia==='Único' &&
+      g.mes===mes && g.ano===ano && g.quincena===q
+    ).reduce((s,g)=>s+g.monto,0);
+
     const totalEgreso = fijosQ + cuotasQ + unicosQ;
-    const saldo = ingrBase - totalEgreso;
+    const saldo  = ingrBase - totalEgreso;
     const pctUso = ingrBase>0?(totalEgreso/ingrBase*100):0;
     const estado = saldo<0?'deficit':pctUso>=ST.perfil.umbralAlerta?'ajustado':'ok';
-    // Ahorro sugerido
     const metaAhorro = (ST.perfil.metaAhorro||15)/100;
     const ahorroSug  = ingrBase * metaAhorro;
     const libreReal  = saldo - ahorroSug;
-    quincenas.push({ idx:i+1, mes, ano, q, label:`Q${q} ${MESES[mes-1]} ${ano}`,
-      ingrBase, fijosQ, cuotasQ, unicosQ, totalEgreso, saldo, pctUso, estado,
-      ahorroSug, libreReal });
-    // avanzar quincena
+
+    quincenas.push({ idx:i+1, mes, ano, q,
+      label:`Q${q} ${MESES[mes-1]} ${ano}`,
+      ingrBase, fijosQ, cuotasQ, unicosQ, totalEgreso,
+      saldo, pctUso, estado, ahorroSug, libreReal });
+
+    // Avanzar quincena
     if(q===1){ fecha = new Date(ano,mes-1,16); }
-    else { fecha = new Date(ano,mes,1); }
+    else      { fecha = new Date(ano,mes,1); }
   }
   return quincenas;
 }
@@ -2184,27 +2223,46 @@ function recalcularCorrida(){
     // Detalle línea por línea de compromisos
     const lineas = [];
 
-    // Gastos fijos
+    // Gastos fijos — respetando la quincena correcta según día de pago
     gastosFijos.forEach(g=>{
-      let montoQ=0;
-      if(g.frecuencia==='Quincenal') montoQ=g.monto;
-      else if(g.frecuencia==='Mensual') montoQ=g.monto/2;
-      else if(g.frecuencia==='Semanal') montoQ=g.monto*2;
-      const diaConcepto = g.diaPago?` · día ${g.diaPago}`:'';
-      lineas.push(`<div style="display:flex;justify-content:space-between;font-size:11px;padding:1px 0">
-        <span style="color:var(--text2)">${g.concepto}<span style="color:var(--text3)">${diaConcepto}</span></span>
-        <span class="mono" style="color:var(--red);margin-left:10px">${fmt(montoQ)}</span>
-      </div>`);
+      if(g.frecuencia==='Quincenal'){
+        // Quincenal: aparece en ambas quincenas
+        const diaConcepto = g.diaPago?` · día ${g.diaPago}`:'';
+        lineas.push(`<div style="display:flex;justify-content:space-between;font-size:11px;padding:1px 0">
+          <span style="color:var(--text2)">${g.concepto}<span style="color:var(--text3)">${diaConcepto}</span></span>
+          <span class="mono" style="color:var(--red);margin-left:10px">${fmt(g.monto)}</span>
+        </div>`);
+      } else if(g.frecuencia==='Mensual'){
+        // Mensual: solo en la quincena donde cae su día de pago
+        const qGasto = quincenaDeGasto(g);
+        if(qGasto===q.q){
+          const diaConcepto = g.diaPago?` · día ${g.diaPago}`:'';
+          lineas.push(`<div style="display:flex;justify-content:space-between;font-size:11px;padding:1px 0">
+            <span style="color:var(--text2)">${g.concepto}<span style="color:var(--text3)">${diaConcepto} · mensual</span></span>
+            <span class="mono" style="color:var(--red);margin-left:10px">${fmt(g.monto)}</span>
+          </div>`);
+        }
+      } else if(g.frecuencia==='Semanal'){
+        lineas.push(`<div style="display:flex;justify-content:space-between;font-size:11px;padding:1px 0">
+          <span style="color:var(--text2)">${g.concepto}<span style="color:var(--text3)"> · semanal ×2</span></span>
+          <span class="mono" style="color:var(--red);margin-left:10px">${fmt(g.monto*2)}</span>
+        </div>`);
+      }
     });
 
-    // Deudas/préstamos activos en esta quincena
+    // Deudas/préstamos activos — respetando quincena de pago si tiene día definido
     deudasActivas.forEach((d,di)=>{
       const pagadasActual=(d.pagadas||0)+qIdx;
-      if(pagadasActual>=(d.quincenas||1)) return; // ya liquidada
-      const diaD = d.fechaPago?new Date(d.fechaPago).getDate():d.diaPago||'—';
+      if(pagadasActual>=(d.quincenas||1)) return;
+      const diaD = d.fechaPago?new Date(d.fechaPago).getDate():d.diaPago||null;
+      // Si tiene día definido, solo aparece en la quincena correcta
+      if(diaD){
+        const qDeuda = parseInt(diaD)<=15?1:2;
+        if(qDeuda!==q.q) return;
+      }
       const restantes=(d.quincenas||1)-(d.pagadas||0)-qIdx;
       lineas.push(`<div style="display:flex;justify-content:space-between;font-size:11px;padding:1px 0">
-        <span style="color:var(--text2)">${d.nombre}<span style="color:var(--text3)"> · día ${diaD} · ${restantes}Q rest.</span></span>
+        <span style="color:var(--text2)">${d.nombre}<span style="color:var(--text3)"> · ${diaD?`día ${diaD} · `:''}${restantes}Q rest.</span></span>
         <span class="mono" style="color:var(--orange);margin-left:10px">${fmt(d.cuota)}</span>
       </div>`);
     });
