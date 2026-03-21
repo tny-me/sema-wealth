@@ -854,7 +854,7 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
   <div id="page-deudas" class="page">
     <div class="section-h">Deudas &amp; Crédito</div>
     <div class="section-sub">Gestión inteligente con cálculo automático de liquidación</div>
-    <div style="display:flex;gap:8px;margin-bottom:20px">
+    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
       <button class="btn btn-primary" onclick="openModal('modal-deuda')"><i class="fa-solid fa-circle-plus"></i> Nueva Deuda</button>
       <button class="btn btn-ghost" onclick="openModal('modal-diferir')" style="border-color:var(--purple);color:var(--purple)"><i class="fa-solid fa-calendar-plus"></i> Diferir / Plan de pagos</button>
     </div>
@@ -1189,7 +1189,7 @@ service cloud.firestore {
       <!-- Selector de tipo principal -->
       <div style="margin-bottom:18px">
         <label class="form-label">¿Qué quieres agregar?</label>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px">
           <div class="tipo-btn active" data-tipo="prestamo" onclick="seleccionarTipo('prestamo',this)" style="padding:10px 8px;border-radius:10px;border:2px solid var(--accent);background:var(--accent-glow2);cursor:pointer;text-align:center">
             <i class="fa-solid fa-hand-holding-dollar" style="font-size:16px;color:var(--accent);display:block;margin-bottom:5px"></i>
             <div style="font-size:11.5px;font-weight:600;color:var(--accent)">Préstamo</div>
@@ -1202,9 +1202,21 @@ service cloud.firestore {
             <i class="fa-solid fa-receipt" style="font-size:16px;color:var(--text2);display:block;margin-bottom:5px"></i>
             <div style="font-size:11.5px;font-weight:600;color:var(--text2)">Gasto Fijo</div>
           </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
           <div class="tipo-btn" data-tipo="deuda" onclick="seleccionarTipo('deuda',this)" style="padding:10px 8px;border-radius:10px;border:2px solid var(--border);cursor:pointer;text-align:center">
             <i class="fa-solid fa-file-invoice-dollar" style="font-size:16px;color:var(--text2);display:block;margin-bottom:5px"></i>
             <div style="font-size:11.5px;font-weight:600;color:var(--text2)">Deuda/Abono</div>
+          </div>
+          <div class="tipo-btn" data-tipo="msi" onclick="seleccionarTipo('msi',this)" style="padding:10px 8px;border-radius:10px;border:2px solid var(--border);cursor:pointer;text-align:center">
+            <i class="fa-solid fa-calendar-check" style="font-size:16px;color:var(--text2);display:block;margin-bottom:5px"></i>
+            <div style="font-size:11.5px;font-weight:600;color:var(--text2)">MSI</div>
+            <div style="font-size:9.5px;color:var(--text3);margin-top:2px">Meses sin interés</div>
+          </div>
+          <div class="tipo-btn" data-tipo="disposicion" onclick="seleccionarTipo('disposicion',this)" style="padding:10px 8px;border-radius:10px;border:2px solid var(--border);cursor:pointer;text-align:center">
+            <i class="fa-solid fa-money-bill-transfer" style="font-size:16px;color:var(--text2);display:block;margin-bottom:5px"></i>
+            <div style="font-size:11.5px;font-weight:600;color:var(--text2)">Disposición</div>
+            <div style="font-size:9.5px;color:var(--text3);margin-top:2px">Retiro de efectivo</div>
           </div>
         </div>
       </div>
@@ -1320,6 +1332,63 @@ service cloud.firestore {
         </div>
         <div class="form-row">
           <div class="form-group"><label class="form-label">Fecha inicio</label><input type="month" class="form-control" id="u-d-inicio"></div>
+        </div>
+      </div>
+
+      <!-- FORM MSI (Meses sin interés) -->
+      <div id="form-msi" style="display:none">
+        <div style="background:rgba(0,168,118,0.06);border:1px solid rgba(0,168,118,0.2);border-radius:9px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--text2)">
+          <i class="fa-solid fa-circle-info" style="color:var(--green);margin-right:6px"></i>
+          El monto se divide entre los meses y se descuenta de la línea de crédito de la tarjeta seleccionada. Sin interés si pagas a tiempo.
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Concepto / Descripción</label><input type="text" class="form-control" id="u-msi-concepto" placeholder="ej. Laptop, Refrigerador, Vuelos"></div>
+          <div class="form-group"><label class="form-label">Monto total ($)</label><input type="number" class="form-control" id="u-msi-monto" placeholder="ej. 18000" step="0.01" oninput="calcUnificadoAuto()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Tarjeta de crédito</label>
+            <select class="form-control" id="u-msi-tarjeta" onchange="calcUnificadoAuto()">
+              <option value="">Selecciona tarjeta...</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Número de meses sin interés</label>
+            <select class="form-control" id="u-msi-meses" onchange="calcUnificadoAuto()">
+              <option value="3">3 meses</option>
+              <option value="6">6 meses</option>
+              <option value="9">9 meses</option>
+              <option value="12">12 meses</option>
+              <option value="18">18 meses</option>
+              <option value="24">24 meses</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Día de pago de la tarjeta</label><input type="number" class="form-control" id="u-msi-diapago" placeholder="ej. 20" min="1" max="31"></div>
+          <div class="form-group"><label class="form-label">Fecha de compra</label><input type="month" class="form-control" id="u-msi-inicio"></div>
+        </div>
+      </div>
+
+      <!-- FORM DISPOSICIÓN DE EFECTIVO -->
+      <div id="form-disposicion" style="display:none">
+        <div style="background:rgba(229,51,74,0.06);border:1px solid rgba(229,51,74,0.2);border-radius:9px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--text2)">
+          <i class="fa-solid fa-triangle-exclamation" style="color:var(--red);margin-right:6px"></i>
+          El retiro genera interés desde el primer día y una comisión inmediata. Se descuenta de la línea de crédito de la tarjeta.
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Descripción</label><input type="text" class="form-control" id="u-dis-concepto" placeholder="ej. Emergencia, Gasto urgente"></div>
+          <div class="form-group"><label class="form-label">Monto retirado ($)</label><input type="number" class="form-control" id="u-dis-monto" placeholder="ej. 5000" step="0.01" oninput="calcUnificadoAuto()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Tarjeta de crédito</label>
+            <select class="form-control" id="u-dis-tarjeta" onchange="calcUnificadoAuto()">
+              <option value="">Selecciona tarjeta...</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Tasa interés anual (%)</label><input type="number" class="form-control" id="u-dis-tasa" placeholder="Se toma de la tarjeta" step="0.1" oninput="calcUnificadoAuto()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Pagar en cuántas quincenas</label><input type="number" class="form-control" id="u-dis-quincenas" placeholder="ej. 6" min="1" oninput="calcUnificadoAuto()"></div>
+          <div class="form-group"><label class="form-label">Día de pago</label><input type="number" class="form-control" id="u-dis-diapago" placeholder="ej. 20" min="1" max="31"></div>
         </div>
       </div>
 
@@ -2949,22 +3018,50 @@ let _tipoActual = 'prestamo';
 
 function seleccionarTipo(tipo, el){
   _tipoActual = tipo;
-  // Reset UI
   document.querySelectorAll('.tipo-btn').forEach(b=>{
     b.style.border='2px solid var(--border)';
+    b.style.background='';
     b.querySelectorAll('i,div').forEach(x=>{ x.style.color='var(--text2)'; });
   });
   el.style.border='2px solid var(--accent)';
   el.style.background='var(--accent-glow2)';
   el.querySelectorAll('i,div').forEach(x=>{ x.style.color='var(--accent)'; });
-  // Mostrar el form correcto
-  ['prestamo','tarjeta','gasto_fijo','deuda'].forEach(t=>{
-    document.getElementById(`form-${t}`).style.display = t===tipo?'block':'none';
+  ['prestamo','tarjeta','gasto_fijo','deuda','msi','disposicion'].forEach(t=>{
+    const f = document.getElementById('form-'+t);
+    if(f) f.style.display = t===tipo?'block':'none';
   });
-  // Labels
+  // Poblar tarjetas en MSI y disposición
+  if(tipo==='msi'||tipo==='disposicion'){
+    const selId = tipo==='msi'?'u-msi-tarjeta':'u-dis-tarjeta';
+    const sel = document.getElementById(selId);
+    if(sel){
+      sel.innerHTML = '<option value="">Selecciona tarjeta...</option>' +
+        ST.tarjetas.filter(t=>t.activa).map(t=>{
+          const u = calcUtilTarjeta(t);
+          return '<option value="'+t.id+'">'+t.nombre+' ('+t.banco+') - Disp: '+fmt(u.disponible)+'</option>';
+        }).join('');
+    }
+    if(tipo==='disposicion'){
+      const sel2 = document.getElementById('u-dis-tarjeta');
+      if(sel2) sel2.onchange = function(){
+        const t = ST.tarjetas.find(t=>t.id===parseInt(this.value));
+        if(t) document.getElementById('u-dis-tasa').value = t.tasa||0;
+        calcUnificadoAuto();
+      };
+    }
+    if(tipo==='msi'){
+      const sel2 = document.getElementById('u-msi-tarjeta');
+      if(sel2) sel2.onchange = function(){
+        const t = ST.tarjetas.find(t=>t.id===parseInt(this.value));
+        if(t && t.pago) document.getElementById('u-msi-diapago').value = t.pago;
+        calcUnificadoAuto();
+      };
+    }
+  }
   const labels = {
     prestamo:'Guardar préstamo', tarjeta:'Guardar tarjeta',
-    gasto_fijo:'Guardar gasto fijo', deuda:'Guardar deuda'
+    gasto_fijo:'Guardar gasto fijo', deuda:'Guardar deuda',
+    msi:'Registrar MSI', disposicion:'Registrar disposición'
   };
   document.getElementById('btn-guardar-label').textContent = labels[tipo]||'Guardar';
   document.getElementById('u-preview').style.display='none';
@@ -3051,6 +3148,56 @@ function calcUnificadoAuto(){
     impacto.innerHTML=`Equivale a <strong style="color:var(--accent)">${fmt(cuotaQ)}</strong> quincenal en la corrida. Margen libre: <strong style="color:${libre>=cuotaQ?'var(--green)':'var(--red)'}">${fmt(libre)}</strong> — ${libre>=cuotaQ?'<span style="color:var(--green)">lo puedes cubrir</span>':'<span style="color:var(--red)">excede tu margen</span>'}.`;
     impacto.style.color='var(--text2)';
   }
+
+  if(_tipoActual==='msi'){
+    const monto  = parseFloat(document.getElementById('u-msi-monto').value)||0;
+    const meses  = parseInt(document.getElementById('u-msi-meses').value)||6;
+    const tid    = parseInt(document.getElementById('u-msi-tarjeta').value)||0;
+    if(!monto){ prev.style.display='none'; return; }
+    const pagoMensual = monto/meses;
+    const pagoQ = pagoMensual/2;
+    const t = ST.tarjetas.find(t=>t.id===tid);
+    const u = t?calcUtilTarjeta(t):{disponible:0,util:0};
+    const dispTras = t?(u.disponible-monto):0;
+    prev.style.display='block';
+    content.innerHTML = '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">' +
+      '<div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:13px;color:var(--green)">'+fmt(pagoMensual)+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Pago /mes</div></div>' +
+      '<div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:13px;color:var(--accent)">'+fmt(pagoQ)+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Equiv. /Q</div></div>' +
+      '<div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:13px;color:var(--text)">'+meses+' meses</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Sin interés</div></div>' +
+      '<div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:13px;color:'+(dispTras<0?'var(--red)':'var(--green)')+'">'+fmt(dispTras)+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Disp. tras cargo</div></div>' +
+      '</div>';
+    impacto.innerHTML = t
+      ? (dispTras<0
+          ? '<span style="color:var(--red)">La compra excede el disponible de '+t.nombre+' en '+fmt(Math.abs(dispTras))+'</span>'
+          : 'Cargo de '+fmt(monto)+' a <strong>'+t.nombre+'</strong>. Pagas '+fmt(pagoMensual)+'/mes durante '+meses+' meses. Impacto quincenal en corrida: <strong style="color:var(--accent)">'+fmt(pagoQ)+'</strong>.')
+      : 'Selecciona una tarjeta para ver el análisis.';
+    impacto.style.color='var(--text2)';
+  }
+
+  if(_tipoActual==='disposicion'){
+    const monto  = parseFloat(document.getElementById('u-dis-monto').value)||0;
+    const tasa   = parseFloat(document.getElementById('u-dis-tasa').value)||0;
+    const numQ   = parseInt(document.getElementById('u-dis-quincenas').value)||6;
+    const tid    = parseInt(document.getElementById('u-dis-tarjeta').value)||0;
+    if(!monto){ prev.style.display='none'; return; }
+    const t = ST.tarjetas.find(t=>t.id===tid);
+    const comision = monto*0.06; // 6% comisión típica
+    const tasaQ = tasa>0?tasa/(100*24):0;
+    const cuotaQ = numQ>0?(tasaQ>0?monto*tasaQ/(1-Math.pow(1+tasaQ,-numQ)):monto/numQ):monto;
+    const totalIntereses = Math.max(0,cuotaQ*numQ-monto);
+    const costoReal = monto+comision+totalIntereses;
+    const u = t?calcUtilTarjeta(t):{disponible:0};
+    const dispTras = t?(u.disponible-monto):0;
+    prev.style.display='block';
+    content.innerHTML = '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">' +
+      '<div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:13px;color:var(--accent)">'+fmt(cuotaQ)+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Pago /Q</div></div>' +
+      '<div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:13px;color:var(--red)">'+fmt(comision)+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Comisión 6%</div></div>' +
+      '<div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:13px;color:var(--orange)">'+fmt(totalIntereses)+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Intereses</div></div>' +
+      '<div style="background:var(--bg4);border-radius:8px;padding:10px;text-align:center"><div class="mono" style="font-size:13px;color:var(--red)">'+fmt(costoReal)+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">Costo real</div></div>' +
+      '</div>';
+    impacto.innerHTML = '⚠ El retiro de '+fmt(monto)+' tiene una comisión inmediata de '+fmt(comision)+' (6%) e intereses desde el primer día. '+(t&&dispTras<0?'<span style="color:var(--red)">Excede el disponible de '+t.nombre+'.</span>':t?'Disponible tras cargo: <strong>'+fmt(dispTras)+'</strong>.':'Selecciona una tarjeta.');
+    impacto.style.color='var(--text2)';
+  }
 }
 
 function guardarUnificado(){
@@ -3125,8 +3272,87 @@ function guardarUnificado(){
     else if(freq==='semanal'){ cuotaQ=cuota*2; quinceTotal=Math.ceil(periodos/2); }
     ST.deudas.push({ id:Date.now(), nombre, tipo:subtipo, total, cuota:cuotaQ, cuotaOriginal:cuota, frecuencia:freq, quincenas:quinceTotal, tasa:0, pagadas, diaPago, inicio, activa:true });
     saveState(); closeModal('modal-deuda');
-    toast(`Deuda registrada — ${fmt(cuota)}/${freq==='mensual'?'mes':freq==='semanal'?'semana':'quincena'} → ${fmt(cuotaQ)}/Q en corrida`,'success');
+    toast('Deuda registrada — '+fmt(cuota)+'/'+(freq==='mensual'?'mes':freq==='semanal'?'semana':'quincena')+' → '+fmt(cuotaQ)+'/Q en corrida','success');
     renderDeudas(); recalcularCorrida();
+
+  } else if(_tipoActual==='msi'){
+    const concepto = document.getElementById('u-msi-concepto').value.trim();
+    const monto    = parseFloat(document.getElementById('u-msi-monto').value)||0;
+    const tid      = parseInt(document.getElementById('u-msi-tarjeta').value)||0;
+    const meses    = parseInt(document.getElementById('u-msi-meses').value)||6;
+    const diaPago  = document.getElementById('u-msi-diapago').value;
+    const inicio   = document.getElementById('u-msi-inicio').value||mesActual;
+    if(!concepto||!monto||!tid){ toast('Completa concepto, monto y tarjeta','error'); return; }
+    const t = ST.tarjetas.find(t=>t.id===tid);
+    if(!t){ toast('Tarjeta no encontrada','error'); return; }
+    // Descontar de la línea de crédito
+    t.saldo = (parseFloat(t.saldo)||0) + monto;
+    // Registrar cargo en cargosTarjeta
+    const cargoId = Date.now();
+    ST.cargosTarjeta.push({ id:cargoId, concepto:'MSI: '+concepto, monto, tarjetaId:tid, fecha:new Date().toISOString().slice(0,10), tipo:'cargo', categoria:'MSI' });
+    // Crear plan de pagos en corrida (mensual = /2 quincenal)
+    const pagoMensual = monto/meses;
+    const pagoQ = pagoMensual/2;
+    const quinceTotal = meses*2;
+    ST.deudas.push({
+      id: cargoId+1,
+      nombre: 'MSI: '+concepto+' ('+t.nombre+')',
+      tipo: 'msi',
+      total: monto,
+      cuota: pagoQ,
+      cuotaOriginal: pagoMensual,
+      frecuencia: 'mensual',
+      quincenas: quinceTotal,
+      tasa: 0,
+      pagadas: 0,
+      diaPago,
+      inicio,
+      activa: true,
+      esMSI: true,
+      tarjetaId: tid
+    });
+    saveState(); closeModal('modal-deuda');
+    toast('MSI registrado — '+fmt(pagoMensual)+'/mes x '+meses+' meses. Cargo aplicado a '+t.nombre,'success');
+    renderDeudas(); renderTarjetas(); recalcularCorrida();
+
+  } else if(_tipoActual==='disposicion'){
+    const concepto = document.getElementById('u-dis-concepto').value.trim();
+    const monto    = parseFloat(document.getElementById('u-dis-monto').value)||0;
+    const tid      = parseInt(document.getElementById('u-dis-tarjeta').value)||0;
+    const tasa     = parseFloat(document.getElementById('u-dis-tasa').value)||0;
+    const numQ     = parseInt(document.getElementById('u-dis-quincenas').value)||6;
+    const diaPago  = document.getElementById('u-dis-diapago').value;
+    if(!concepto||!monto||!tid){ toast('Completa concepto, monto y tarjeta','error'); return; }
+    const t = ST.tarjetas.find(t=>t.id===tid);
+    if(!t){ toast('Tarjeta no encontrada','error'); return; }
+    // Comisión del 6%
+    const comision = monto*0.06;
+    const montoTotal = monto + comision;
+    // Descontar de la línea de crédito (monto + comisión)
+    t.saldo = (parseFloat(t.saldo)||0) + montoTotal;
+    // Registrar cargo
+    const cargoId = Date.now();
+    ST.cargosTarjeta.push({ id:cargoId, concepto:'Disposición: '+concepto, monto:montoTotal, tarjetaId:tid, fecha:new Date().toISOString().slice(0,10), tipo:'cargo', categoria:'Disposición' });
+    // Amortización francesa con la tasa
+    const tasaQ = tasa>0?tasa/(100*24):0;
+    const cuotaQ = numQ>0?(tasaQ>0?montoTotal*tasaQ/(1-Math.pow(1+tasaQ,-numQ)):montoTotal/numQ):montoTotal;
+    ST.deudas.push({
+      id: cargoId+1,
+      nombre: 'Disposición: '+concepto+' ('+t.nombre+')',
+      tipo: 'disposicion',
+      total: montoTotal,
+      cuota: cuotaQ,
+      quincenas: numQ,
+      tasa,
+      pagadas: 0,
+      diaPago,
+      activa: true,
+      esDisposicion: true,
+      tarjetaId: tid
+    });
+    saveState(); closeModal('modal-deuda');
+    toast('Disposición registrada — Comisión '+fmt(comision)+' + intereses. Cargo aplicado a '+t.nombre,'success');
+    renderDeudas(); renderTarjetas(); recalcularCorrida();
   }
 
   document.getElementById('u-preview').style.display='none';
