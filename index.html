@@ -3016,6 +3016,7 @@ function guardarEditDeuda(){
   const id = parseInt(document.getElementById('ed-id').value);
   const d  = ST.deudas.find(d=>d.id===id);
   if(!d) return;
+  const pagadasAntes = d.pagadas||0;
   d.nombre    = document.getElementById('ed-nombre').value.trim();
   d.tipo      = document.getElementById('ed-tipo').value;
   d.total     = parseFloat(document.getElementById('ed-total').value)||0;
@@ -3025,10 +3026,21 @@ function guardarEditDeuda(){
   d.tasa      = parseFloat(document.getElementById('ed-tasa').value)||0;
   d.diaPago   = document.getElementById('ed-diapago').value;
   d.activa    = d.pagadas < d.quincenas;
+  // Si es MSI o disposición y cambió el número de pagadas, actualizar tarjeta
+  if((d.esMSI||d.esDisposicion) && d.tarjetaId && d.pagadas!==pagadasAntes){
+    const t = ST.tarjetas.find(t=>t.id===d.tarjetaId);
+    if(t){
+      const cuotaOrig = d.cuotaOriginal||d.cuota;
+      const diff = d.pagadas - pagadasAntes;
+      // Más pagos = menos saldo en tarjeta
+      t.saldo = Math.max(0,(parseFloat(t.saldo)||0) - (cuotaOrig*diff));
+    }
+  }
   saveState();
   closeModal('modal-edit-deuda');
   toast('Deuda actualizada','success');
   renderDeudas(); refreshDashboard(); recalcularCorrida();
+  if(currentPage==='tarjetas') renderTarjetas();
 }
 function eliminarDeudaEdit(){
   const id = parseInt(document.getElementById('ed-id').value);
@@ -3467,8 +3479,28 @@ function actualizarLabelDeuda(){
 
 
 function eliminarDeuda(id){
+  const d = ST.deudas.find(d=>d.id===id);
+  if(d && (d.esMSI || d.esDisposicion) && d.tarjetaId){
+    // Revertir el saldo en la tarjeta
+    const t = ST.tarjetas.find(t=>t.id===d.tarjetaId);
+    if(t){
+      // Calcular lo que falta por pagar (saldo pendiente)
+      const pagadas = d.pagadas||0;
+      const cuotaOriginal = d.cuotaOriginal||d.cuota;
+      const freq = d.frecuencia||'quincenal';
+      let pagosMensuales;
+      if(freq==='mensual') pagosMensuales = Math.ceil((d.quincenas||0)/2);
+      else pagosMensuales = d.quincenas||0;
+      const pagadasReales = freq==='mensual' ? Math.floor(pagadas/2) : pagadas;
+      const pendiente = cuotaOriginal * (pagosMensuales - pagadasReales);
+      t.saldo = Math.max(0, (parseFloat(t.saldo)||0) - pendiente);
+      // Eliminar cargo de cargosTarjeta
+      ST.cargosTarjeta = ST.cargosTarjeta.filter(c=>c.tarjetaId!==d.tarjetaId||c.concepto.indexOf(d.nombre.split('(')[0].trim())===-1);
+    }
+  }
   ST.deudas = ST.deudas.filter(d=>d.id!==id);
   saveState(); renderDeudas(); refreshDashboard(); recalcularCorrida();
+  if(currentPage==='tarjetas') renderTarjetas();
 }
 
 // ============================================================
@@ -3600,10 +3632,19 @@ function marcarPagada(id){
   const d = ST.deudas.find(d=>d.id===id);
   if(!d) return;
   d.pagadas = (d.pagadas||0)+1;
-  if(d.pagadas>=d.quincenas){ d.activa=false; toast(`"${d.nombre}" ¡LIQUIDADA! 🎉`,'success'); }
-  else { toast(`Cuota marcada. Restan ${d.quincenas-d.pagadas} quincenas`,'info'); }
+  // Si es MSI o disposición, reducir saldo en la tarjeta
+  if((d.esMSI||d.esDisposicion) && d.tarjetaId){
+    const t = ST.tarjetas.find(t=>t.id===d.tarjetaId);
+    if(t){
+      const cuotaOrig = d.cuotaOriginal||d.cuota;
+      t.saldo = Math.max(0,(parseFloat(t.saldo)||0) - cuotaOrig);
+    }
+  }
+  if(d.pagadas>=d.quincenas){ d.activa=false; toast('"'+d.nombre+'" LIQUIDADA! Saldo tarjeta actualizado','success'); }
+  else { toast('Cuota marcada. Restan '+(d.quincenas-d.pagadas)+' pagos','info'); }
   saveState();
   if(currentPage==='deudas') renderDeudas();
+  if(currentPage==='tarjetas') renderTarjetas();
   if(currentPage==='prediccion') renderPrediccion();
   recalcularCorrida();
 }
