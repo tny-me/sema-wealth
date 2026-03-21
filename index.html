@@ -297,7 +297,7 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);backdrop-filter:blur(3px);z-index:200;align-items:center;justify-content:center;padding:20px;}
 .modal-bg.open{display:flex;}
 .modal{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.18);}
-.modal-lg{max-width:740px;}
+.modal-lg{max-width:780px;}
 .modal-header{padding:22px 26px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
 .modal-title{font-family:'Inter',Arial,sans-serif;font-size:15px;font-weight:700;color:var(--text);}
 .modal-close{width:28px;height:28px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center;}
@@ -1189,34 +1189,34 @@ service cloud.firestore {
       <!-- Selector de tipo principal -->
       <div style="margin-bottom:18px">
         <label class="form-label">¿Qué quieres agregar?</label>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px">
-          <div class="tipo-btn active" data-tipo="prestamo" onclick="seleccionarTipo('prestamo',this)" style="padding:10px 8px;border-radius:10px;border:2px solid var(--accent);background:var(--accent-glow2);cursor:pointer;text-align:center">
-            <i class="fa-solid fa-hand-holding-dollar" style="font-size:16px;color:var(--accent);display:block;margin-bottom:5px"></i>
-            <div style="font-size:11.5px;font-weight:600;color:var(--accent)">Préstamo</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:6px">
+          <div class="tipo-btn active" data-tipo="prestamo" onclick="seleccionarTipo('prestamo',this)" style="padding:8px 4px;border-radius:10px;border:2px solid var(--accent);background:var(--accent-glow2);cursor:pointer;text-align:center;min-width:0">
+            <i class="fa-solid fa-hand-holding-dollar" style="font-size:15px;color:var(--accent);display:block;margin-bottom:4px"></i>
+            <div style="font-size:11px;font-weight:600;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Préstamo</div>
           </div>
-          <div class="tipo-btn" data-tipo="tarjeta" onclick="seleccionarTipo('tarjeta',this)" style="padding:10px 8px;border-radius:10px;border:2px solid var(--border);cursor:pointer;text-align:center">
-            <i class="fa-solid fa-credit-card" style="font-size:16px;color:var(--text2);display:block;margin-bottom:5px"></i>
-            <div style="font-size:11.5px;font-weight:600;color:var(--text2)">Tarjeta</div>
+          <div class="tipo-btn" data-tipo="tarjeta" onclick="seleccionarTipo('tarjeta',this)" style="padding:8px 4px;border-radius:10px;border:2px solid var(--border);cursor:pointer;text-align:center;min-width:0">
+            <i class="fa-solid fa-credit-card" style="font-size:15px;color:var(--text2);display:block;margin-bottom:4px"></i>
+            <div style="font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Tarjeta</div>
           </div>
-          <div class="tipo-btn" data-tipo="gasto_fijo" onclick="seleccionarTipo('gasto_fijo',this)" style="padding:10px 8px;border-radius:10px;border:2px solid var(--border);cursor:pointer;text-align:center">
-            <i class="fa-solid fa-receipt" style="font-size:16px;color:var(--text2);display:block;margin-bottom:5px"></i>
-            <div style="font-size:11.5px;font-weight:600;color:var(--text2)">Gasto Fijo</div>
+          <div class="tipo-btn" data-tipo="gasto_fijo" onclick="seleccionarTipo('gasto_fijo',this)" style="padding:8px 4px;border-radius:10px;border:2px solid var(--border);cursor:pointer;text-align:center;min-width:0">
+            <i class="fa-solid fa-receipt" style="font-size:15px;color:var(--text2);display:block;margin-bottom:4px"></i>
+            <div style="font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Gasto Fijo</div>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-          <div class="tipo-btn" data-tipo="deuda" onclick="seleccionarTipo('deuda',this)" style="padding:10px 8px;border-radius:10px;border:2px solid var(--border);cursor:pointer;text-align:center">
-            <i class="fa-solid fa-file-invoice-dollar" style="font-size:16px;color:var(--text2);display:block;margin-bottom:5px"></i>
-            <div style="font-size:11.5px;font-weight:600;color:var(--text2)">Deuda/Abono</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+          <div class="tipo-btn" data-tipo="deuda" onclick="seleccionarTipo('deuda',this)" style="padding:8px 4px;border-radius:10px;border:2px solid var(--border);cursor:pointer;text-align:center;min-width:0">
+            <i class="fa-solid fa-file-invoice-dollar" style="font-size:15px;color:var(--text2);display:block;margin-bottom:4px"></i>
+            <div style="font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Deuda/Abono</div>
           </div>
-          <div class="tipo-btn" data-tipo="msi" onclick="seleccionarTipo('msi',this)" style="padding:10px 8px;border-radius:10px;border:2px solid var(--border);cursor:pointer;text-align:center">
-            <i class="fa-solid fa-calendar-check" style="font-size:16px;color:var(--text2);display:block;margin-bottom:5px"></i>
-            <div style="font-size:11.5px;font-weight:600;color:var(--text2)">MSI</div>
-            <div style="font-size:9.5px;color:var(--text3);margin-top:2px">Meses sin interés</div>
+          <div class="tipo-btn" data-tipo="msi" onclick="seleccionarTipo('msi',this)" style="padding:8px 4px;border-radius:10px;border:2px solid var(--border);cursor:pointer;text-align:center;min-width:0">
+            <i class="fa-solid fa-calendar-check" style="font-size:15px;color:var(--text2);display:block;margin-bottom:4px"></i>
+            <div style="font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">MSI</div>
+            <div style="font-size:9px;color:var(--text3)">Sin interés</div>
           </div>
-          <div class="tipo-btn" data-tipo="disposicion" onclick="seleccionarTipo('disposicion',this)" style="padding:10px 8px;border-radius:10px;border:2px solid var(--border);cursor:pointer;text-align:center">
-            <i class="fa-solid fa-money-bill-transfer" style="font-size:16px;color:var(--text2);display:block;margin-bottom:5px"></i>
-            <div style="font-size:11.5px;font-weight:600;color:var(--text2)">Disposición</div>
-            <div style="font-size:9.5px;color:var(--text3);margin-top:2px">Retiro de efectivo</div>
+          <div class="tipo-btn" data-tipo="disposicion" onclick="seleccionarTipo('disposicion',this)" style="padding:8px 4px;border-radius:10px;border:2px solid var(--border);cursor:pointer;text-align:center;min-width:0">
+            <i class="fa-solid fa-money-bill-transfer" style="font-size:15px;color:var(--text2);display:block;margin-bottom:4px"></i>
+            <div style="font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Disposición</div>
+            <div style="font-size:9px;color:var(--text3)">Retiro efectivo</div>
           </div>
         </div>
       </div>
