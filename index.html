@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="SEMA">
 <meta name="theme-color" content="#0d1117">
-<title>SEMA Wealth Os</title>
+<title>SEMA FinanceOS Pro</title>
 <link rel="manifest" href="./manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -1059,7 +1059,7 @@ service cloud.firestore {
         <input type="hidden" id="i-tipo" value="fijo">
       </div>
       <div class="form-row-3">
-        <div class="form-group"><label class="form-label">Período</label><select class="form-control" id="i-q"><option value="1">1-15</option><option value="2">16-31</option></select></div>
+        <div class="form-group"><label class="form-label">Período</label><select class="form-control" id="i-q"><option value="1">1-15</option><option value="2">16-30</option></select></div>
         <div class="form-group"><label class="form-label">Mes</label><select class="form-control" id="i-mes"></select></div>
         <div class="form-group"><label class="form-label">Año</label><select class="form-control" id="i-ano"></select></div>
       </div>
@@ -1092,7 +1092,7 @@ service cloud.firestore {
         </div>
       </div>
       <div class="form-row-3" id="g-fecha-row">
-        <div class="form-group"><label class="form-label">Quincena</label><select class="form-control" id="g-q"><option value="1">1-15</option><option value="2">16-31</option></select></div>
+        <div class="form-group"><label class="form-label">Quincena</label><select class="form-control" id="g-q"><option value="1">1-15</option><option value="2">16-30</option></select></div>
         <div class="form-group"><label class="form-label">Mes</label><select class="form-control" id="g-mes"></select></div>
         <div class="form-group"><label class="form-label">Año</label><select class="form-control" id="g-ano"></select></div>
       </div>
@@ -1548,7 +1548,7 @@ service cloud.firestore {
       </div>
       <div class="form-row-3">
         <div class="form-group"><label class="form-label">Quincena</label>
-          <select class="form-control" id="eg-q"><option value="1">1-15</option><option value="2">16-31</option></select>
+          <select class="form-control" id="eg-q"><option value="1">1-15</option><option value="2">16-30</option></select>
         </div>
         <div class="form-group"><label class="form-label">Mes</label><select class="form-control" id="eg-mes"></select></div>
         <div class="form-group"><label class="form-label">Año</label><select class="form-control" id="eg-ano"></select></div>
@@ -1869,7 +1869,7 @@ function navigate(page, el){
   document.getElementById('page-title').textContent = PAGE_TITLES[page]||page;
   currentPage = page;
   const now = new Date();
-  document.getElementById('quincena-pill').textContent = `${now.getDate()<=15?'1-15':'16-31'} · ${MESES[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('quincena-pill').textContent = `${now.getDate()<=15?'1-15':'16-30'} · ${MESES[now.getMonth()]} ${now.getFullYear()}`;
   if(page==='dashboard') refreshDashboard();
   if(page==='corrida') recalcularCorrida();
   if(page==='prediccion') renderPrediccion();
@@ -1967,13 +1967,13 @@ function initSelects(){
 // ============================================================
 const fmt = n => new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN',minimumFractionDigits:2}).format(n||0);
 const fmtPct = n => `${(n||0).toFixed(1)}%`;
-const fmtQ = (mes,ano,q)=>`${q===1?'1-15':'16-31'} ${MESES[mes-1]||''} ${ano}`;
+const fmtQ = (mes,ano,q)=>`${q===1?'1-15':'16-30'} ${MESES[mes-1]||''} ${ano}`;
 
 // Lógica de cobro: cobras el 15 y el 30
-// Cobras el 15 → pagas lo que vence del 16 al 30 (período 16-31)
+// Cobras el 15 → pagas lo que vence del 16 al 30 (período 16-30)
 // Cobras el 30 → pagas lo que vence del 1 al 15 del mes siguiente (período 1-15)
-// Por tanto: día de pago 1-15 → se cubre con ingreso del 30 anterior → período 1-15
-//            día de pago 16-31 → se cubre con ingreso del 15 → período 16-31
+// Por tanto: día de pago 1-15  → período 1-15  (cubierto por ingreso del 30)
+//            día de pago 16-30 → período 16-30 (cubierto por ingreso del 15)
 function periodoDeGasto(diaPago){
   if(!diaPago) return null;
   return parseInt(diaPago)<=15 ? 1 : 2;
@@ -2094,7 +2094,7 @@ function generarCorrida(n=12){
     const libreReal  = saldo - ahorroSug;
 
     quincenas.push({ idx:i+1, mes, ano, q,
-      label:`${q===1?'1-15':'16-31'} ${MESES[mes-1]} ${ano}`,
+      label:`${q===1?'1-15':'16-30'} ${MESES[mes-1]} ${ano}`,
       ingrBase, fijosQ, cuotasQ, unicosQ, totalEgreso,
       saldo, pctUso, estado, ahorroSug, libreReal });
 
@@ -2278,7 +2278,7 @@ function renderFuentesIngreso(){
             return `<tr style="border-bottom:1px solid var(--border)">
               <td style="padding:12px 18px">
                 <div style="font-weight:600;font-size:13px;color:var(--text)">${i.fuente}</div>
-                <div style="font-size:11px;color:var(--text3);margin-top:2px">${i.quincena===1?'1-15':'16-31'} ${MESES[i.mes-1]} ${i.ano}</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:2px">${i.quincena===1?'1-15':'16-30'} ${MESES[i.mes-1]} ${i.ano}</div>
               </td>
               <td style="padding:12px 18px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent);font-weight:600">${fmt(i.monto)}</td>
               <td style="padding:12px 18px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text2)">${fmt(gastosAsig)}</td>
@@ -2408,7 +2408,7 @@ function recalcularCorrida(){
     hEl.style.display='block';
     listaEl.innerHTML = ST.corridaCerradas.map(qk=>{
       const parts=qk.split('-'); const qNum=parts[2],mes=parseInt(parts[1]),ano=parts[0];
-      const lbl=(qNum==='1'?'1-15':'16-31')+' '+MESES[mes-1]+' '+ano;
+      const lbl=(qNum==='1'?'1-15':'16-30')+' '+MESES[mes-1]+' '+ano;
       return '<div style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:var(--green-glow);border:1px solid rgba(0,168,118,0.25);border-radius:20px;font-size:11px;font-weight:600;color:var(--green);cursor:pointer" onclick="reabrirQuincena(\''+qk+'\')" title="Clic para reabrir"><i class="fa-solid fa-lock" style="font-size:9px"></i> '+lbl+' <i class="fa-solid fa-xmark" style="font-size:9px;margin-left:3px;opacity:0.6"></i></div>';
     }).join('');
   } else if(hEl){ hEl.style.display='none'; }
@@ -2503,7 +2503,7 @@ function recalcularCorrida(){
   // Stack composición
   if(chartCorridaStack) chartCorridaStack.destroy();
   chartCorridaStack = new Chart(document.getElementById('chart-corrida-stack'),{type:'bar',data:{
-    labels:corrida.map(q=>`${q.q===1?'1-15':'16-31'} ${MESES[q.mes-1].slice(0,3)}`),
+    labels:corrida.map(q=>`${q.q===1?'1-15':'16-30'} ${MESES[q.mes-1].slice(0,3)}`),
     datasets:[
       {label:'Fijos',data:corrida.map(q=>q.fijosQ),backgroundColor:'rgba(229,51,74,0.55)',borderRadius:3},
       {label:'Cuotas',data:corrida.map(q=>q.cuotasQ),backgroundColor:'rgba(217,119,6,0.55)',borderRadius:3},
@@ -2762,7 +2762,7 @@ function renderIngresos(){
   tbody.innerHTML = ST.ingresos.length
     ? ST.ingresos.map(i=>`<tr>
         <td style="font-weight:500">${i.fuente}</td>
-        <td><span class="badge badge-blue">${i.quincena===1?'1-15':'16-31'}</span></td>
+        <td><span class="badge badge-blue">${i.quincena===1?'1-15':'16-30'}</span></td>
         <td>${MESES[i.mes-1]||''}</td>
         <td>${i.ano}</td>
         <td class="mono" style="color:var(--green)">${fmt(i.monto)}</td>
@@ -3070,7 +3070,7 @@ function renderGastos(){
           <td style="font-weight:500">${g.concepto}${g.yaPagado?' <span class="badge badge-green" style="font-size:10px">Pagado</span>':''}</td>
           <td><span class="badge" style="background:${CATS_COLORS[g.categoria]||'#6b7280'}22;color:${CATS_COLORS[g.categoria]||'#6b7280'}">${g.categoria}</span></td>
           <td><span class="badge badge-blue">${g.frecuencia}</span></td>
-          <td><span class="badge badge-blue">${g.quincena===1?'1-15':'16-31'}</span></td>
+          <td><span class="badge badge-blue">${g.quincena===1?'1-15':'16-30'}</span></td>
           <td>${MESES[g.mes-1]||''} ${g.ano}</td>
           <td class="mono" style="color:var(--red)">${fmt(g.monto)}</td>
           <td style="font-size:12px">${metodoLabel}</td>
@@ -3560,7 +3560,7 @@ function calcDeferirPreview(){
     const mes = fPrev.getMonth()+1;
     const ano = fPrev.getFullYear();
     const q   = fPrev.getDate()<16?1:2;
-    const periodo = `${q===1?'1-15':'16-31'} ${MESES[mes-1]} ${ano}`;
+    const periodo = `${q===1?'1-15':'16-30'} ${MESES[mes-1]} ${ano}`;
     const restantes = numQ-i;
     filas.push(`<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-bottom:1px solid var(--border);font-size:12px">
       <span style="color:var(--text2)">${periodo}</span>
@@ -3901,7 +3901,7 @@ function initApp(){
   document.getElementById('user-email-sidebar').textContent = ST.perfil.email||'Modo local';
   document.getElementById('user-avatar').textContent = (ST.perfil.nombre||'U')[0].toUpperCase();
   const now=new Date();
-  document.getElementById('quincena-pill').textContent=`${now.getDate()<=15?'1-15':'16-31'} · ${MESES[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('quincena-pill').textContent=`${now.getDate()<=15?'1-15':'16-30'} · ${MESES[now.getMonth()]} ${now.getFullYear()}`;
   const prInicio=document.getElementById('pr-inicio');
   if(prInicio) prInicio.value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   // Restore sidebar state
@@ -3941,7 +3941,7 @@ function buildQStrip(id){
     const q=d.getDate()<16?1:2;
     const mes=d.getMonth()+1, ano=d.getFullYear();
     const isActive=mes===now.getMonth()+1&&ano===now.getFullYear()&&q===(now.getDate()<=15?1:2);
-    html+=`<div class="q-chip${isActive?' active':''}" onclick="filterByQ(${q},${mes},${ano},'${id}',this)">${q===1?'1-15':'16-31'} ${MESES[mes-1]} ${ano}</div>`;
+    html+=`<div class="q-chip${isActive?' active':''}" onclick="filterByQ(${q},${mes},${ano},'${id}',this)">${q===1?'1-15':'16-30'} ${MESES[mes-1]} ${ano}</div>`;
   }
   el.innerHTML=html;
 }
