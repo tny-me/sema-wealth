@@ -1718,13 +1718,39 @@ function switchAuthTab(mode){
   document.getElementById('auth-name-group').style.display = mode==='register'?'block':'none';
   document.getElementById('auth-btn').textContent = mode==='login'?'Iniciar sesión':'Crear cuenta';
 }
+// Enter key en campos de login
+document.addEventListener('DOMContentLoaded',()=>{
+  ['auth-email','auth-password','auth-name'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('keydown', e=>{ if(e.key==='Enter') handleAuth(); });
+  });
+});
 async function handleAuth(){
-  const email = document.getElementById('auth-email').value.trim();
-  const pass  = document.getElementById('auth-password').value;
-  const errEl = document.getElementById('auth-error');
+  const email  = document.getElementById('auth-email').value.trim();
+  const pass   = document.getElementById('auth-password').value;
+  const errEl  = document.getElementById('auth-error');
+  const btn    = document.getElementById('auth-btn');
   errEl.style.display='none';
-  if(!email||!pass){ errEl.textContent='Completa los campos requeridos'; errEl.style.display='block'; return; }
-  if(!window._FB){ demoLogin(email); return; }
+
+  if(!email||!pass){
+    errEl.textContent='Completa correo y contraseña';
+    errEl.style.display='block';
+    return;
+  }
+
+  // Mostrar estado de carga
+  const btnOriginal = btn.textContent;
+  btn.textContent = 'Cargando...';
+  btn.disabled = true;
+
+  // Si Firebase no cargó, entrar en modo local
+  if(!window._FB){
+    demoLogin(email);
+    btn.textContent = btnOriginal;
+    btn.disabled = false;
+    return;
+  }
+
   try {
     const { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword } = window._FB;
     let cred;
@@ -1732,17 +1758,25 @@ async function handleAuth(){
       cred = await signInWithEmailAndPassword(auth, email, pass);
     } else {
       cred = await createUserWithEmailAndPassword(auth, email, pass);
-      const name = document.getElementById('auth-name').value.trim();
-      ST.perfil.nombre = name;
-      ST.perfil.email = email;
+      ST.perfil.nombre = document.getElementById('auth-name').value.trim();
+      ST.perfil.email  = email;
     }
     ST.uid = cred.user.uid;
     ST.perfil.email = email;
     await loadFromFirebase(ST.uid);
     enterApp();
   } catch(e){
-    errEl.textContent = e.message.replace('Firebase:','').replace('(auth/wrong-password).','Contraseña incorrecta').replace('(auth/user-not-found).','Usuario no encontrado').replace('(auth/email-already-in-use).','Correo ya registrado').replace('(auth/invalid-credential).','Correo o contraseña incorrectos');
+    const msg = e.message||'';
+    let texto = 'Error al iniciar sesión. Intenta de nuevo.';
+    if(msg.includes('invalid-credential')||msg.includes('wrong-password')||msg.includes('user-not-found')) texto='Correo o contraseña incorrectos';
+    else if(msg.includes('email-already-in-use')) texto='Este correo ya está registrado';
+    else if(msg.includes('weak-password')) texto='Contraseña muy débil (mínimo 6 caracteres)';
+    else if(msg.includes('invalid-email')) texto='Correo inválido';
+    else if(msg.includes('network')) texto='Sin conexión. Verifica tu internet.';
+    errEl.textContent = texto;
     errEl.style.display='block';
+    btn.textContent = btnOriginal;
+    btn.disabled = false;
   }
 }
 function demoLogin(email='demo@sema.local'){
@@ -3275,7 +3309,7 @@ function renderDeudas(){
           <div class="debt-card-top">
             <div>
               <div class="debt-name">${d.nombre} ${!d.activa?'<span class="badge badge-green">Liquidada</span>':''}</div>
-              <div class="debt-meta">${d.esDeferido?'<span class="badge badge-purple" style="font-size:10px;margin-right:4px">Plan de pagos</span>':''}${d.tipo!=='diferido'?d.tipo+' · ':''}${fmt(d.cuota)}/quincena · Sin interés${d.frecuencia&&d.frecuencia!=='quincenal'?` · Pago ${d.frecuencia} (${fmt(d.cuotaOriginal||d.cuota)})':''}</div>
+              <div class="debt-meta">${d.esDeferido?"Plan de pagos · ":""}${d.tipo!=="diferido"?d.tipo+" · ":""}${fmt(d.cuota)}/quincena - Sin interés${d.frecuencia&&d.frecuencia!=="quincenal"?" · Pago "+d.frecuencia+" ("+fmt(d.cuotaOriginal||d.cuota)+")":""}</div>
             </div>
             <div style="display:flex;gap:6px;align-items:center">
               ${d.activa?`<button class="btn btn-success btn-sm" onclick="marcarPagada(${d.id})">+ Cuota</button>`:''}
@@ -3285,7 +3319,7 @@ function renderDeudas(){
           </div>
           <div class="debt-progress"><div class="debt-progress-fill" style="width:${pct}%;${!d.activa?'background:var(--green)':''}"></div></div>
           <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--text3);margin-top:3px;margin-bottom:10px">
-            <span>${pagadas}/${total} quincenas pagadas · ${pct}%</span>
+            <span>${pagadas}/${total} quincenas pagadas - ${pct}%</span>
             <span style="color:var(--text2)">${restantes} Q restantes</span>
           </div>
           <div class="debt-stats">
@@ -3560,16 +3594,22 @@ function filterByQ(q,mes,ano,stripId,el){
   el.classList.add('active');
 }
 
-// Check if already have session
-if(ST.uid){ enterApp(); }
-else {
-  // Check Firebase auth state
-  if(window._FB){
+// Check if already have session — esperar DOM listo
+window.addEventListener('load', ()=>{
+  if(ST.uid && ST.uid.startsWith('local-')){
+    enterApp();
+  } else if(window._FB){
     window._FB.onAuthStateChanged(window._FB.auth, user=>{
-      if(user){ ST.uid=user.uid; ST.perfil.email=user.email; loadFromFirebase(user.uid).then(()=>enterApp()); }
+      if(user){
+        ST.uid = user.uid;
+        ST.perfil.email = user.email;
+        loadFromFirebase(user.uid).then(()=>enterApp()).catch(()=>enterApp());
+      }
     });
+  } else if(ST.uid){
+    enterApp();
   }
-}
+});
 
 // ============================================================
 // TARJETAS DE CRÉDITO
@@ -3992,15 +4032,7 @@ function renderPrestamos(){
           <div class="ai-insight-head"><div class="ai-pulse"></div><div class="ai-insight-title">Estrategia Avalanche</div></div>
           <div class="ai-insight-body">Paga el mínimo en todos y destina el dinero extra al préstamo con mayor tasa. Esto reduce el costo total de intereses.</div>
         </div>
-        ${ordenados.map((p,i)=>`
-          <div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
-            <div style="width:22px;height:22px;border-radius:50%;background:${i===0?'var(--red)':i===1?'var(--orange)':'var(--bg3)'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${i<=1?'#fff':'var(--text2)'};flex-shrink:0">${i+1}</div>
-            <div style="flex:1">
-              <div style="font-size:12.5px;font-weight:600;color:var(--text)">${p.nombre}</div>
-              <div style="font-size:11px;color:var(--text2)">${p.tasa||0}% anual · ${fmt(p.pago)}/Q</div>
-            </div>
-            ${i===0?'<span class="badge badge-red">Prioridad</span>':''}
-          </div>`).join('')}`;
+        ${ordenados.map((p,i)=>'<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)"><div style="width:22px;height:22px;border-radius:50%;background:'+(i===0?'var(--red)':i===1?'var(--orange)':'var(--bg3)')+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:'+(i<=1?'#fff':'var(--text2)')+';flex-shrink:0">'+(i+1)+'</div><div style="flex:1"><div style="font-size:12.5px;font-weight:600;color:var(--text)">'+p.nombre+'</div><div style="font-size:11px;color:var(--text2)">'+(p.tasa||0)+'% anual - '+fmt(p.pago)+'/Q</div></div>'+(i===0?'<span class="badge badge-red">Prioridad</span>':'')+'</div>').join('')}`;
     }
   }
 
