@@ -379,11 +379,7 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
 .section-sub{font-size:12.5px;color:var(--text2);margin-bottom:22px;}
 
 /* ── FIREBASE CONFIG ── */
-.config-panel{background:rgba(0,153,230,0.04);border:1px solid rgba(0,153,230,0.15);border-radius:14px;padding:22px;}
-.config-step{display:flex;gap:14px;margin-bottom:16px;}
-.step-num{width:26px;height:26px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
-.step-text{font-size:12.5px;color:var(--text2);line-height:1.6;}
-.step-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
+/* config-panel CSS eliminado — panel Firebase removido */
 
 /* ── TABS ── */
 .tabs{display:flex;background:var(--bg3);border-radius:10px;padding:3px;margin-bottom:20px;gap:2px;}
@@ -407,17 +403,147 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
 .ai-insight-body{font-size:12px;color:var(--text2);line-height:1.6;}
 
 /* ── RESPONSIVE ── */
+/* ── OVERLAY para sidebar móvil ── */
+#sb-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,0.5);z-index:49;
+  backdrop-filter:blur(2px);
+}
+#sb-overlay.open{ display:block; }
+
+/* ── Botón hamburguesa (solo móvil) ── */
+#mobile-menu-btn{
+  display:none;width:36px;height:36px;border-radius:9px;
+  background:var(--bg3);border:1px solid var(--border2);
+  align-items:center;justify-content:center;
+  cursor:pointer;font-size:14px;color:var(--text2);
+  flex-shrink:0;
+}
+
+/* ════════════════════════════
+   TABLET  ≤ 1024px
+════════════════════════════ */
+@media(max-width:1024px){
+  .kpi-grid{ grid-template-columns:repeat(3,1fr); }
+  .g-65,.g-73,.intel-grid{ grid-template-columns:1fr; }
+}
+
+/* ════════════════════════════
+   MÓVIL  ≤ 768px
+════════════════════════════ */
 @media(max-width:768px){
-  .sidebar{transform:translateX(-100%);}
-  .main{margin-left:0;}
-  .kpi-grid{grid-template-columns:repeat(2,1fr);}
-  .g2,.g3,.g-65,.g-73,.intel-grid{grid-template-columns:1fr;}
+
+  /* Sidebar — drawer lateral */
+  .sidebar{
+    transform:translateX(-100%);
+    transition:transform .25s cubic-bezier(.4,0,.2,1);
+    width:var(--sidebar) !important;
+    z-index:50;
+  }
+  .sidebar.mobile-open{ transform:translateX(0); }
+  .sidebar.collapsed{ transform:translateX(-100%); }
+
+  /* Quitar toggle interno en móvil */
+  .sb-toggle{ display:none; }
+
+  /* Main — ocupa todo el ancho */
+  .main{ margin-left:0 !important; }
+
+  /* Topbar */
+  .topbar{ padding:0 14px; gap:8px; }
+  .topbar-title{ font-size:13.5px; }
+
+  /* Mostrar hamburguesa */
+  #mobile-menu-btn{ display:flex; }
+
+  /* Botones topbar — solo icono en móvil */
+  .topbar-right .btn .btn-label{ display:none; }
+  .topbar-right .btn{ padding:8px 10px; gap:0; }
+
+  /* Ocultar botón instalar en topbar si la pantalla es pequeña */
+  #install-btn{ display:none !important; }
+
+  /* Grids → columna única */
+  .g2,.g3,.g-65,.g-73,.intel-grid{ grid-template-columns:1fr; }
+
+  /* KPI — 2 columnas */
+  .kpi-grid{ grid-template-columns:repeat(2,1fr); gap:10px; }
+  .kpi{ padding:14px; }
+  .kpi-val{ font-size:18px; }
+
+  /* Content — menos padding */
+  .content{ padding:14px; }
+  .section-h{ font-size:15px; }
+  .section-sub{ margin-bottom:14px; }
+  .mb24{ margin-bottom:14px; }
+  .mb16{ margin-bottom:10px; }
+
+  /* Tablas — scroll horizontal */
+  .corrida-table-wrap,
+  .table-modern-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  table.table-modern,
+  table.corrida-table{ min-width:560px; }
+
+  /* Cards */
+  .card-header{ padding:12px 14px 10px; flex-wrap:wrap; gap:8px; }
+  .card-body{ padding:14px; }
+
+  /* Auth card — full width */
+  .auth-card{ width:calc(100% - 32px); padding:32px 20px; }
+
+  /* Modal — full screen en móvil */
+  .modal{
+    width:100%;max-width:100%;margin:0;
+    border-radius:16px 16px 0 0;
+    position:fixed;bottom:0;left:0;right:0;
+    max-height:92dvh;overflow-y:auto;
+  }
+  .modal-bg{ align-items:flex-end; }
+
+  /* Predict cards — 2 columnas */
+  .predict-grid{ grid-template-columns:repeat(2,1fr) !important; gap:10px !important; }
+  .predict-card{ padding:14px; }
+  .predict-val{ font-size:18px !important; }
+
+  /* Corrida summary row */
+  .corrida-summary-row{ flex-direction:column; gap:8px; }
+
+  /* Formularios — full width */
+  .form-row,.form-row-3{ grid-template-columns:1fr !important; }
+
+  /* Intelligence panel */
+  .intel-grid{ gap:10px; }
+
+  /* Chart wraps */
+  .chart-wrap-lg{ height:220px !important; }
+  .chart-wrap-sm{ height:160px !important; }
+
+  /* Topbar right — apretar botones */
+  .topbar-right{ gap:4px; }
+
+  /* Quincena pill — más corto */
+  #quincena-pill{ font-size:10px; padding:3px 8px; }
+
+  /* Config page — todo en columna */
+  #page-config .g2{ grid-template-columns:1fr; }
+}
+
+/* ════════════════════════════
+   MUY PEQUEÑO  ≤ 400px
+════════════════════════════ */
+@media(max-width:400px){
+  .kpi-grid{ grid-template-columns:1fr 1fr; gap:8px; }
+  .kpi-val{ font-size:16px; }
+  .predict-grid{ grid-template-columns:1fr 1fr !important; }
+  .auth-card{ padding:24px 14px; }
+  .content{ padding:10px; }
 }
 </style>
 </head>
 <body>
 
 <div id="toast-container"></div>
+<div id="sb-overlay" onclick="closeSidebarMobile()"></div>
 
 <!-- ======================================================
      AUTH SCREEN
@@ -505,16 +631,16 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
 <div class="main">
   <header class="topbar">
     <div class="topbar-left">
+      <div id="mobile-menu-btn" onclick="openSidebarMobile()"><i class="fa-solid fa-bars"></i></div>
       <div class="topbar-title" id="page-title">Dashboard</div>
       <div id="quincena-pill" style="font-size:11px;color:var(--text3);font-family:var(--font-mono);"></div>
     </div>
     <div class="topbar-right">
-      <button class="btn btn-ghost btn-sm" id="btn-instalar" style="display:none" onclick="instalarApp()"><i class="fa-solid fa-download"></i> Instalar app</button>
-      <button class="btn btn-ghost btn-sm" onclick="openModal('modal-ingreso')"><i class="fa-solid fa-plus"></i> Ingreso</button>
-      <button class="btn btn-ghost btn-sm" onclick="openModal('modal-gasto')"><i class="fa-solid fa-plus"></i> Gasto</button>
-      <button class="btn btn-primary btn-sm" onclick="openModal('modal-deuda')"><i class="fa-solid fa-circle-plus"></i> Deuda</button>
+      <button class="btn btn-ghost btn-sm" onclick="openModal('modal-ingreso')"><i class="fa-solid fa-plus"></i><span class="btn-label"> Ingreso</span></button>
+      <button class="btn btn-ghost btn-sm" onclick="openModal('modal-gasto')"><i class="fa-solid fa-plus"></i><span class="btn-label"> Gasto</span></button>
+      <button class="btn btn-primary btn-sm" onclick="openModal('modal-deuda')"><i class="fa-solid fa-circle-plus"></i><span class="btn-label"> Deuda</span></button>
       <button class="btn btn-ghost btn-sm" onclick="syncData()" title="Sincronizar"><i class="fa-solid fa-cloud-arrow-up"></i></button>
-      <button id="install-btn-app" style="display:none" class="btn btn-ghost btn-sm" onclick="installApp()" title="Instalar app"><i class="fa-solid fa-download"></i> Instalar</button>
+      <button id="install-btn-app" style="display:none" class="btn btn-ghost btn-sm" onclick="installApp()" title="Instalar app"><i class="fa-solid fa-download"></i><span class="btn-label"> Instalar</span></button>
     </div>
   </header>
 
@@ -1829,6 +1955,8 @@ function navigate(page, el){
   if(el) el.classList.add('active');
   document.getElementById('page-title').textContent = PAGE_TITLES[page]||page;
   currentPage = page;
+  // Cerrar sidebar en móvil al navegar
+  if(window.innerWidth <= 768) closeSidebarMobile();
   const now = new Date();
   document.getElementById('quincena-pill').textContent = `${now.getDate()<=15?'1-15':'16-30'} · ${MESES[now.getMonth()]} ${now.getFullYear()}`;
   if(page==='dashboard') refreshDashboard();
@@ -3844,6 +3972,17 @@ function toggleSidebar(){
   icon.className = collapsed ? 'fa-solid fa-chevron-right' : 'fa-solid fa-chevron-left';
   ST._sidebarCollapsed = collapsed;
   saveToLocal();
+}
+
+function openSidebarMobile(){
+  document.getElementById('sidebar').classList.add('mobile-open');
+  document.getElementById('sb-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebarMobile(){
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  document.getElementById('sb-overlay').classList.remove('open');
+  document.body.style.overflow = '';
 }
 
 function initApp(){
