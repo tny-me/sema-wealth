@@ -18,32 +18,30 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
-<!-- Firebase SDK -->
-<script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-  import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+<!-- API Client — credenciales de Firebase viven solo en el servidor -->
+<script>
+(function(){
+  const BASE = '/api'; // Cambia a tu URL de backend si es diferente, ej: 'https://tu-backend.com/api'
 
-  // ── Firebase Config ──
-  const firebaseConfig = {
-    apiKey: "AIzaSyDdM6BBWMxrRwFAqn6ZKzogW_7D-dFN7rc",
-    authDomain: "sema-wealth.firebaseapp.com",
-    projectId: "sema-wealth",
-    storageBucket: "sema-wealth.firebasestorage.app",
-    messagingSenderId: "916630135081",
-    appId: "1:916630135081:web:3fa56116ee20535d6bd738"
+  async function req(path, method='GET', body=null){
+    const opts = { method, headers:{'Content-Type':'application/json'}, credentials:'include' };
+    if(body) opts.body = JSON.stringify(body);
+    const r = await fetch(BASE + path, opts);
+    const data = await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(data.message || r.statusText);
+    return data;
+  }
+
+  window._API = {
+    login:    (email, password)         => req('/auth/login',    'POST', {email, password}),
+    register: (email, password, nombre) => req('/auth/register', 'POST', {email, password, nombre}),
+    logout:   (uid)                     => req('/auth/logout',   'POST', {uid}),
+    session:  ()                        => req('/auth/session'),
+    loadData: (uid)                     => req(`/data/${uid}`),
+    saveData: (uid, data)               => req(`/data/${uid}`,   'POST', data),
   };
 
-  try {
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    window._FB = { app, db, auth, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc, query, where, orderBy, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut };
-    console.log('Firebase inicializado');
-  } catch(e) {
-    console.warn('Firebase no configurado, modo local activo');
-    window._FB = null;
-  }
+})();
 </script>
 
 <style>
@@ -985,40 +983,6 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
           </div>
         </div>
       </div>
-      <div>
-        <div class="config-panel mb16">
-          <div style="font-family:'Inter',Arial,sans-serif;font-size:14px;font-weight:700;color:var(--accent);margin-bottom:16px;">⚡ Conectar Firebase</div>
-          <div class="config-step"><div class="step-num">1</div><div><div class="step-title">Crea proyecto en Firebase</div><div class="step-text">Visita <a href="https://console.firebase.google.com" target="_blank" style="color:var(--accent)">console.firebase.google.com</a> y crea un nuevo proyecto</div></div></div>
-          <div class="config-step"><div class="step-num">2</div><div><div class="step-title">Activa Authentication + Firestore</div><div class="step-text">En tu proyecto, activa <strong>Authentication (Email/Password)</strong> y <strong>Cloud Firestore</strong></div></div></div>
-          <div class="config-step"><div class="step-num">3</div><div><div class="step-title">Obtén tu configuración</div><div class="step-text">Ve a <strong>Configuración del proyecto → Tus apps → Web app</strong> y copia el objeto <code>firebaseConfig</code></div></div></div>
-          <div class="config-step"><div class="step-num">4</div><div><div class="step-title">Pega tu configuración aquí</div></div></div>
-          <textarea class="form-control" id="cfg-firebase" rows="8" placeholder='{
-  "apiKey": "...",
-  "authDomain": "...",
-  "projectId": "...",
-  "storageBucket": "...",
-  "messagingSenderId": "...",
-  "appId": "..."
-}' style="font-family:var(--font-mono);font-size:11.5px;"></textarea>
-          <div style="margin-top:12px">
-            <button class="btn btn-primary" onclick="guardarFirebaseConfig()"><i class="fa-solid fa-plug-circle-bolt"></i> Conectar y guardar</button>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header"><span class="card-title">Reglas Firestore recomendadas</span></div>
-          <div class="card-body">
-            <pre style="font-family:var(--font-mono);font-size:11px;color:var(--text2);white-space:pre-wrap;line-height:1.7">rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null
-        &amp;&amp; request.auth.uid == userId;
-    }
-  }
-}</pre>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -1698,7 +1662,7 @@ const CATS_COLORS = {
 let ST = {
   perfil: { nombre:'', email:'', ingresoBase:0, metaAhorro:15, umbralAlerta:80 },
   ingresos: [], gastos: [], deudas: [], tarjetas: [], cargosTarjeta: [], prestamos: [],
-  alertas: [], firebaseConfig: null, uid: null,
+  alertas: [], uid: null,
   corridaChecks: {},   // { "qKey": { "itemKey": true/false } }
   corridaCerradas: []  // [ { label, mes, ano, q, resumen } ]
 };
@@ -1716,22 +1680,21 @@ function saveState(){
 loadState();
 
 // ============================================================
-// FIREBASE SYNC
+// SYNC — usa backend API (credenciales Firebase en el servidor)
 // ============================================================
 async function syncData(){
-  if(!window._FB || !ST.uid) {
+  if(!ST.uid || ST.uid.startsWith('local-')) {
     document.getElementById('sync-dot').className = 'sync-dot offline';
     document.getElementById('sync-label').textContent = 'Modo local';
     return;
   }
   try {
-    const { db, doc, setDoc } = window._FB;
-    await setDoc(doc(db,'users',ST.uid,'data','state'), {
-      perfil: ST.perfil,
-      ingresos: ST.ingresos,
-      gastos: ST.gastos,
-      deudas: ST.deudas,
-      alertas: ST.alertas,
+    await window._API.saveData(ST.uid, {
+      perfil:    ST.perfil,
+      ingresos:  ST.ingresos,
+      gastos:    ST.gastos,
+      deudas:    ST.deudas,
+      alertas:   ST.alertas,
       updatedAt: new Date().toISOString()
     });
     document.getElementById('sync-dot').className = 'sync-dot';
@@ -1742,21 +1705,20 @@ async function syncData(){
   }
 }
 async function loadFromFirebase(uid){
-  if(!window._FB) return;
   try {
-    const { db, doc, getDoc } = window._FB;
-    const snap = await getDoc(doc(db,'users',uid,'data','state'));
-    if(snap.exists()){
-      const data = snap.data();
-      ST.perfil = data.perfil || ST.perfil;
-      ST.ingresos = data.ingresos || [];
-      ST.gastos = data.gastos || [];
-      ST.deudas = data.deudas || [];
-      ST.alertas = data.alertas || [];
+    const data = await window._API.loadData(uid);
+    if(data && data.perfil !== undefined){
+      ST.perfil    = data.perfil    || ST.perfil;
+      ST.ingresos  = data.ingresos  || [];
+      ST.gastos    = data.gastos    || [];
+      ST.deudas    = data.deudas    || [];
+      ST.alertas   = data.alertas   || [];
       saveToLocal();
-      toast('Datos cargados desde Firebase','success');
+      toast('Datos cargados desde servidor','success');
     }
-  } catch(e){}
+  } catch(e){
+    // Sin datos remotos — continuar con los datos locales
+  }
 }
 function saveToLocal(){ localStorage.setItem('sema_pro_v3', JSON.stringify(ST)); }
 
@@ -1795,8 +1757,8 @@ async function handleAuth(){
   btn.textContent = 'Cargando...';
   btn.disabled = true;
 
-  // Si Firebase no cargó, entrar en modo local
-  if(!window._FB){
+  // Si API no está disponible, entrar en modo local
+  if(!window._API){
     demoLogin(email);
     btn.textContent = btnOriginal;
     btn.disabled = false;
@@ -1804,16 +1766,15 @@ async function handleAuth(){
   }
 
   try {
-    const { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword } = window._FB;
-    let cred;
+    let res;
     if(authMode==='login'){
-      cred = await signInWithEmailAndPassword(auth, email, pass);
+      res = await window._API.login(email, pass);
     } else {
-      cred = await createUserWithEmailAndPassword(auth, email, pass);
-      ST.perfil.nombre = document.getElementById('auth-name').value.trim();
-      ST.perfil.email  = email;
+      const nombre = document.getElementById('auth-name').value.trim();
+      res = await window._API.register(email, pass, nombre);
+      ST.perfil.nombre = res.nombre || nombre;
     }
-    ST.uid = cred.user.uid;
+    ST.uid = res.uid;
     ST.perfil.email = email;
     await loadFromFirebase(ST.uid);
     enterApp();
@@ -1843,8 +1804,8 @@ function enterApp(){
   initApp();
 }
 function cerrarSesion(){
-  if(window._FB && ST.uid && !ST.uid.startsWith('local-')){
-    window._FB.signOut(window._FB.auth).catch(()=>{});
+  if(ST.uid && !ST.uid.startsWith('local-')){
+    window._API.logout(ST.uid).catch(()=>{});
   }
   ST.uid = null;
   saveToLocal();
@@ -3806,7 +3767,6 @@ function renderConfig(){
   document.getElementById('cfg-meta-ahorro').value = ST.perfil.metaAhorro||15;
   document.getElementById('cfg-umbral').value = ST.perfil.umbralAlerta||80;
   document.getElementById('cfg-user-email').textContent = ST.perfil.email||'Sin email';
-  if(ST.firebaseConfig) document.getElementById('cfg-firebase').value = JSON.stringify(ST.firebaseConfig,null,2);
 }
 function guardarPerfil(){
   ST.perfil.nombre = document.getElementById('cfg-nombre').value.trim();
@@ -3818,15 +3778,6 @@ function guardarPerfil(){
   saveState();
   toast('Perfil guardado','success');
   refreshDashboard();
-}
-function guardarFirebaseConfig(){
-  try {
-    const cfg = JSON.parse(document.getElementById('cfg-firebase').value);
-    ST.firebaseConfig = cfg;
-    window.FIREBASE_CONFIG = cfg;
-    saveToLocal();
-    toast('Configuración Firebase guardada. Recarga la página para activarla.','success');
-  } catch(e){ toast('JSON inválido. Verifica el formato.','error'); }
 }
 function exportarTodo(){
   const blob=new Blob([JSON.stringify(ST,null,2)],{type:'application/json'});
@@ -3914,8 +3865,8 @@ function initApp(){
     if(icon) icon.className='fa-solid fa-chevron-right';
   }
   refreshDashboard();
-  // check firebase
-  if(!window._FB){
+  // check sync status
+  if(!ST.uid || ST.uid.startsWith('local-')){
     document.getElementById('sync-dot').className='sync-dot offline';
     document.getElementById('sync-label').textContent='Modo local';
   }
@@ -3951,19 +3902,22 @@ function filterByQ(q,mes,ano,stripId,el){
 }
 
 // Check if already have session — esperar DOM listo
-window.addEventListener('load', ()=>{
+window.addEventListener('load', async ()=>{
   if(ST.uid && ST.uid.startsWith('local-')){
     enterApp();
-  } else if(window._FB){
-    window._FB.onAuthStateChanged(window._FB.auth, user=>{
-      if(user){
-        ST.uid = user.uid;
-        ST.perfil.email = user.email;
-        loadFromFirebase(user.uid).then(()=>enterApp()).catch(()=>enterApp());
+  } else if(ST.uid) {
+    // Validar sesión con el servidor
+    try {
+      const session = await window._API.session().catch(()=>null);
+      if(session && session.uid){
+        ST.uid = session.uid;
+        ST.perfil.email = session.email || ST.perfil.email;
+        await loadFromFirebase(ST.uid);
       }
-    });
-  } else if(ST.uid){
-    enterApp();
+      enterApp();
+    } catch(e){
+      enterApp(); // fallback con datos locales
+    }
   }
 });
 
