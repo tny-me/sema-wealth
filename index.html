@@ -5566,16 +5566,64 @@ function renderConfig(){
   if(Notification.permission === 'granted') programarNotificaciones();
 }
 
-// ── Service Worker — notificaciones persistentes ──
+// ── Service Worker — notificaciones persistentes y auto-actualización ──
 const _esProduccion = location.hostname.includes('github.io') || 
                       (location.hostname !== 'localhost' && !location.hostname.includes('claudeusercontent'));
 if('serviceWorker' in navigator && _esProduccion){
   navigator.serviceWorker.register('./sw.js')
-    .then(r => {
-      console.log('SW registrado:', r.scope);
+    .then(reg => {
+      console.log('SW registrado:', reg.scope);
       if(Notification.permission === 'granted') programarNotificaciones();
+
+      // Detectar cuando hay una nueva versión disponible
+      reg.addEventListener('updatefound', () => {
+        const nuevoSW = reg.installing;
+        nuevoSW.addEventListener('statechange', () => {
+          // Nuevo SW instalado y listo — hay actualización disponible
+          if(nuevoSW.state === 'installed' && navigator.serviceWorker.controller){
+            mostrarBannerActualizacion();
+          }
+        });
+      });
     })
     .catch(e => console.warn('SW error:', e));
+
+  // Cuando el SW toma control (después de actualizar), recargar
+  let recargando = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if(!recargando){ recargando = true; location.reload(); }
+  });
+}
+
+function mostrarBannerActualizacion(){
+  // Evitar mostrar dos veces
+  if(document.getElementById('update-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'update-banner';
+  banner.innerHTML = `
+    <div style="
+      position:fixed;top:0;left:0;right:0;z-index:9999;
+      background:var(--accent);color:#fff;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:12px 18px;font-size:13px;font-weight:600;
+      box-shadow:0 4px 20px rgba(0,153,230,0.4);
+      animation:slideDown .3s ease;
+    ">
+      <span>🚀 Nueva versión disponible</span>
+      <button onclick="aplicarActualizacion()" style="
+        background:#fff;color:var(--accent);border:none;
+        border-radius:8px;padding:6px 14px;font-weight:700;
+        font-size:12px;cursor:pointer;font-family:inherit;
+      ">Actualizar ahora</button>
+    </div>
+  `;
+  document.body.appendChild(banner);
+}
+
+function aplicarActualizacion(){
+  navigator.serviceWorker.ready.then(reg => {
+    reg.waiting?.postMessage({ type: 'SKIP_WAITING' });
+  });
 }
 </script>
 </body>
