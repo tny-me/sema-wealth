@@ -2160,12 +2160,18 @@ async function syncData(){
   try {
     const { db, doc, setDoc } = window._FB;
     await setDoc(doc(db,'users',ST.uid,'data','state'), {
-      perfil:    ST.perfil,
-      ingresos:  ST.ingresos,
-      gastos:    ST.gastos,
-      deudas:    ST.deudas,
-      alertas:   ST.alertas,
-      updatedAt: new Date().toISOString()
+      perfil:         ST.perfil,
+      ingresos:       ST.ingresos,
+      gastos:         ST.gastos,
+      deudas:         ST.deudas,
+      tarjetas:       ST.tarjetas       || [],
+      cargosTarjeta:  ST.cargosTarjeta  || [],
+      prestamos:      ST.prestamos      || [],
+      alertas:        ST.alertas        || [],
+      corridaChecks:  ST.corridaChecks  || {},
+      corridaCerradas:ST.corridaCerradas|| [],
+      notifConfig:    ST.notifConfig    || {},
+      updatedAt:      new Date().toISOString()
     });
     document.getElementById('sync-dot').className = 'sync-dot';
     document.getElementById('sync-label').textContent = 'Sincronizado';
@@ -2181,15 +2187,21 @@ async function loadFromFirebase(uid){
     const snap = await getDoc(doc(db,'users',uid,'data','state'));
     if(snap.exists()){
       const data = snap.data();
-      ST.perfil   = data.perfil    || ST.perfil;
-      ST.ingresos = data.ingresos  || [];
-      ST.gastos   = data.gastos    || [];
-      ST.deudas   = data.deudas    || [];
-      ST.alertas  = data.alertas   || [];
+      ST.perfil          = data.perfil          || ST.perfil;
+      ST.ingresos        = data.ingresos         || [];
+      ST.gastos          = data.gastos           || [];
+      ST.deudas          = data.deudas           || [];
+      ST.tarjetas        = data.tarjetas         || [];
+      ST.cargosTarjeta   = data.cargosTarjeta    || [];
+      ST.prestamos       = data.prestamos        || [];
+      ST.alertas         = data.alertas          || [];
+      ST.corridaChecks   = data.corridaChecks    || {};
+      ST.corridaCerradas = data.corridaCerradas  || [];
+      ST.notifConfig     = data.notifConfig      || {};
       saveToLocal();
-      toast('Datos cargados desde la nube','success');
+      toast('Datos cargados desde la nube ☁️','success');
     }
-  } catch(e){}
+  } catch(e){ console.warn('loadFromFirebase error:', e); }
 }
 function saveToLocal(){ localStorage.setItem('sema_pro_v3', JSON.stringify(ST)); }
 
@@ -5492,11 +5504,12 @@ function renderConfig(){
 }
 
 // ── Service Worker — notificaciones persistentes ──
-if('serviceWorker' in navigator){
+const _esProduccion = location.hostname.includes('github.io') || 
+                      (location.hostname !== 'localhost' && !location.hostname.includes('claudeusercontent'));
+if('serviceWorker' in navigator && _esProduccion){
   navigator.serviceWorker.register('./sw.js')
     .then(r => {
       console.log('SW registrado:', r.scope);
-      // Si ya hay permiso, reprogramar al cargar
       if(Notification.permission === 'granted') programarNotificaciones();
     })
     .catch(e => console.warn('SW error:', e));
