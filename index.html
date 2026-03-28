@@ -758,7 +758,7 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
     <div class="fab-action-label">Nueva Deuda</div>
     <button class="fab-action-btn" style="background:var(--red)"><i class="fa-solid fa-file-invoice-dollar"></i></button>
   </div>
-  <div class="fab-action" onclick="closeFab();openModal('modal-ingreso')">
+  <div class="fab-action" onclick="closeFab();openModal('modal-tarjeta')">
     <div class="fab-action-label">Agregar Tarjeta</div>
     <button class="fab-action-btn" style="background:var(--purple)"><i class="fa-solid fa-credit-card"></i></button>
   </div>
@@ -2189,6 +2189,13 @@ function navigate(page, el){
   currentPage = page;
   const now = new Date();
   document.getElementById('quincena-pill').textContent = `${now.getDate()<=15?'1-15':'16-30'} · ${MESES[now.getMonth()]} ${now.getFullYear()}`;
+  // ── Sincronizar bottom nav móvil ──
+  if(window.innerWidth<=768){
+    document.querySelectorAll('.mbn-item').forEach(i=>i.classList.remove('active'));
+    const mapped = MOBILE_NAV_MAP[page];
+    if(mapped) document.getElementById(mapped)?.classList.add('active');
+    closeFab();
+  }
   if(page==='dashboard') refreshDashboard();
   if(page==='corrida') recalcularCorrida();
   if(page==='prediccion') renderPrediccion();
@@ -4734,13 +4741,8 @@ const MOBILE_NAV_MAP = {
 };
 
 function mobileNavigate(page, el){
-  // Actualizar bottom nav activo
-  document.querySelectorAll('.mbn-item').forEach(i=>i.classList.remove('active'));
-  const mapped = MOBILE_NAV_MAP[page];
-  if(mapped) document.getElementById(mapped)?.classList.add('active');
-  // Navegar usando la función principal
-  const sidebarItem = document.querySelector(`.nav-item[onclick*="'${page}'"]`);
-  navigate(page, sidebarItem);
+  // Delega directamente a navigate; la sincronización del bottom nav ya está integrada ahí
+  navigate(page, el);
 }
 
 function openMoreSheet(){
@@ -4773,24 +4775,7 @@ function closeFab(){
   fab.innerHTML='<i class="fa-solid fa-plus"></i>';
 }
 
-// Detectar móvil y ajustar navigate para sincronizar bottom nav
-const _origNavigate = navigate;
-function navigate(page, el){
-  _origNavigate(page, el);
-  if(window.innerWidth<=768){
-    document.querySelectorAll('.mbn-item').forEach(i=>i.classList.remove('active'));
-    const mapped = MOBILE_NAV_MAP[page];
-    if(mapped) document.getElementById(mapped)?.classList.add('active');
-    closeFab();
-  }
-}
-
-// Agregar tarjeta desde FAB
-document.addEventListener('DOMContentLoaded',()=>{
-  // Remap FAB "Agregar Tarjeta" to correct modal
-  const fabTarjeta = document.querySelector('#mobile-fab-menu .fab-action:last-child');
-  if(fabTarjeta) fabTarjeta.onclick = ()=>{ closeFab(); openModal('modal-tarjeta'); };
-});
+// Agregar tarjeta desde FAB — ya corregido en el HTML directamente
 let _deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
