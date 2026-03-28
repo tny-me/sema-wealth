@@ -402,141 +402,278 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
 .ai-insight-title{font-size:12px;font-weight:700;color:var(--purple);}
 .ai-insight-body{font-size:12px;color:var(--text2);line-height:1.6;}
 
-/* ── RESPONSIVE ── */
-/* ── OVERLAY para sidebar móvil ── */
-#sb-overlay{
-  display:none;position:fixed;inset:0;
-  background:rgba(0,0,0,0.5);z-index:49;
-  backdrop-filter:blur(2px);
-}
-#sb-overlay.open{ display:block; }
-
-/* ── Botón hamburguesa (solo móvil) ── */
-#mobile-menu-btn{
-  display:none;width:36px;height:36px;border-radius:9px;
-  background:var(--bg3);border:1px solid var(--border2);
-  align-items:center;justify-content:center;
-  cursor:pointer;font-size:14px;color:var(--text2);
-  flex-shrink:0;
-}
-
-/* ════════════════════════════
+/* ════════════════════════════════════════════════════
    TABLET  ≤ 1024px
-════════════════════════════ */
+════════════════════════════════════════════════════ */
 @media(max-width:1024px){
   .kpi-grid{ grid-template-columns:repeat(3,1fr); }
   .g-65,.g-73,.intel-grid{ grid-template-columns:1fr; }
 }
 
-/* ════════════════════════════
-   MÓVIL  ≤ 768px
-════════════════════════════ */
+/* ════════════════════════════════════════════════════
+   ELEMENTOS SOLO MÓVIL (ocultos en desktop)
+════════════════════════════════════════════════════ */
+
+/* Bottom nav bar */
+#mobile-bottom-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:var(--bg2);border-top:1px solid var(--border);
+  padding:0 4px;padding-bottom:env(safe-area-inset-bottom,0px);
+  height:calc(60px + env(safe-area-inset-bottom,0px));
+  flex-direction:row;align-items:stretch;
+  box-shadow:0 -2px 16px rgba(0,0,0,0.08);
+}
+.mbn-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:3px;cursor:pointer;
+  color:var(--text3);font-size:9.5px;font-weight:600;
+  letter-spacing:0.02em;padding:6px 2px;
+  border-radius:12px;transition:all .15s;
+  -webkit-tap-highlight-color:transparent;
+  position:relative;
+}
+.mbn-item i{ font-size:18px;transition:all .15s; }
+.mbn-item.active{ color:var(--accent); }
+.mbn-item.active i{ transform:scale(1.1); }
+.mbn-item .mbn-badge{
+  position:absolute;top:4px;right:calc(50% - 16px);
+  width:16px;height:16px;border-radius:50%;
+  background:var(--red);color:#fff;font-size:9px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* FAB — botón flotante de acción rápida */
+#mobile-fab{
+  display:none;position:fixed;
+  bottom:calc(72px + env(safe-area-inset-bottom,0px));
+  right:18px;z-index:101;
+  width:54px;height:54px;border-radius:50%;
+  background:var(--accent);color:#fff;
+  border:none;cursor:pointer;
+  box-shadow:0 4px 20px rgba(0,153,230,0.4);
+  font-size:22px;
+  align-items:center;justify-content:center;
+  transition:transform .2s, box-shadow .2s;
+  -webkit-tap-highlight-color:transparent;
+}
+#mobile-fab:active{ transform:scale(0.93); box-shadow:0 2px 10px rgba(0,153,230,0.3); }
+#mobile-fab.open{ transform:rotate(45deg); }
+
+/* FAB speed-dial */
+#mobile-fab-menu{
+  display:none;position:fixed;
+  bottom:calc(136px + env(safe-area-inset-bottom,0px));
+  right:14px;z-index:101;
+  flex-direction:column;gap:10px;align-items:flex-end;
+}
+#mobile-fab-menu.open{ display:flex; }
+.fab-action{
+  display:flex;align-items:center;gap:10px;
+  -webkit-tap-highlight-color:transparent;
+}
+.fab-action-label{
+  background:var(--bg2);color:var(--text);font-size:12.5px;font-weight:600;
+  padding:6px 12px;border-radius:20px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.12);
+  border:1px solid var(--border);white-space:nowrap;
+}
+.fab-action-btn{
+  width:44px;height:44px;border-radius:50%;
+  border:none;cursor:pointer;font-size:16px;color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 10px rgba(0,0,0,0.2);flex-shrink:0;
+}
+
+/* Overlay FAB */
+#fab-overlay{
+  display:none;position:fixed;inset:0;z-index:99;
+  background:rgba(0,0,0,0.3);backdrop-filter:blur(1px);
+}
+#fab-overlay.open{ display:block; }
+
+/* More sheet (desde el tab "Más") */
+#mobile-more-sheet{
+  display:none;position:fixed;inset:0;z-index:200;
+  align-items:flex-end;
+}
+#mobile-more-sheet.open{ display:flex; }
+#mobile-more-sheet-overlay{
+  position:absolute;inset:0;background:rgba(0,0,0,0.4);
+}
+#mobile-more-content{
+  position:relative;z-index:1;
+  width:100%;background:var(--bg2);
+  border-radius:20px 20px 0 0;
+  padding:20px 16px;
+  padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));
+}
+.more-handle{
+  width:36px;height:4px;border-radius:2px;
+  background:var(--border2);margin:0 auto 20px;
+}
+.more-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;
+}
+.more-item{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.more-icon{
+  width:52px;height:52px;border-radius:16px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;transition:transform .15s;
+}
+.more-item:active .more-icon{ transform:scale(0.93); }
+.more-label{
+  font-size:11px;font-weight:600;color:var(--text2);text-align:center;
+}
+
+/* Hamburguesa desktop (oculta en móvil) */
+#mobile-menu-btn{ display:none; }
+
+/* ════════════════════════════════════════════════════
+   MÓVIL  ≤ 768px  — layout nativo
+════════════════════════════════════════════════════ */
 @media(max-width:768px){
 
-  /* Sidebar — drawer lateral */
-  .sidebar{
-    transform:translateX(-100%);
-    transition:transform .25s cubic-bezier(.4,0,.2,1);
-    width:var(--sidebar) !important;
-    z-index:50;
+  /* Bloquear scroll en html/body — el scroll va en .mobile-scroll */
+  html, body{
+    height:100%;height:100dvh;
+    overflow:hidden;
+    position:fixed;width:100%;
   }
-  .sidebar.mobile-open{ transform:translateX(0); }
-  .sidebar.collapsed{ transform:translateX(-100%); }
 
-  /* Quitar toggle interno en móvil */
-  .sb-toggle{ display:none; }
+  /* Sidebar — oculto en móvil (navegación va abajo) */
+  .sidebar{ display:none !important; }
 
-  /* Main — ocupa todo el ancho */
-  .main{ margin-left:0 !important; }
+  /* Main — ocupa todo el viewport */
+  .main{
+    margin-left:0 !important;
+    width:100%;height:100dvh;
+    display:flex;flex-direction:column;
+    overflow:hidden;
+  }
 
-  /* Topbar */
-  .topbar{ padding:0 14px; gap:8px; }
-  .topbar-title{ font-size:13.5px; }
+  /* Topbar — compacto, sin botones de acción (van en FAB) */
+  .topbar{
+    padding:0 16px;
+    padding-top:env(safe-area-inset-top,0px);
+    height:calc(52px + env(safe-area-inset-top,0px));
+    flex-shrink:0;position:relative;z-index:10;
+  }
+  .topbar-title{ font-size:15px; }
+  #quincena-pill{ font-size:10px; }
 
-  /* Mostrar hamburguesa */
-  #mobile-menu-btn{ display:flex; }
+  /* Ocultar botones de acción del topbar en móvil (están en FAB) */
+  .topbar-right{ display:none; }
 
-  /* Botones topbar — solo icono en móvil */
-  .topbar-right .btn .btn-label{ display:none; }
-  .topbar-right .btn{ padding:8px 10px; gap:0; }
+  /* Área scrollable de contenido */
+  .content{
+    flex:1;overflow-y:auto;overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    padding:14px 14px calc(14px + 60px + env(safe-area-inset-bottom,0px));
+    /* espacio extra abajo para bottom nav */
+  }
 
-  /* Ocultar botón instalar en topbar si la pantalla es pequeña */
-  #install-btn{ display:none !important; }
+  /* Mostrar elementos móviles */
+  #mobile-bottom-nav{ display:flex; }
+  #mobile-fab{ display:flex; }
 
   /* Grids → columna única */
   .g2,.g3,.g-65,.g-73,.intel-grid{ grid-template-columns:1fr; }
 
-  /* KPI — 2 columnas */
-  .kpi-grid{ grid-template-columns:repeat(2,1fr); gap:10px; }
-  .kpi{ padding:14px; }
-  .kpi-val{ font-size:18px; }
+  /* KPI — 2 columnas compactas */
+  .kpi-grid{ grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:14px; }
+  .kpi{ padding:12px 14px; }
+  .kpi-val{ font-size:17px; }
+  .kpi-label{ font-size:10px; margin-bottom:6px; }
 
-  /* Content — menos padding */
-  .content{ padding:14px; }
-  .section-h{ font-size:15px; }
-  .section-sub{ margin-bottom:14px; }
+  /* Secciones */
+  .section-h{ font-size:16px; margin-bottom:2px; }
+  .section-sub{ font-size:12px; margin-bottom:14px; }
   .mb24{ margin-bottom:14px; }
   .mb16{ margin-bottom:10px; }
 
   /* Tablas — scroll horizontal */
   .corrida-table-wrap,
-  .table-modern-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
-  table.table-modern,
-  table.corrida-table{ min-width:560px; }
+  .table-modern-wrap{
+    overflow-x:auto;-webkit-overflow-scrolling:touch;
+    border-radius:0;
+  }
+  table.table-modern{ min-width:480px; }
+  table.corrida-table{ min-width:600px; }
 
   /* Cards */
-  .card-header{ padding:12px 14px 10px; flex-wrap:wrap; gap:8px; }
-  .card-body{ padding:14px; }
+  .card{ border-radius:14px; }
+  .card-header{ padding:12px 14px 10px; flex-wrap:wrap; gap:6px; }
+  .card-body{ padding:12px 14px; }
 
-  /* Auth card — full width */
-  .auth-card{ width:calc(100% - 32px); padding:32px 20px; }
+  /* Auth — centrado y full width */
+  .auth-card{
+    width:calc(100% - 32px);
+    padding:28px 20px;
+    border-radius:20px;
+  }
 
-  /* Modal — full screen en móvil */
+  /* Modales — bottom sheet nativo */
+  .modal-bg{
+    align-items:flex-end;
+    padding:0;
+  }
   .modal{
     width:100%;max-width:100%;margin:0;
-    border-radius:16px 16px 0 0;
-    position:fixed;bottom:0;left:0;right:0;
+    border-radius:20px 20px 0 0;
+    position:relative;
     max-height:92dvh;overflow-y:auto;
+    padding-bottom:env(safe-area-inset-bottom,0px);
   }
-  .modal-bg{ align-items:flex-end; }
+  /* Handle del modal */
+  .modal-header::before{
+    content:'';display:block;
+    width:36px;height:4px;border-radius:2px;
+    background:var(--border2);
+    margin:0 auto 16px;
+  }
 
   /* Predict cards — 2 columnas */
-  .predict-grid{ grid-template-columns:repeat(2,1fr) !important; gap:10px !important; }
-  .predict-card{ padding:14px; }
-  .predict-val{ font-size:18px !important; }
+  .predict-grid{ grid-template-columns:repeat(2,1fr) !important; gap:8px !important; }
+  .predict-card{ padding:12px; }
+  .predict-val{ font-size:16px !important; }
+  .predict-label{ font-size:10px; }
 
-  /* Corrida summary row */
-  .corrida-summary-row{ flex-direction:column; gap:8px; }
-
-  /* Formularios — full width */
+  /* Formularios */
   .form-row,.form-row-3{ grid-template-columns:1fr !important; }
 
-  /* Intelligence panel */
-  .intel-grid{ gap:10px; }
+  /* Charts */
+  .chart-wrap-lg{ height:200px !important; }
+  .chart-wrap-sm{ height:150px !important; }
 
-  /* Chart wraps */
-  .chart-wrap-lg{ height:220px !important; }
-  .chart-wrap-sm{ height:160px !important; }
+  /* Botones de acción dentro de páginas — más grandes para touch */
+  .btn{ min-height:40px; }
+  .btn-sm{ min-height:34px; }
 
-  /* Topbar right — apretar botones */
-  .topbar-right{ gap:4px; }
+  /* Spacing entre botones de acción de página */
+  [style*="display:flex"][style*="gap:8px"]{
+    flex-wrap:wrap;
+  }
 
-  /* Quincena pill — más corto */
-  #quincena-pill{ font-size:10px; padding:3px 8px; }
+  /* Alert items */
+  .alert-item{ padding:10px; }
 
-  /* Config page — todo en columna */
-  #page-config .g2{ grid-template-columns:1fr; }
+  /* Nav badges corrida */
+  #badge-alertas{ display:none; }
 }
 
-/* ════════════════════════════
-   MUY PEQUEÑO  ≤ 400px
-════════════════════════════ */
-@media(max-width:400px){
-  .kpi-grid{ grid-template-columns:1fr 1fr; gap:8px; }
-  .kpi-val{ font-size:16px; }
-  .predict-grid{ grid-template-columns:1fr 1fr !important; }
-  .auth-card{ padding:24px 14px; }
-  .content{ padding:10px; }
+/* ════════════════════════════════════════════════════
+   MUY PEQUEÑO  ≤ 390px
+════════════════════════════════════════════════════ */
+@media(max-width:390px){
+  .kpi-grid{ gap:8px; }
+  .kpi-val{ font-size:15px; }
+  .more-grid{ grid-template-columns:repeat(4,1fr); gap:8px; }
+  .more-icon{ width:46px;height:46px;font-size:18px; }
+  .auth-card{ padding:22px 16px; }
 }
 </style>
 </head>
@@ -576,6 +713,100 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
     <button id="install-btn" style="display:none;width:100%;justify-content:center;padding:10px;margin-top:10px;background:rgba(0,153,230,0.08);border:1px solid rgba(0,153,230,0.2);border-radius:9px;color:#0099e6;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Inter',Arial,sans-serif;" onclick="installApp()">
       <i class="fa-solid fa-download" style="margin-right:6px"></i> Instalar como app en esta computadora
     </button>
+  </div>
+</div>
+
+<!-- ======================================================
+     MÓVIL — Bottom Navigation Bar
+====================================================== -->
+<nav id="mobile-bottom-nav">
+  <div class="mbn-item active" id="mbn-dashboard" onclick="mobileNavigate('dashboard',this)">
+    <i class="fa-solid fa-chart-pie"></i>
+    <span>Inicio</span>
+  </div>
+  <div class="mbn-item" id="mbn-gastos" onclick="mobileNavigate('gastos',this)">
+    <i class="fa-solid fa-receipt"></i>
+    <span>Gastos</span>
+  </div>
+  <div class="mbn-item" id="mbn-corrida" onclick="mobileNavigate('corrida',this)">
+    <i class="fa-solid fa-table-list"></i>
+    <span>Corrida</span>
+    <span class="mbn-badge" id="mbn-badge" style="display:none">!</span>
+  </div>
+  <div class="mbn-item" id="mbn-tarjetas" onclick="mobileNavigate('tarjetas',this)">
+    <i class="fa-solid fa-credit-card"></i>
+    <span>Tarjetas</span>
+  </div>
+  <div class="mbn-item" id="mbn-mas" onclick="openMoreSheet()">
+    <i class="fa-solid fa-grip"></i>
+    <span>Más</span>
+  </div>
+</nav>
+
+<!-- FAB — Acción rápida -->
+<div id="fab-overlay" onclick="closeFab()"></div>
+<div id="mobile-fab-menu">
+  <div class="fab-action" onclick="closeFab();openModal('modal-ingreso')">
+    <div class="fab-action-label">Nuevo Ingreso</div>
+    <button class="fab-action-btn" style="background:var(--green)"><i class="fa-solid fa-wallet"></i></button>
+  </div>
+  <div class="fab-action" onclick="closeFab();openModal('modal-gasto')">
+    <div class="fab-action-label">Nuevo Gasto</div>
+    <button class="fab-action-btn" style="background:var(--orange)"><i class="fa-solid fa-receipt"></i></button>
+  </div>
+  <div class="fab-action" onclick="closeFab();openModal('modal-deuda')">
+    <div class="fab-action-label">Nueva Deuda</div>
+    <button class="fab-action-btn" style="background:var(--red)"><i class="fa-solid fa-file-invoice-dollar"></i></button>
+  </div>
+  <div class="fab-action" onclick="closeFab();openModal('modal-ingreso')">
+    <div class="fab-action-label">Agregar Tarjeta</div>
+    <button class="fab-action-btn" style="background:var(--purple)"><i class="fa-solid fa-credit-card"></i></button>
+  </div>
+</div>
+<button id="mobile-fab" onclick="toggleFab()">
+  <i class="fa-solid fa-plus"></i>
+</button>
+
+<!-- More Sheet -->
+<div id="mobile-more-sheet">
+  <div id="mobile-more-sheet-overlay" onclick="closeMoreSheet()"></div>
+  <div id="mobile-more-content">
+    <div class="more-handle"></div>
+    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:16px;">Más opciones</div>
+    <div class="more-grid">
+      <div class="more-item" onclick="closeMoreSheet();mobileNavigate('ingresos',null)">
+        <div class="more-icon" style="background:rgba(0,168,118,0.12);color:var(--green)"><i class="fa-solid fa-wallet"></i></div>
+        <span class="more-label">Ingresos</span>
+      </div>
+      <div class="more-item" onclick="closeMoreSheet();mobileNavigate('deudas',null)">
+        <div class="more-icon" style="background:rgba(229,51,74,0.1);color:var(--red)"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+        <span class="more-label">Deudas</span>
+      </div>
+      <div class="more-item" onclick="closeMoreSheet();mobileNavigate('prestamos',null)">
+        <div class="more-icon" style="background:rgba(217,119,6,0.1);color:var(--orange)"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+        <span class="more-label">Préstamos</span>
+      </div>
+      <div class="more-item" onclick="closeMoreSheet();mobileNavigate('calendario',null)">
+        <div class="more-icon" style="background:rgba(0,153,230,0.1);color:var(--accent)"><i class="fa-solid fa-calendar-days"></i></div>
+        <span class="more-label">Calendario</span>
+      </div>
+      <div class="more-item" onclick="closeMoreSheet();mobileNavigate('prediccion',null)">
+        <div class="more-icon" style="background:rgba(124,58,237,0.1);color:var(--purple)"><i class="fa-solid fa-brain"></i></div>
+        <span class="more-label">IA Predictiva</span>
+      </div>
+      <div class="more-item" onclick="closeMoreSheet();mobileNavigate('estadisticas',null)">
+        <div class="more-icon" style="background:rgba(0,153,230,0.08);color:var(--accent)"><i class="fa-solid fa-chart-line"></i></div>
+        <span class="more-label">Estadísticas</span>
+      </div>
+      <div class="more-item" onclick="closeMoreSheet();syncData()">
+        <div class="more-icon" style="background:rgba(0,168,118,0.08);color:var(--green)"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+        <span class="more-label">Sincronizar</span>
+      </div>
+      <div class="more-item" onclick="closeMoreSheet();mobileNavigate('config',null)">
+        <div class="more-icon" style="background:rgba(0,0,0,0.06);color:var(--text2)"><i class="fa-solid fa-gear"></i></div>
+        <span class="more-label">Config</span>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -631,7 +862,6 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
 <div class="main">
   <header class="topbar">
     <div class="topbar-left">
-      <div id="mobile-menu-btn" onclick="openSidebarMobile()"><i class="fa-solid fa-bars"></i></div>
       <div class="topbar-title" id="page-title">Dashboard</div>
       <div id="quincena-pill" style="font-size:11px;color:var(--text3);font-family:var(--font-mono);"></div>
     </div>
@@ -1957,8 +2187,6 @@ function navigate(page, el){
   if(el) el.classList.add('active');
   document.getElementById('page-title').textContent = PAGE_TITLES[page]||page;
   currentPage = page;
-  // Cerrar sidebar en móvil al navegar
-  if(window.innerWidth <= 768) closeSidebarMobile();
   const now = new Date();
   document.getElementById('quincena-pill').textContent = `${now.getDate()<=15?'1-15':'16-30'} · ${MESES[now.getMonth()]} ${now.getFullYear()}`;
   if(page==='dashboard') refreshDashboard();
@@ -4499,7 +4727,70 @@ function renderPrestamos(){
   }
 }
 
-// ── PWA Install ──
+// ── MOBILE NATIVE APP FUNCTIONS ──
+const MOBILE_NAV_MAP = {
+  dashboard:'mbn-dashboard', gastos:'mbn-gastos',
+  corrida:'mbn-corrida', tarjetas:'mbn-tarjetas'
+};
+
+function mobileNavigate(page, el){
+  // Actualizar bottom nav activo
+  document.querySelectorAll('.mbn-item').forEach(i=>i.classList.remove('active'));
+  const mapped = MOBILE_NAV_MAP[page];
+  if(mapped) document.getElementById(mapped)?.classList.add('active');
+  // Navegar usando la función principal
+  const sidebarItem = document.querySelector(`.nav-item[onclick*="'${page}'"]`);
+  navigate(page, sidebarItem);
+}
+
+function openMoreSheet(){
+  document.getElementById('mobile-more-sheet').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeMoreSheet(){
+  document.getElementById('mobile-more-sheet').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+function toggleFab(){
+  const fab = document.getElementById('mobile-fab');
+  const menu = document.getElementById('mobile-fab-menu');
+  const overlay = document.getElementById('fab-overlay');
+  const isOpen = menu.classList.contains('open');
+  if(isOpen){ closeFab(); }
+  else {
+    menu.classList.add('open');
+    overlay.classList.add('open');
+    fab.classList.add('open');
+    fab.innerHTML='<i class="fa-solid fa-xmark"></i>';
+  }
+}
+function closeFab(){
+  document.getElementById('mobile-fab-menu').classList.remove('open');
+  document.getElementById('fab-overlay').classList.remove('open');
+  const fab = document.getElementById('mobile-fab');
+  fab.classList.remove('open');
+  fab.innerHTML='<i class="fa-solid fa-plus"></i>';
+}
+
+// Detectar móvil y ajustar navigate para sincronizar bottom nav
+const _origNavigate = navigate;
+function navigate(page, el){
+  _origNavigate(page, el);
+  if(window.innerWidth<=768){
+    document.querySelectorAll('.mbn-item').forEach(i=>i.classList.remove('active'));
+    const mapped = MOBILE_NAV_MAP[page];
+    if(mapped) document.getElementById(mapped)?.classList.add('active');
+    closeFab();
+  }
+}
+
+// Agregar tarjeta desde FAB
+document.addEventListener('DOMContentLoaded',()=>{
+  // Remap FAB "Agregar Tarjeta" to correct modal
+  const fabTarjeta = document.querySelector('#mobile-fab-menu .fab-action:last-child');
+  if(fabTarjeta) fabTarjeta.onclick = ()=>{ closeFab(); openModal('modal-tarjeta'); };
+});
 let _deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
