@@ -849,11 +849,12 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
       <div id="quincena-pill" style="font-size:11px;color:var(--text3);font-family:var(--font-mono);"></div>
     </div>
     <div class="topbar-right">
-      <button class="btn btn-ghost btn-sm" onclick="openModal('modal-ingreso')"><i class="fa-solid fa-plus"></i><span class="btn-label"> Ingreso</span></button>
-      <button class="btn btn-ghost btn-sm" onclick="openModal('modal-gasto')"><i class="fa-solid fa-plus"></i><span class="btn-label"> Gasto</span></button>
-      <button class="btn btn-primary btn-sm" onclick="openModal('modal-deuda')"><i class="fa-solid fa-circle-plus"></i><span class="btn-label"> Deuda</span></button>
-      <button class="btn btn-ghost btn-sm" onclick="syncData()" title="Sincronizar"><i class="fa-solid fa-cloud-arrow-up"></i></button>
-      <button id="install-btn-app" style="display:none" class="btn btn-ghost btn-sm" onclick="installApp()" title="Instalar app"><i class="fa-solid fa-download"></i><span class="btn-label"> Instalar</span></button>
+      <button class="btn btn-ghost btn-sm" id="topbar-btn-ingreso" onclick="openModal('modal-ingreso')"><i class="fa-solid fa-wallet"></i><span class="btn-label"> Ingreso</span></button>
+      <button class="btn btn-ghost btn-sm" id="topbar-btn-gasto" onclick="abrirGastoRapido()"><i class="fa-solid fa-receipt"></i><span class="btn-label"> Gasto efectivo</span></button>
+      <button class="btn btn-ghost btn-sm" onclick="openModal('modal-deuda')"><i class="fa-solid fa-file-invoice-dollar"></i><span class="btn-label"> Deuda/Préstamo</span></button>
+      <button class="btn btn-ghost btn-sm" onclick="openModal('modal-tarjeta')"><i class="fa-solid fa-credit-card"></i><span class="btn-label"> Tarjeta</span></button>
+      <button class="btn btn-ghost btn-sm" onclick="syncData()" title="Sincronizar con la nube"><i class="fa-solid fa-cloud-arrow-up"></i></button>
+      <button id="install-btn-app" style="display:none" class="btn btn-ghost btn-sm" onclick="installApp()" title="Instalar app"><i class="fa-solid fa-download"></i></button>
     </div>
   </header>
 
@@ -4869,7 +4870,24 @@ function atajoCat(cat, emoji){
   document.getElementById('hoy-concepto').focus();
 }
 
-function registrarGastoHoy(){
+function abrirGastoRapido(){
+  if(currentPage === 'hoy'){
+    // Ya estamos en Hoy — hacer scroll al formulario y enfocar
+    const inp = document.getElementById('hoy-concepto');
+    if(inp){
+      inp.scrollIntoView({ behavior:'smooth', block:'center' });
+      setTimeout(()=>inp.focus(), 300);
+    }
+  } else {
+    // En otra página — navegar a Hoy y enfocar
+    navigate('hoy', document.querySelector('.nav-item'));
+    setTimeout(()=>{
+      const inp = document.getElementById('hoy-concepto');
+      if(inp){ inp.scrollIntoView({ behavior:'smooth', block:'center' }); inp.focus(); }
+    }, 350);
+  }
+}
+
   const concepto = document.getElementById('hoy-concepto').value.trim();
   const monto    = parseFloat(document.getElementById('hoy-monto').value);
   const cat      = document.getElementById('hoy-categoria').value;
