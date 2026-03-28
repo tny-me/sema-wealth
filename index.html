@@ -720,17 +720,13 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
      MÓVIL — Bottom Navigation Bar
 ====================================================== -->
 <nav id="mobile-bottom-nav">
-  <div class="mbn-item active" id="mbn-dashboard" onclick="mobileNavigate('dashboard',this)">
-    <i class="fa-solid fa-chart-pie"></i>
-    <span>Inicio</span>
-  </div>
-  <div class="mbn-item" id="mbn-gastos" onclick="mobileNavigate('gastos',this)">
-    <i class="fa-solid fa-receipt"></i>
-    <span>Gastos</span>
+  <div class="mbn-item active" id="mbn-hoy" onclick="mobileNavigate('hoy',this)">
+    <i class="fa-solid fa-sun"></i>
+    <span>Hoy</span>
   </div>
   <div class="mbn-item" id="mbn-corrida" onclick="mobileNavigate('corrida',this)">
     <i class="fa-solid fa-table-list"></i>
-    <span>Corrida</span>
+    <span>Mis Pagos</span>
     <span class="mbn-badge" id="mbn-badge" style="display:none">!</span>
   </div>
   <div class="mbn-item" id="mbn-tarjetas" onclick="mobileNavigate('tarjetas',this)">
@@ -786,17 +782,9 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
         <div class="more-icon" style="background:rgba(217,119,6,0.1);color:var(--orange)"><i class="fa-solid fa-hand-holding-dollar"></i></div>
         <span class="more-label">Préstamos</span>
       </div>
-      <div class="more-item" onclick="closeMoreSheet();mobileNavigate('calendario',null)">
-        <div class="more-icon" style="background:rgba(0,153,230,0.1);color:var(--accent)"><i class="fa-solid fa-calendar-days"></i></div>
-        <span class="more-label">Calendario</span>
-      </div>
-      <div class="more-item" onclick="closeMoreSheet();mobileNavigate('prediccion',null)">
-        <div class="more-icon" style="background:rgba(124,58,237,0.1);color:var(--purple)"><i class="fa-solid fa-brain"></i></div>
-        <span class="more-label">IA Predictiva</span>
-      </div>
-      <div class="more-item" onclick="closeMoreSheet();mobileNavigate('estadisticas',null)">
-        <div class="more-icon" style="background:rgba(0,153,230,0.08);color:var(--accent)"><i class="fa-solid fa-chart-line"></i></div>
-        <span class="more-label">Estadísticas</span>
+      <div class="more-item" onclick="closeMoreSheet();mobileNavigate('gastos',null)">
+        <div class="more-icon" style="background:rgba(0,153,230,0.1);color:var(--accent)"><i class="fa-solid fa-receipt"></i></div>
+        <span class="more-label">Historial</span>
       </div>
       <div class="more-item" onclick="closeMoreSheet();syncData()">
         <div class="more-icon" style="background:rgba(0,168,118,0.08);color:var(--green)"><i class="fa-solid fa-cloud-arrow-up"></i></div>
@@ -805,10 +793,6 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
       <div class="more-item" onclick="closeMoreSheet();mobileNavigate('config',null)">
         <div class="more-icon" style="background:rgba(0,0,0,0.06);color:var(--text2)"><i class="fa-solid fa-gear"></i></div>
         <span class="more-label">Config</span>
-      </div>
-      <div class="more-item" onclick="closeMoreSheet();generarPDF('resumen')">
-        <div class="more-icon" style="background:rgba(0,168,118,0.1);color:var(--green)"><i class="fa-solid fa-file-pdf"></i></div>
-        <span class="more-label">Reporte PDF</span>
       </div>
     </div>
   </div>
@@ -833,20 +817,15 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
   </div>
 
   <div class="nav-section">Principal</div>
-  <div class="nav-item active" onclick="navigate('dashboard',this)"><i class="fa-solid fa-chart-pie"></i><span class="nav-text">Dashboard</span></div>
-  <div class="nav-item" onclick="navigate('corrida',this)"><i class="fa-solid fa-table-list"></i><span class="nav-text">Corrida Quincenal</span><span class="nav-badge" id="badge-alertas">0</span></div>
-  <div class="nav-item" onclick="navigate('prediccion',this)"><i class="fa-solid fa-brain"></i><span class="nav-text">IA Predictiva</span></div>
+  <div class="nav-item active" onclick="navigate('hoy',this)"><i class="fa-solid fa-sun"></i><span class="nav-text">Hoy</span></div>
+  <div class="nav-item" onclick="navigate('corrida',this)"><i class="fa-solid fa-table-list"></i><span class="nav-text">Mis Pagos</span><span class="nav-badge" id="badge-alertas" style="display:none">!</span></div>
+  <div class="nav-item" onclick="navigate('tarjetas',this)"><i class="fa-solid fa-credit-card"></i><span class="nav-text">Tarjetas</span></div>
 
-  <div class="nav-section">Finanzas</div>
+  <div class="nav-section">Más</div>
   <div class="nav-item" onclick="navigate('ingresos',this)"><i class="fa-solid fa-wallet"></i><span class="nav-text">Ingresos</span></div>
-  <div class="nav-item" onclick="navigate('gastos',this)"><i class="fa-solid fa-receipt"></i><span class="nav-text">Gastos</span></div>
-  <div class="nav-item" onclick="navigate('deudas',this)"><i class="fa-solid fa-file-invoice-dollar"></i><span class="nav-text">Deudas &amp; Crédito</span></div>
-  <div class="nav-item" onclick="navigate('tarjetas',this)"><i class="fa-solid fa-credit-card"></i><span class="nav-text">Tarjetas de Crédito</span></div>
+  <div class="nav-item" onclick="navigate('deudas',this)"><i class="fa-solid fa-file-invoice-dollar"></i><span class="nav-text">Deudas</span></div>
   <div class="nav-item" onclick="navigate('prestamos',this)"><i class="fa-solid fa-hand-holding-dollar"></i><span class="nav-text">Préstamos</span></div>
-  <div class="nav-item" onclick="navigate('calendario',this)"><i class="fa-solid fa-calendar-days"></i><span class="nav-text">Calendario</span></div>
-
-  <div class="nav-section">Sistema</div>
-  <div class="nav-item" onclick="navigate('estadisticas',this)"><i class="fa-solid fa-chart-line"></i><span class="nav-text">Estadísticas</span></div>
+  <div class="nav-item" onclick="navigate('gastos',this)"><i class="fa-solid fa-receipt"></i><span class="nav-text">Historial gastos</span></div>
   <div class="nav-item" onclick="navigate('config',this)"><i class="fa-solid fa-gear"></i><span class="nav-text">Configuración</span></div>
 
   <div class="sidebar-footer">
@@ -881,61 +860,90 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
   <div class="content">
 
   <!-- ============================================================
-       DASHBOARD
+       HOY — Gasto diario en efectivo
   ============================================================ -->
-  <div id="page-dashboard" class="page active">
+  <div id="page-hoy" class="page active">
 
-    <div class="kpi-grid" id="kpi-grid">
-      <div class="kpi">
-        <div class="kpi-glow" style="background:radial-gradient(circle,var(--accent-glow),transparent)"></div>
-        <div class="kpi-label">Ingreso Quincenal</div>
-        <div class="kpi-val mono" id="kpi-ingreso" style="color:var(--accent)">$0</div>
-        <div class="kpi-sub">Base de cálculo</div>
-        <div class="kpi-trend neutral" id="kpi-ingreso-trend">—</div>
+    <!-- Resumen del día -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px">
+      <div class="kpi" style="padding:16px">
+        <div class="kpi-label">Gasté hoy</div>
+        <div class="kpi-val mono" id="hoy-total" style="color:var(--red);font-size:20px">$0</div>
+        <div class="kpi-sub" id="hoy-fecha"></div>
       </div>
-      <div class="kpi">
-        <div class="kpi-glow" style="background:radial-gradient(circle,var(--red-glow),transparent)"></div>
-        <div class="kpi-label">Gastos Fijos /Q</div>
-        <div class="kpi-val mono" id="kpi-fijos" style="color:var(--red)">$0</div>
-        <div class="kpi-sub">Compromisos recurrentes</div>
-        <div class="kpi-trend" id="kpi-fijos-pct">—</div>
+      <div class="kpi" style="padding:16px">
+        <div class="kpi-label">Esta semana</div>
+        <div class="kpi-val mono" id="hoy-semana" style="color:var(--orange);font-size:20px">$0</div>
+        <div class="kpi-sub">últimos 7 días</div>
       </div>
-      <div class="kpi">
-        <div class="kpi-glow" style="background:radial-gradient(circle,var(--orange-glow),transparent)"></div>
-        <div class="kpi-label">Cuotas Deudas /Q</div>
-        <div class="kpi-val mono" id="kpi-cuotas" style="color:var(--orange)">$0</div>
-        <div class="kpi-sub">Pagos de crédito activos</div>
-        <div class="kpi-trend" id="kpi-cuotas-pct">—</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-glow" style="background:radial-gradient(circle,var(--green-glow),transparent)"></div>
-        <div class="kpi-label">Dinero Libre /Q</div>
-        <div class="kpi-val mono" id="kpi-libre" style="color:var(--green)">$0</div>
-        <div class="kpi-sub">Disponible real</div>
-        <div class="kpi-trend" id="kpi-libre-pct">—</div>
+      <div class="kpi" style="padding:16px">
+        <div class="kpi-label">Libre hoy</div>
+        <div class="kpi-val mono" id="hoy-libre" style="color:var(--green);font-size:20px">$0</div>
+        <div class="kpi-sub">del presupuesto diario</div>
       </div>
     </div>
 
-    <div class="intel-grid mb24">
+    <!-- Registro rápido -->
+    <div class="card mb16">
+      <div class="card-header"><span class="card-title">¿En qué gasté?</span></div>
+      <div class="card-body">
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <div class="form-group" style="flex:2;min-width:140px;margin-bottom:0">
+            <label class="form-label">Concepto</label>
+            <input type="text" class="form-control" id="hoy-concepto" placeholder="ej. Tacos, Gasolina, Farmacia" onkeydown="if(event.key==='Enter')registrarGastoHoy()">
+          </div>
+          <div class="form-group" style="flex:1;min-width:100px;margin-bottom:0">
+            <label class="form-label">Monto ($)</label>
+            <input type="number" class="form-control" id="hoy-monto" placeholder="0.00" step="0.01" onkeydown="if(event.key==='Enter')registrarGastoHoy()">
+          </div>
+          <div class="form-group" style="flex:1;min-width:120px;margin-bottom:0">
+            <label class="form-label">Categoría</label>
+            <select class="form-control" id="hoy-categoria">
+              <option>Alimentación</option><option>Transporte</option><option>Salud</option>
+              <option>Entretenimiento</option><option>Ropa</option><option>Servicios</option><option>Otro</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" style="height:40px;padding:0 20px;margin-bottom:0" onclick="registrarGastoHoy()">
+            <i class="fa-solid fa-plus"></i> Anotar
+          </button>
+        </div>
+        <!-- Atajos rápidos de categoría -->
+        <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap">
+          <span style="font-size:11px;color:var(--text3);align-self:center">Rápido:</span>
+          <button class="btn btn-ghost btn-sm" onclick="atajoCat('Alimentación','🍔')" style="font-size:11.5px;padding:4px 10px">🍔 Comida</button>
+          <button class="btn btn-ghost btn-sm" onclick="atajoCat('Transporte','⛽')" style="font-size:11.5px;padding:4px 10px">⛽ Gasolina</button>
+          <button class="btn btn-ghost btn-sm" onclick="atajoCat('Entretenimiento','🎬')" style="font-size:11.5px;padding:4px 10px">🎬 Ocio</button>
+          <button class="btn btn-ghost btn-sm" onclick="atajoCat('Salud','💊')" style="font-size:11.5px;padding:4px 10px">💊 Farmacia</button>
+          <button class="btn btn-ghost btn-sm" onclick="atajoCat('Servicios','🛒')" style="font-size:11.5px;padding:4px 10px">🛒 Super</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lo de hoy -->
+    <div class="g-65">
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Flujo Financiero Quincenal</span>
-          <select class="form-control" style="width:auto;font-size:11.5px;padding:5px 10px" id="dash-year-sel" onchange="renderDashCharts()"></select>
+          <span class="card-title">Lo de hoy</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <button class="btn btn-ghost btn-sm" id="hoy-ver-btn" onclick="toggleVerSemana()" style="font-size:11px">Ver semana</button>
+          </div>
         </div>
-        <div class="card-body">
-          <div class="chart-wrap-lg"><canvas id="chart-flujo"></canvas></div>
+        <div class="card-body" style="padding:0">
+          <div id="hoy-lista" style="min-height:80px"></div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">Distribución de Gastos</span></div>
-        <div class="card-body"><div class="chart-wrap-sm"><canvas id="chart-donut"></canvas></div><div id="leyenda-donut" style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:5px"></div></div>
-      </div>
-    </div>
 
-    <div class="card mb16">
-      <div class="card-header"><span class="card-title">Últimas Transacciones</span></div>
-      <div class="card-body" style="padding:0">
-        <div class="table-modern-wrap"><table class="table-modern"><thead><tr><th>Concepto</th><th>Categoría</th><th>Monto</th></tr></thead><tbody id="tabla-recientes"></tbody></table></div>
+      <div>
+        <!-- Por categoría hoy -->
+        <div class="card mb16">
+          <div class="card-header"><span class="card-title">Por categoría</span></div>
+          <div class="card-body" id="hoy-cats" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+        <!-- Próximo pago urgente -->
+        <div class="card" id="hoy-prox-card">
+          <div class="card-header"><span class="card-title"><i class="fa-solid fa-bell" style="color:var(--orange);margin-right:6px;font-size:12px"></i>Próximo pago</span></div>
+          <div class="card-body" id="hoy-proximo"></div>
+        </div>
       </div>
     </div>
 
@@ -945,8 +953,8 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
        CORRIDA QUINCENAL
   ============================================================ -->
   <div id="page-corrida" class="page">
-    <div class="section-h">Corrida Quincenal Inteligente</div>
-    <div class="section-sub">Proyección automatizada con algoritmo de salud financiera</div>
+    <div class="section-h">Mis Pagos por Quincena</div>
+    <div class="section-sub">Todo lo que debes pagar — calculado automático según tus deudas, tarjetas y préstamos</div>
 
     <div class="g3 mb16">
       <div class="predict-card">
@@ -2279,10 +2287,11 @@ function cerrarSesion(){
 // NAVIGATION
 // ============================================================
 const PAGE_TITLES = {
-  dashboard:'Dashboard', corrida:'Corrida Quincenal', prediccion:'IA Predictiva',
-  ingresos:'Ingresos', gastos:'Gastos', deudas:'Deudas & Crédito',
+  hoy:'Hoy', corrida:'Mis Pagos', prediccion:'IA Predictiva',
+  ingresos:'Ingresos', gastos:'Historial de Gastos', deudas:'Deudas',
   tarjetas:'Tarjetas de Crédito', prestamos:'Préstamos',
-  calendario:'Calendario', estadisticas:'Estadísticas', config:'Configuración'
+  calendario:'Calendario', estadisticas:'Estadísticas', config:'Configuración',
+  dashboard:'Dashboard'
 };
 let currentPage = 'dashboard';
 function navigate(page, el){
@@ -2301,6 +2310,7 @@ function navigate(page, el){
     if(mapped) document.getElementById(mapped)?.classList.add('active');
     closeFab();
   }
+  if(page==='hoy') renderHoy();
   if(page==='dashboard') refreshDashboard();
   if(page==='corrida') recalcularCorrida();
   if(page==='prediccion') renderPrediccion();
@@ -4336,7 +4346,6 @@ function initApp(){
   document.getElementById('quincena-pill').textContent=`${now.getDate()<=15?'1-15':'16-30'} · ${MESES[now.getMonth()]} ${now.getFullYear()}`;
   const prInicio=document.getElementById('pr-inicio');
   if(prInicio) prInicio.value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  // Restore sidebar state
   if(ST._sidebarCollapsed){
     const sb=document.getElementById('sidebar');
     const main=document.querySelector('.main');
@@ -4345,15 +4354,13 @@ function initApp(){
     main.classList.add('expanded');
     if(icon) icon.className='fa-solid fa-chevron-right';
   }
-  refreshDashboard();
-  // check sync status
+  // Iniciar en Hoy
+  navigate('hoy', document.querySelector('.nav-item'));
   if(!window._FB || !ST.uid || ST.uid.startsWith('local-')){
     document.getElementById('sync-dot').className='sync-dot offline';
     document.getElementById('sync-label').textContent='Modo local';
   }
-  // setup quincena strips
   buildQStrip('strip-ingresos');
-  // populate fuente select on gasto modal open
   document.getElementById('modal-gasto')?.addEventListener('click',()=>{
     const sel=document.getElementById('g-fuente-ingreso');
     if(sel){
@@ -4839,10 +4846,192 @@ function renderPrestamos(){
   }
 }
 
+// ══════════════════════════════════════════════════════════
+// HOY — Gasto diario en efectivo
+// ══════════════════════════════════════════════════════════
+let verSemana = false;
+
+function atajoCat(cat, emoji){
+  const inp = document.getElementById('hoy-categoria');
+  if(inp) inp.value = cat;
+  document.getElementById('hoy-concepto').focus();
+}
+
+function registrarGastoHoy(){
+  const concepto = document.getElementById('hoy-concepto').value.trim();
+  const monto    = parseFloat(document.getElementById('hoy-monto').value);
+  const cat      = document.getElementById('hoy-categoria').value;
+  if(!concepto){ toast('Escribe qué compraste','error'); return; }
+  if(!monto||monto<=0){ toast('Escribe el monto','error'); return; }
+
+  const now = new Date();
+  const gasto = {
+    id: Date.now(), concepto, monto, categoria: cat,
+    frecuencia:'Único', metodo:'Efectivo',
+    mes: now.getMonth()+1, ano: now.getFullYear(),
+    quincena: now.getDate()<=15?1:2,
+    fecha: now.toISOString().slice(0,10),
+    esHoy: true
+  };
+  ST.gastos.push(gasto);
+  saveState();
+  document.getElementById('hoy-concepto').value = '';
+  document.getElementById('hoy-monto').value = '';
+  toast(`+${fmt(monto)} anotado`, 'success');
+  renderHoy();
+}
+
+function toggleVerSemana(){
+  verSemana = !verSemana;
+  const btn = document.getElementById('hoy-ver-btn');
+  if(btn) btn.textContent = verSemana ? 'Ver solo hoy' : 'Ver semana';
+  renderHoy();
+}
+
+function renderHoy(){
+  const now = new Date();
+  const hoyStr = now.toISOString().slice(0,10);
+  const dias7 = new Date(now); dias7.setDate(dias7.getDate()-6);
+
+  // Gastos de hoy (efectivo, únicos con fecha de hoy)
+  const gastosHoy = ST.gastos.filter(g =>
+    g.fecha === hoyStr && g.metodo !== 'Tarjeta Crédito'
+  );
+  const gastosSemana = ST.gastos.filter(g => {
+    if(!g.fecha) return false;
+    const d = new Date(g.fecha+'T12:00:00');
+    return d >= dias7 && g.metodo !== 'Tarjeta Crédito';
+  });
+
+  const totalHoy = gastosHoy.reduce((s,g)=>s+g.monto,0);
+  const totalSemana = gastosSemana.reduce((s,g)=>s+g.monto,0);
+
+  // Presupuesto diario: saldo libre /Q ÷ 15 días
+  const libreQ = calcIngresoBase()-calcFijosQ()-calcCuotasQ();
+  const presupDiario = Math.max(0, libreQ/15);
+  const libreHoy = Math.max(0, presupDiario - totalHoy);
+
+  // KPIs
+  document.getElementById('hoy-total').textContent = fmt(totalHoy);
+  document.getElementById('hoy-semana').textContent = fmt(totalSemana);
+  document.getElementById('hoy-libre').textContent = fmt(libreHoy);
+  const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  document.getElementById('hoy-fecha').textContent =
+    `${now.getDate()} de ${meses[now.getMonth()]}`;
+
+  // Lista de gastos
+  const listaEl = document.getElementById('hoy-lista');
+  const items = verSemana ? gastosSemana : gastosHoy;
+  if(!listaEl) return;
+  if(!items.length){
+    listaEl.innerHTML = `<div style="text-align:center;padding:32px 16px;color:var(--text3);font-size:13px">
+      <i class="fa-solid fa-sun" style="font-size:28px;margin-bottom:10px;display:block;opacity:0.3"></i>
+      ${verSemana ? 'Sin gastos esta semana' : 'Sin gastos hoy — ¡buen día!'}</div>`;
+  } else {
+    listaEl.innerHTML = items.slice().reverse().map(g=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:34px;height:34px;border-radius:10px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">
+            ${catEmoji(g.categoria)}
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--text)">${g.concepto}</div>
+            <div style="font-size:11px;color:var(--text3)">${g.categoria}${verSemana&&g.fecha?' · '+g.fecha.slice(5).replace('-','/'):''}
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="mono" style="font-size:13px;font-weight:600;color:var(--red)">${fmt(g.monto)}</span>
+          <span style="cursor:pointer;color:var(--text3);font-size:12px" onclick="eliminarGastoHoy(${g.id})"><i class="fa-solid fa-xmark"></i></span>
+        </div>
+      </div>`).join('');
+  }
+
+  // Por categoría
+  const catEl = document.getElementById('hoy-cats');
+  if(catEl){
+    const cats = {};
+    items.forEach(g=>{ cats[g.categoria]=(cats[g.categoria]||0)+g.monto; });
+    const sorted = Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+    if(!sorted.length){
+      catEl.innerHTML = '<div style="color:var(--text3);font-size:12.5px;text-align:center;padding:8px">Sin datos</div>';
+    } else {
+      const max = sorted[0][1];
+      catEl.innerHTML = sorted.map(([cat,total])=>`
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+            <span style="color:var(--text2)">${catEmoji(cat)} ${cat}</span>
+            <span class="mono" style="color:var(--text);font-weight:600">${fmt(total)}</span>
+          </div>
+          <div style="height:4px;background:var(--bg4);border-radius:2px;overflow:hidden">
+            <div style="height:100%;border-radius:2px;background:var(--accent);width:${(total/max*100).toFixed(0)}%"></div>
+          </div>
+        </div>`).join('');
+    }
+  }
+
+  // Próximo pago urgente
+  const proxEl = document.getElementById('hoy-proximo');
+  if(proxEl){
+    const pagos = [];
+    const hoy = now.getDate();
+    ST.tarjetas.forEach(t=>{
+      const dia = parseInt(t.pago||t.diaPagoFinal||0);
+      if(!dia) return;
+      const diff = dia >= hoy ? dia-hoy : 30-hoy+dia;
+      pagos.push({nombre:t.nombre, monto:t.saldo||0, dias:diff, tipo:'tarjeta', color:'var(--accent)'});
+    });
+    ST.deudas.filter(d=>d.activa).forEach(d=>{
+      const dia = d.diaPago ? parseInt(d.diaPago) : null;
+      if(!dia) return;
+      const diff = dia >= hoy ? dia-hoy : 30-hoy+dia;
+      pagos.push({nombre:d.nombre, monto:d.cuota, dias:diff, tipo:'deuda', color:'var(--orange)'});
+    });
+    ST.prestamos.filter(p=>p.activa).forEach(p=>{
+      const dia = p.diaPago ? parseInt(p.diaPago) : null;
+      if(!dia) return;
+      const diff = dia >= hoy ? dia-hoy : 30-hoy+dia;
+      pagos.push({nombre:p.nombre, monto:p.pago, dias:diff, tipo:'prestamo', color:'var(--purple)'});
+    });
+    pagos.sort((a,b)=>a.dias-b.dias);
+    const prox = pagos[0];
+    if(!prox){
+      proxEl.innerHTML = '<div style="font-size:12.5px;color:var(--text3)">Sin pagos próximos registrados</div>';
+    } else {
+      const urgencia = prox.dias===0?'var(--red)':prox.dias<=3?'var(--orange)':'var(--text2)';
+      proxEl.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text)">${prox.nombre}</div>
+            <div style="font-size:12px;color:${urgencia};margin-top:2px;font-weight:600">
+              ${prox.dias===0?'¡Hoy!':prox.dias===1?'Mañana':`En ${prox.dias} días`}
+            </div>
+          </div>
+          <span class="mono" style="font-size:15px;font-weight:700;color:${prox.color}">${fmt(prox.monto)}</span>
+        </div>
+        ${pagos.length>1?`<div style="font-size:11px;color:var(--text3);margin-top:8px">+${pagos.length-1} pagos más próximos</div>`:''}`;
+    }
+  }
+}
+
+function eliminarGastoHoy(id){
+  ST.gastos = ST.gastos.filter(g=>g.id!==id);
+  saveState();
+  renderHoy();
+}
+
+function catEmoji(cat){
+  const map = {
+    'Alimentación':'🍔','Transporte':'🚗','Salud':'💊','Entretenimiento':'🎬',
+    'Ropa':'👕','Servicios':'🛒','Vivienda':'🏠','Educación':'📚',
+    'Tarjetas de Crédito':'💳','Préstamos':'📋','Ahorro':'🐷','Otro':'📦'
+  };
+  return map[cat]||'📦';
+}
+
 // ── MOBILE NATIVE APP FUNCTIONS ──
 const MOBILE_NAV_MAP = {
-  dashboard:'mbn-dashboard', gastos:'mbn-gastos',
-  corrida:'mbn-corrida', tarjetas:'mbn-tarjetas'
+  hoy:'mbn-hoy', corrida:'mbn-corrida', tarjetas:'mbn-tarjetas'
 };
 
 function mobileNavigate(page, el){
