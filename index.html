@@ -5144,87 +5144,118 @@ function guardarConfigNotif(){
   toast('Preferencias guardadas','success');
 }
 
-function enviarNotifPrueba(){
+async function enviarNotifPrueba(){
   if(Notification.permission !== 'granted'){ toast('Activa las notificaciones primero','error'); return; }
-  const n = new Notification('SEMA — Prueba de notificación', {
-    body: `Tu saldo libre esta quincena es ${fmt(calcIngresoBase() - calcFijosQ() - calcCuotasQ())}`,
-    icon: 'https://img.icons8.com/color/96/money.png',
-    badge: 'https://img.icons8.com/color/96/money.png'
-  });
-  n.onclick = () => window.focus();
+  const reg = await navigator.serviceWorker.ready.catch(()=>null);
+  const body = `Tu saldo libre esta quincena es ${fmt(calcIngresoBase() - calcFijosQ() - calcCuotasQ())}`;
+  if(reg){
+    reg.active?.postMessage({ type: 'NOTIF_PRUEBA', body });
+  } else {
+    new Notification('SEMA — Prueba ✅', { body, icon: '/icon-192.png' });
+  }
   toast('Notificación enviada','success');
 }
 
-function programarNotificaciones(){
-  // Limpia timers previos
-  if(window._notifTimers){ window._notifTimers.forEach(t=>clearTimeout(t)); }
-  window._notifTimers = [];
+async function programarNotificaciones(){
   if(Notification.permission !== 'granted') return;
+
+  // Obtener el SW activo
+  const reg = await navigator.serviceWorker.ready.catch(()=>null);
+  if(!reg){ console.warn('SW no disponible'); return; }
+
   const nc = ST.notifConfig || {};
   const diasAntes = parseInt(nc.diasAntes || '1');
   const [hora, min] = (nc.hora || '09:00').split(':').map(Number);
   const now = new Date();
+  const alarmas = [];
+  let tagCounter = 0;
 
-  function programar(fechaEvento, titulo, cuerpo){
+  function agregarAlarma(fechaEvento, titulo, cuerpo, urgente = false){
     const fechaNotif = new Date(fechaEvento);
     fechaNotif.setDate(fechaNotif.getDate() - diasAntes);
     fechaNotif.setHours(hora, min, 0, 0);
     const ms = fechaNotif - now;
-    if(ms > 0 && ms < 7 * 24 * 60 * 60 * 1000){ // solo si es en los próximos 7 días
-      const t = setTimeout(()=>{
-        new Notification(titulo, { body: cuerpo, icon: 'https://img.icons8.com/color/96/money.png' });
-      }, ms);
-      window._notifTimers.push(t);
+    // Programar si es en los próximos 30 días y en el futuro
+    if(ms > 0 && ms < 30 * 24 * 60 * 60 * 1000){
+      alarmas.push({
+        tag: `sema-${tagCounter++}`,
+        timestamp: fechaNotif.getTime(),
+        titulo, cuerpo, urgente
+      });
     }
   }
 
   // Quincena próxima
   if(nc.quincena !== false){
     const d = now.getDate();
-    const proximaQ = new Date(now);
-    if(d < 15){ proximaQ.setDate(15); }
-    else { proximaQ.setMonth(proximaQ.getMonth()+1, 1); }
-    programar(proximaQ, 'SEMA — Día de quincena 💰',
-      `¡Hoy es día de pago! Saldo libre disponible: ${fmt(calcIngresoBase()-calcFijosQ()-calcCuotasQ())}`);
+    const q1 = new Date(now); q1.setDate(15);
+    const q2 = new Date(now); q2.setMonth(q2.getMonth()+1, 1);
+    const proximaQ = d < 15 ? q1 : q2;
+    const libreQ = calcIngresoBase()-calcFijosQ()-calcCuotasQ();
+    agregarAlarma(proximaQ,
+      'SEMA — Día de quincena 💰',
+      `¡Hoy es día de pago! Tienes ${fmt(libreQ)} disponibles.`, true);
   }
 
-  // Tarjetas — fecha de corte
+  // Tarjetas — fecha de corte y fecha de pago
   if(nc.tarjeta !== false){
     ST.tarjetas.forEach(t=>{
-      if(!t.diaCorteFinal && !t.corte) return;
-      const dia = t.diaCorteFinal || t.corte;
-      const fechaCorte = new Date(now.getFullYear(), now.getMonth(), parseInt(dia));
-      if(fechaCorte < now) fechaCorte.setMonth(fechaCorte.getMonth()+1);
-      programar(fechaCorte, `SEMA — Corte ${t.nombre} 💳`,
-        `El ${dia} es la fecha de corte de tu tarjeta ${t.nombre}. Saldo: ${fmt(t.saldo||0)}`);
+      const diaCorte = parseInt(t.diaCorteFinal || t.corte || 0);
+      const diaPago  = parseInt(t.diaPagoFinal  || t.pago  || 0);
+      if(diaCorte){
+        const f = new Date(now.getFullYear(), now.getMonth(), diaCorte);
+        if(f <= now) f.setMonth(f.getMonth()+1);
+        agregarAlarma(f,
+          `SEMA — Corte ${t.nombre} 💳`,
+          `Fecha de corte de ${t.nombre}. Saldo actual: ${fmt(t.saldo||0)}.`, true);
+      }
+      if(diaPago){
+        const f = new Date(now.getFullYear(), now.getMonth(), diaPago);
+        if(f <= now) f.setMonth(f.getMonth()+1);
+        agregarAlarma(f,
+          `SEMA — Pago ${t.nombre} 💳`,
+          `Recuerda pagar tu tarjeta ${t.nombre} hoy.`, true);
+      }
     });
   }
 
   // Préstamos
   if(nc.prestamo !== false){
     ST.prestamos.filter(p=>p.activa).forEach(p=>{
-      const dia = p.diaPago || 1;
-      const fechaPago = new Date(now.getFullYear(), now.getMonth(), parseInt(dia));
-      if(fechaPago < now) fechaPago.setMonth(fechaPago.getMonth()+1);
-      programar(fechaPago, `SEMA — Pago préstamo ${p.nombre} 📋`,
-        `Recordatorio: pago quincenal de ${fmt(p.pago)} para ${p.nombre}`);
+      const dia = parseInt(p.diaPago || 1);
+      const f = new Date(now.getFullYear(), now.getMonth(), dia);
+      if(f <= now) f.setMonth(f.getMonth()+1);
+      agregarAlarma(f,
+        `SEMA — Pago préstamo ${p.nombre} 📋`,
+        `Pago quincenal de ${fmt(p.pago)} para ${p.nombre}.`);
     });
   }
 
-  // Alerta límite presupuesto
+  // Deudas con día de pago
+  ST.deudas.filter(d=>d.activa&&d.diaPago).forEach(d=>{
+    const dia = parseInt(d.diaPago);
+    const f = new Date(now.getFullYear(), now.getMonth(), dia);
+    if(f <= now) f.setMonth(f.getMonth()+1);
+    agregarAlarma(f,
+      `SEMA — Pago deuda ${d.nombre} 📅`,
+      `Cuota de ${fmt(d.cuota)} para ${d.nombre}.`);
+  });
+
+  // Alerta presupuesto — mostrar inmediato si aplica
   if(nc.limite !== false){
     const base = calcIngresoBase();
     const uso = calcFijosQ() + calcCuotasQ();
     const pct = base > 0 ? uso/base*100 : 0;
     if(pct >= (ST.perfil.umbralAlerta || 80)){
-      setTimeout(()=>{
-        new Notification('SEMA — Alerta de presupuesto ⚠️', {
-          body: `Estás usando el ${pct.toFixed(0)}% de tu ingreso quincenal en compromisos fijos.`,
-          icon: 'https://img.icons8.com/color/96/money.png'
-        });
-      }, 3000);
+      reg.showNotification('SEMA — Presupuesto al límite ⚠️', {
+        body: `Usas el ${pct.toFixed(0)}% de tu ingreso en compromisos fijos.`,
+        icon: '/icon-192.png', tag: 'sema-limite'
+      });
     }
   }
+
+  // Enviar todas las alarmas al SW para que las persista
+  reg.active?.postMessage({ type: 'PROGRAMAR_NOTIFS', alarmas });
 }
 
 // ══════════════════════════════════════════════════════════
@@ -5460,10 +5491,14 @@ function renderConfig(){
   if(Notification.permission === 'granted') programarNotificaciones();
 }
 
-// ── Service Worker (solo en producción) ──
-if('serviceWorker' in navigator && location.hostname.includes('github.io')){
+// ── Service Worker — notificaciones persistentes ──
+if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js')
-    .then(r => console.log('SW registrado:', r.scope))
+    .then(r => {
+      console.log('SW registrado:', r.scope);
+      // Si ya hay permiso, reprogramar al cargar
+      if(Notification.permission === 'granted') programarNotificaciones();
+    })
     .catch(e => console.warn('SW error:', e));
 }
 </script>
