@@ -806,6 +806,10 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
         <div class="more-icon" style="background:rgba(0,0,0,0.06);color:var(--text2)"><i class="fa-solid fa-gear"></i></div>
         <span class="more-label">Config</span>
       </div>
+      <div class="more-item" onclick="closeMoreSheet();generarPDF('resumen')">
+        <div class="more-icon" style="background:rgba(0,168,118,0.1);color:var(--green)"><i class="fa-solid fa-file-pdf"></i></div>
+        <span class="more-label">Reporte PDF</span>
+      </div>
     </div>
   </div>
 </div>
@@ -1336,6 +1340,107 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
           <div class="card-body">
             <p style="font-size:12.5px;color:var(--text2);margin-bottom:14px;">Usuario: <span id="cfg-user-email" style="color:var(--text)">—</span></p>
             <button class="btn btn-danger" onclick="cerrarSesion()"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUMNA DERECHA: Notificaciones + Reportes -->
+      <div>
+        <!-- ── NOTIFICACIONES ── -->
+        <div class="card mb16">
+          <div class="card-header">
+            <span class="card-title"><i class="fa-solid fa-bell" style="color:var(--accent);margin-right:6px"></i>Notificaciones</span>
+            <span id="notif-estado-badge" class="badge badge-orange">Sin activar</span>
+          </div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
+            <p style="font-size:12.5px;color:var(--text2);line-height:1.6">Recibe recordatorios de pagos y alertas de presupuesto directamente en tu dispositivo, aunque la app esté cerrada.</p>
+            <button class="btn btn-primary" id="btn-activar-notif" onclick="activarNotificaciones()">
+              <i class="fa-solid fa-bell"></i> Activar notificaciones
+            </button>
+            <div id="notif-config" style="display:none;flex-direction:column;gap:10px">
+              <div style="height:1px;background:var(--border);margin:2px 0"></div>
+              <div style="font-size:11.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em">¿Cuándo avisarte?</div>
+              <label style="display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--text);cursor:pointer">
+                <span><i class="fa-solid fa-calendar-day" style="color:var(--orange);margin-right:8px;width:14px"></i>Día de pago quincenal</span>
+                <input type="checkbox" id="notif-quincena" checked onchange="guardarConfigNotif()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent)">
+              </label>
+              <label style="display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--text);cursor:pointer">
+                <span><i class="fa-solid fa-credit-card" style="color:var(--red);margin-right:8px;width:14px"></i>Fecha de corte tarjeta</span>
+                <input type="checkbox" id="notif-tarjeta" checked onchange="guardarConfigNotif()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent)">
+              </label>
+              <label style="display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--text);cursor:pointer">
+                <span><i class="fa-solid fa-triangle-exclamation" style="color:var(--orange);margin-right:8px;width:14px"></i>Presupuesto al límite</span>
+                <input type="checkbox" id="notif-limite" checked onchange="guardarConfigNotif()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent)">
+              </label>
+              <label style="display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--text);cursor:pointer">
+                <span><i class="fa-solid fa-hand-holding-dollar" style="color:var(--purple);margin-right:8px;width:14px"></i>Recordatorio pago préstamo</span>
+                <input type="checkbox" id="notif-prestamo" checked onchange="guardarConfigNotif()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent)">
+              </label>
+              <div style="height:1px;background:var(--border);margin:2px 0"></div>
+              <div style="font-size:11.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em">Horario del recordatorio</div>
+              <div class="form-row">
+                <div class="form-group" style="margin-bottom:0">
+                  <label class="form-label">Días antes</label>
+                  <select class="form-control" id="notif-dias-antes" onchange="guardarConfigNotif()">
+                    <option value="0">El mismo día</option>
+                    <option value="1" selected>1 día antes</option>
+                    <option value="2">2 días antes</option>
+                    <option value="3">3 días antes</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom:0">
+                  <label class="form-label">Hora</label>
+                  <input type="time" class="form-control" id="notif-hora" value="09:00" onchange="guardarConfigNotif()">
+                </div>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="enviarNotifPrueba()">
+                <i class="fa-solid fa-paper-plane"></i> Enviar notificación de prueba
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── REPORTES ── -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="fa-solid fa-file-chart-column" style="color:var(--green);margin-right:6px"></i>Reportes</span>
+          </div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+            <div class="form-row" style="margin-bottom:6px">
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Período</label>
+                <select class="form-control" id="rep-periodo">
+                  <option value="mes">Este mes</option>
+                  <option value="quincena">Esta quincena</option>
+                  <option value="anio">Este año</option>
+                  <option value="todo">Todo el historial</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Formato</label>
+                <select class="form-control" id="rep-formato">
+                  <option value="pdf">PDF (imprimible)</option>
+                  <option value="excel">Excel (.xlsx)</option>
+                </select>
+              </div>
+            </div>
+
+            <button class="btn btn-success" onclick="generarReporte('resumen')">
+              <i class="fa-solid fa-chart-pie"></i> Reporte resumen financiero
+            </button>
+            <button class="btn btn-ghost" onclick="generarReporte('corrida')">
+              <i class="fa-solid fa-table-list"></i> Corrida quincenal completa
+            </button>
+            <button class="btn btn-ghost" onclick="generarReporte('gastos')">
+              <i class="fa-solid fa-receipt"></i> Detalle de gastos
+            </button>
+            <button class="btn btn-ghost" onclick="generarReporte('deudas')">
+              <i class="fa-solid fa-file-invoice-dollar"></i> Estado de deudas y préstamos
+            </button>
+            <div style="height:1px;background:var(--border);margin:2px 0"></div>
+            <button class="btn btn-ghost" onclick="exportarExcelCompleto()">
+              <i class="fa-solid fa-file-excel" style="color:var(--green)"></i> Exportar todo a Excel
+            </button>
           </div>
         </div>
       </div>
@@ -4791,6 +4896,380 @@ function installApp(){
   _deferredPrompt.userChoice.then(()=>{ _deferredPrompt=null; document.getElementById('install-btn').style.display='none'; });
 }
 window.addEventListener('appinstalled', ()=>{ toast('¡SEMA instalada correctamente!','success'); });
+
+// ══════════════════════════════════════════════════════════
+// NOTIFICACIONES — Web Push API
+// ══════════════════════════════════════════════════════════
+function renderConfigNotif(){
+  const perm = Notification.permission;
+  const badge = document.getElementById('notif-estado-badge');
+  const btnActivar = document.getElementById('btn-activar-notif');
+  const panel = document.getElementById('notif-config');
+  if(!badge) return;
+  if(perm === 'granted'){
+    badge.className = 'badge badge-green'; badge.textContent = 'Activas';
+    btnActivar.style.display = 'none';
+    panel.style.display = 'flex';
+    // Restaurar checkboxes guardados
+    const nc = ST.notifConfig || {};
+    if(document.getElementById('notif-quincena')) document.getElementById('notif-quincena').checked = nc.quincena !== false;
+    if(document.getElementById('notif-tarjeta')) document.getElementById('notif-tarjeta').checked = nc.tarjeta !== false;
+    if(document.getElementById('notif-limite')) document.getElementById('notif-limite').checked = nc.limite !== false;
+    if(document.getElementById('notif-prestamo')) document.getElementById('notif-prestamo').checked = nc.prestamo !== false;
+    if(document.getElementById('notif-dias-antes')) document.getElementById('notif-dias-antes').value = nc.diasAntes || '1';
+    if(document.getElementById('notif-hora')) document.getElementById('notif-hora').value = nc.hora || '09:00';
+  } else if(perm === 'denied'){
+    badge.className = 'badge badge-red'; badge.textContent = 'Bloqueadas';
+    btnActivar.textContent = 'Bloqueadas — activa en configuración del navegador';
+    btnActivar.disabled = true;
+  } else {
+    badge.className = 'badge badge-orange'; badge.textContent = 'Sin activar';
+  }
+}
+
+async function activarNotificaciones(){
+  if(!('Notification' in window)){ toast('Tu navegador no soporta notificaciones','error'); return; }
+  const perm = await Notification.requestPermission();
+  if(perm === 'granted'){
+    toast('¡Notificaciones activadas!','success');
+    if(!ST.notifConfig) ST.notifConfig = {};
+    saveToLocal();
+    renderConfigNotif();
+    programarNotificaciones();
+  } else {
+    toast('Notificaciones denegadas. Actívalas en el navegador.','error');
+    renderConfigNotif();
+  }
+}
+
+function guardarConfigNotif(){
+  if(!ST.notifConfig) ST.notifConfig = {};
+  ST.notifConfig.quincena  = document.getElementById('notif-quincena')?.checked ?? true;
+  ST.notifConfig.tarjeta   = document.getElementById('notif-tarjeta')?.checked ?? true;
+  ST.notifConfig.limite    = document.getElementById('notif-limite')?.checked ?? true;
+  ST.notifConfig.prestamo  = document.getElementById('notif-prestamo')?.checked ?? true;
+  ST.notifConfig.diasAntes = document.getElementById('notif-dias-antes')?.value || '1';
+  ST.notifConfig.hora      = document.getElementById('notif-hora')?.value || '09:00';
+  saveToLocal();
+  programarNotificaciones();
+  toast('Preferencias guardadas','success');
+}
+
+function enviarNotifPrueba(){
+  if(Notification.permission !== 'granted'){ toast('Activa las notificaciones primero','error'); return; }
+  const n = new Notification('SEMA — Prueba de notificación', {
+    body: `Tu saldo libre esta quincena es ${fmt(calcIngresoBase() - calcFijosQ() - calcCuotasQ())}`,
+    icon: 'https://img.icons8.com/color/96/money.png',
+    badge: 'https://img.icons8.com/color/96/money.png'
+  });
+  n.onclick = () => window.focus();
+  toast('Notificación enviada','success');
+}
+
+function programarNotificaciones(){
+  // Limpia timers previos
+  if(window._notifTimers){ window._notifTimers.forEach(t=>clearTimeout(t)); }
+  window._notifTimers = [];
+  if(Notification.permission !== 'granted') return;
+  const nc = ST.notifConfig || {};
+  const diasAntes = parseInt(nc.diasAntes || '1');
+  const [hora, min] = (nc.hora || '09:00').split(':').map(Number);
+  const now = new Date();
+
+  function programar(fechaEvento, titulo, cuerpo){
+    const fechaNotif = new Date(fechaEvento);
+    fechaNotif.setDate(fechaNotif.getDate() - diasAntes);
+    fechaNotif.setHours(hora, min, 0, 0);
+    const ms = fechaNotif - now;
+    if(ms > 0 && ms < 7 * 24 * 60 * 60 * 1000){ // solo si es en los próximos 7 días
+      const t = setTimeout(()=>{
+        new Notification(titulo, { body: cuerpo, icon: 'https://img.icons8.com/color/96/money.png' });
+      }, ms);
+      window._notifTimers.push(t);
+    }
+  }
+
+  // Quincena próxima
+  if(nc.quincena !== false){
+    const d = now.getDate();
+    const proximaQ = new Date(now);
+    if(d < 15){ proximaQ.setDate(15); }
+    else { proximaQ.setMonth(proximaQ.getMonth()+1, 1); }
+    programar(proximaQ, 'SEMA — Día de quincena 💰',
+      `¡Hoy es día de pago! Saldo libre disponible: ${fmt(calcIngresoBase()-calcFijosQ()-calcCuotasQ())}`);
+  }
+
+  // Tarjetas — fecha de corte
+  if(nc.tarjeta !== false){
+    ST.tarjetas.forEach(t=>{
+      if(!t.diaCorteFinal && !t.corte) return;
+      const dia = t.diaCorteFinal || t.corte;
+      const fechaCorte = new Date(now.getFullYear(), now.getMonth(), parseInt(dia));
+      if(fechaCorte < now) fechaCorte.setMonth(fechaCorte.getMonth()+1);
+      programar(fechaCorte, `SEMA — Corte ${t.nombre} 💳`,
+        `El ${dia} es la fecha de corte de tu tarjeta ${t.nombre}. Saldo: ${fmt(t.saldo||0)}`);
+    });
+  }
+
+  // Préstamos
+  if(nc.prestamo !== false){
+    ST.prestamos.filter(p=>p.activa).forEach(p=>{
+      const dia = p.diaPago || 1;
+      const fechaPago = new Date(now.getFullYear(), now.getMonth(), parseInt(dia));
+      if(fechaPago < now) fechaPago.setMonth(fechaPago.getMonth()+1);
+      programar(fechaPago, `SEMA — Pago préstamo ${p.nombre} 📋`,
+        `Recordatorio: pago quincenal de ${fmt(p.pago)} para ${p.nombre}`);
+    });
+  }
+
+  // Alerta límite presupuesto
+  if(nc.limite !== false){
+    const base = calcIngresoBase();
+    const uso = calcFijosQ() + calcCuotasQ();
+    const pct = base > 0 ? uso/base*100 : 0;
+    if(pct >= (ST.perfil.umbralAlerta || 80)){
+      setTimeout(()=>{
+        new Notification('SEMA — Alerta de presupuesto ⚠️', {
+          body: `Estás usando el ${pct.toFixed(0)}% de tu ingreso quincenal en compromisos fijos.`,
+          icon: 'https://img.icons8.com/color/96/money.png'
+        });
+      }, 3000);
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// REPORTES — PDF y Excel
+// ══════════════════════════════════════════════════════════
+function getDataPeriodo(){
+  const periodo = document.getElementById('rep-periodo')?.value || 'mes';
+  const now = new Date();
+  let gastos = ST.gastos, ingresos = ST.ingresos;
+
+  if(periodo === 'quincena'){
+    const q = now.getDate() <= 15 ? 1 : 2;
+    gastos = gastos.filter(g => g.mes === now.getMonth()+1 && g.ano === now.getFullYear() && (g.quincena === q || g.frecuencia === 'Quincenal'));
+    ingresos = ingresos.filter(i => i.mes === now.getMonth()+1 && i.ano === now.getFullYear() && i.q == q);
+  } else if(periodo === 'mes'){
+    gastos = gastos.filter(g => g.mes === now.getMonth()+1 && g.ano === now.getFullYear());
+    ingresos = ingresos.filter(i => i.mes === now.getMonth()+1 && i.ano === now.getFullYear());
+  } else if(periodo === 'anio'){
+    gastos = gastos.filter(g => g.ano === now.getFullYear());
+    ingresos = ingresos.filter(i => i.ano === now.getFullYear());
+  }
+  return { gastos, ingresos, periodo };
+}
+
+function generarReporte(tipo){
+  const formato = document.getElementById('rep-formato')?.value || 'pdf';
+  if(formato === 'pdf') generarPDF(tipo);
+  else generarExcel(tipo);
+}
+
+function generarPDF(tipo){
+  const { jsPDF } = window.jspdf;
+  if(!jsPDF){ toast('jsPDF no disponible','error'); return; }
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const { gastos, ingresos, periodo } = getDataPeriodo();
+  const now = new Date();
+  const periodoLabel = { mes:'Este mes', quincena:'Esta quincena', anio:'Este año', todo:'Todo el historial' };
+  const ACCENT = [0, 153, 230];
+  const DARK   = [26, 29, 35];
+  const GRAY   = [90, 97, 114];
+
+  // Header
+  doc.setFillColor(...ACCENT);
+  doc.rect(0, 0, 210, 22, 'F');
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(16); doc.setFont('helvetica','bold');
+  doc.text('SEMA FinanceOS', 14, 14);
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  doc.text(`Reporte generado: ${now.toLocaleDateString('es-MX')}  |  Período: ${periodoLabel[periodo]||periodo}`, 14, 19);
+
+  let y = 30;
+  const addTitle = (t) => {
+    doc.setFillColor(240,242,245);
+    doc.rect(10, y-5, 190, 8, 'F');
+    doc.setTextColor(...DARK); doc.setFontSize(10); doc.setFont('helvetica','bold');
+    doc.text(t, 14, y); y += 8;
+    doc.setFont('helvetica','normal');
+  };
+
+  if(tipo === 'resumen' || tipo === 'corrida'){
+    addTitle('Resumen financiero');
+    const base = calcIngresoBase(), fijos = calcFijosQ(), cuotas = calcCuotasQ(), libre = base-fijos-cuotas;
+    const rows = [
+      ['Ingreso quincenal base', fmt(base)],
+      ['Gastos fijos /Q', fmt(fijos)],
+      ['Cuotas deudas /Q', fmt(cuotas)],
+      ['Saldo libre estimado', fmt(libre)],
+      ['Deuda total activa', fmt(ST.deudas.filter(d=>d.activa).reduce((s,d)=>s+d.total,0))],
+      ['Préstamos activos', ST.prestamos.filter(p=>p.activa).length + ' préstamos'],
+    ];
+    doc.autoTable({
+      startY: y, head:[['Concepto','Valor']], body:rows,
+      theme:'grid', styles:{fontSize:9,cellPadding:3},
+      headStyles:{fillColor:ACCENT,textColor:[255,255,255],fontStyle:'bold'},
+      columnStyles:{0:{cellWidth:120},1:{cellWidth:60,halign:'right'}},
+      margin:{left:10,right:10}
+    });
+    y = doc.lastAutoTable.finalY + 10;
+  }
+
+  if(tipo === 'gastos' || tipo === 'resumen'){
+    if(y > 240){ doc.addPage(); y = 20; }
+    addTitle('Gastos del período');
+    const rows = gastos.slice(0,60).map(g=>[
+      g.concepto, g.categoria||'', g.frecuencia||'',
+      `${MESES[(g.mes||1)-1]} ${g.ano||''}`, fmt(g.monto)
+    ]);
+    if(!rows.length) rows.push(['Sin gastos en este período','','','','']);
+    doc.autoTable({
+      startY: y, head:[['Concepto','Categoría','Frecuencia','Período','Monto']],
+      body:rows, theme:'striped', styles:{fontSize:8,cellPadding:2.5},
+      headStyles:{fillColor:ACCENT,textColor:[255,255,255]},
+      margin:{left:10,right:10}
+    });
+    y = doc.lastAutoTable.finalY + 10;
+  }
+
+  if(tipo === 'deudas'){
+    addTitle('Deudas y préstamos activos');
+    const deudas = ST.deudas.filter(d=>d.activa).map(d=>[
+      d.nombre, d.tipo||'', fmt(d.cuota)+'/Q',
+      `${d.pagadas||0}/${d.quincenas||0} Q`, fmt((d.quincenas-(d.pagadas||0))*d.cuota)
+    ]);
+    const prest = ST.prestamos.filter(p=>p.activa).map(p=>[
+      p.nombre, 'Préstamo', fmt(p.pago)+'/Q',
+      `${p.pagadas||0}/${p.plazo||0} Q`, fmt((p.plazo-(p.pagadas||0))*p.pago)
+    ]);
+    const rows = [...deudas,...prest];
+    if(!rows.length) rows.push(['Sin deudas activas','','','','']);
+    doc.autoTable({
+      startY: y, head:[['Nombre','Tipo','Pago/Q','Avance','Saldo pendiente']],
+      body:rows, theme:'striped', styles:{fontSize:8,cellPadding:2.5},
+      headStyles:{fillColor:[229,51,74],textColor:[255,255,255]},
+      margin:{left:10,right:10}
+    });
+  }
+
+  if(tipo === 'corrida'){
+    if(y > 180){ doc.addPage(); y = 20; }
+    addTitle('Corrida quincenal (próximas 6 quincenas)');
+    const corrida = generarCorrida(6);
+    const rows = corrida.map(q=>[q.label, fmt(q.ingrBase), fmt(q.fijosQ+q.cuotasQ), fmt(q.saldo), q.estado]);
+    doc.autoTable({
+      startY: y, head:[['Quincena','Ingreso','Compromisos','Saldo libre','Estado']],
+      body:rows, theme:'grid', styles:{fontSize:8.5,cellPadding:3},
+      headStyles:{fillColor:ACCENT,textColor:[255,255,255]},
+      margin:{left:10,right:10}
+    });
+  }
+
+  // Footer
+  const pageCount = doc.internal.getNumberOfPages();
+  for(let i=1;i<=pageCount;i++){
+    doc.setPage(i);
+    doc.setFontSize(7); doc.setTextColor(...GRAY);
+    doc.text(`SEMA FinanceOS Pro  |  Pág. ${i}/${pageCount}  |  ${ST.perfil.nombre||'Usuario'}`, 105, 292, {align:'center'});
+  }
+
+  const nombres = {resumen:'reporte-financiero',gastos:'detalle-gastos',deudas:'estado-deudas',corrida:'corrida-quincenal'};
+  doc.save(`SEMA-${nombres[tipo]||tipo}-${now.toISOString().slice(0,10)}.pdf`);
+  toast('PDF generado y descargado','success');
+}
+
+function generarExcel(tipo){
+  if(!window.XLSX){ toast('XLSX no disponible','error'); return; }
+  const { gastos, ingresos, periodo } = getDataPeriodo();
+  const wb = XLSX.utils.book_new();
+  const now = new Date();
+
+  if(tipo === 'resumen' || tipo === 'corrida'){
+    const base = calcIngresoBase(), fijos = calcFijosQ(), cuotas = calcCuotasQ();
+    const wsData = [
+      ['SEMA FinanceOS — Resumen Financiero'],
+      ['Generado:', now.toLocaleDateString('es-MX')],
+      ['Período:', periodo],[''],
+      ['Concepto','Valor'],
+      ['Ingreso quincenal', base],['Gastos fijos /Q', fijos],
+      ['Cuotas deudas /Q', cuotas],['Saldo libre', base-fijos-cuotas],
+    ];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), 'Resumen');
+  }
+  if(tipo === 'gastos' || tipo === 'resumen'){
+    const wsG = [['Concepto','Categoría','Frecuencia','Mes','Año','Monto','Método'],
+      ...gastos.map(g=>[g.concepto,g.categoria,g.frecuencia,MESES[(g.mes||1)-1],g.ano,g.monto,g.metodo||''])];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsG), 'Gastos');
+  }
+  if(tipo === 'deudas'){
+    const wsD = [['Nombre','Tipo','Cuota/Q','Quincenas totales','Pagadas','Saldo pendiente'],
+      ...ST.deudas.map(d=>[d.nombre,d.tipo,d.cuota,d.quincenas,d.pagadas||0,(d.quincenas-(d.pagadas||0))*d.cuota]),
+      ...ST.prestamos.map(p=>[p.nombre,'Préstamo',p.pago,p.plazo,p.pagadas||0,(p.plazo-(p.pagadas||0))*p.pago])];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsD), 'Deudas');
+  }
+  if(tipo === 'corrida'){
+    const corrida = generarCorrida(12);
+    const wsC = [['Quincena','Ingreso','Fijos','Cuotas','Únicos','Saldo','Estado'],
+      ...corrida.map(q=>[q.label,q.ingrBase,q.fijosQ,q.cuotasQ,q.unicosQ,q.saldo,q.estado])];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsC), 'Corrida');
+  }
+
+  const nombres = {resumen:'reporte-financiero',gastos:'detalle-gastos',deudas:'estado-deudas',corrida:'corrida-quincenal'};
+  XLSX.writeFile(wb, `SEMA-${nombres[tipo]||tipo}-${now.toISOString().slice(0,10)}.xlsx`);
+  toast('Excel generado y descargado','success');
+}
+
+function exportarExcelCompleto(){
+  if(!window.XLSX){ toast('XLSX no disponible','error'); return; }
+  const now = new Date();
+  const wb = XLSX.utils.book_new();
+
+  // Ingresos
+  const wsI = [['Fuente','Monto','Período','Mes','Año','Tipo'],
+    ...ST.ingresos.map(i=>[i.fuente,i.monto,i.q==1?'1-15':'16-30',MESES[(i.mes||1)-1],i.ano,i.tipo||'fijo'])];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsI), 'Ingresos');
+
+  // Gastos
+  const wsG = [['Concepto','Categoría','Frecuencia','Quincena','Mes','Año','Monto','Método'],
+    ...ST.gastos.map(g=>[g.concepto,g.categoria,g.frecuencia,g.quincena==1?'1-15':'16-30',MESES[(g.mes||1)-1],g.ano,g.monto,g.metodo||''])];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsG), 'Gastos');
+
+  // Deudas
+  const wsD = [['Nombre','Tipo','Cuota/Q','Quincenas','Pagadas','Tasa','Activa'],
+    ...ST.deudas.map(d=>[d.nombre,d.tipo,d.cuota,d.quincenas,d.pagadas||0,d.tasa||0,d.activa?'Sí':'No'])];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsD), 'Deudas');
+
+  // Préstamos
+  const wsP = [['Nombre','Tipo','Monto','Pago/Q','Plazo','Pagadas','Tasa','Activo'],
+    ...ST.prestamos.map(p=>[p.nombre,p.tipo,p.monto,p.pago,p.plazo,p.pagadas||0,p.tasa||0,p.activa?'Sí':'No'])];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsP), 'Préstamos');
+
+  // Tarjetas
+  if(ST.tarjetas.length){
+    const wsT = [['Nombre','Banco','Límite','Saldo','Día corte','Día pago','Tasa'],
+      ...ST.tarjetas.map(t=>[t.nombre,t.banco,t.limite,t.saldo||0,t.corte,t.pago,t.tasa||0])];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsT), 'Tarjetas');
+  }
+
+  // Corrida 12Q
+  const corrida = generarCorrida(12);
+  const wsC = [['Quincena','Ingreso','Fijos','Cuotas','Únicos','Saldo libre','Estado'],
+    ...corrida.map(q=>[q.label,q.ingrBase,q.fijosQ,q.cuotasQ,q.unicosQ,q.saldo,q.estado])];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsC), 'Corrida 12Q');
+
+  XLSX.writeFile(wb, `SEMA-backup-completo-${now.toISOString().slice(0,10)}.xlsx`);
+  toast('Excel completo generado y descargado','success');
+}
+
+// Inicializar notificaciones al entrar a config
+const _origRenderConfig = renderConfig;
+function renderConfig(){
+  _origRenderConfig();
+  setTimeout(renderConfigNotif, 50);
+  // Programar notificaciones si ya están activas
+  if(Notification.permission === 'granted') programarNotificaciones();
+}
 
 // ── Service Worker (solo en producción) ──
 if('serviceWorker' in navigator && location.hostname.includes('github.io')){
