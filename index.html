@@ -18,30 +18,29 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
-<!-- API Client — credenciales de Firebase viven solo en el servidor -->
-<script>
-(function(){
-  const BASE = '/api'; // Cambia a tu URL de backend si es diferente, ej: 'https://tu-backend.com/api'
+<!-- Firebase SDK (la API key web es pública por diseño; la seguridad real son las Firestore Rules) -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+  import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
-  async function req(path, method='GET', body=null){
-    const opts = { method, headers:{'Content-Type':'application/json'}, credentials:'include' };
-    if(body) opts.body = JSON.stringify(body);
-    const r = await fetch(BASE + path, opts);
-    const data = await r.json().catch(()=>({}));
-    if(!r.ok) throw new Error(data.message || r.statusText);
-    return data;
-  }
-
-  window._API = {
-    login:    (email, password)         => req('/auth/login',    'POST', {email, password}),
-    register: (email, password, nombre) => req('/auth/register', 'POST', {email, password, nombre}),
-    logout:   (uid)                     => req('/auth/logout',   'POST', {uid}),
-    session:  ()                        => req('/auth/session'),
-    loadData: (uid)                     => req(`/data/${uid}`),
-    saveData: (uid, data)               => req(`/data/${uid}`,   'POST', data),
+  const firebaseConfig = {
+    apiKey:            "AIzaSyDdM6BBWMxrRwFAqn6ZKzogW_7D-dFN7rc",
+    authDomain:        "sema-wealth.firebaseapp.com",
+    projectId:         "sema-wealth",
+    storageBucket:     "sema-wealth.firebasestorage.app",
+    messagingSenderId: "916630135081",
+    appId:             "1:916630135081:web:3fa56116ee20535d6bd738"
   };
 
-})();
+  try {
+    const app  = initializeApp(firebaseConfig);
+    const db   = getFirestore(app);
+    const auth = getAuth(app);
+    window._FB = { db, auth, doc, setDoc, getDoc, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut };
+  } catch(e) {
+    window._FB = null;
+  }
 </script>
 
 <style>
@@ -106,7 +105,7 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
   background:#0d1117;border-right:1px solid rgba(255,255,255,0.06);
   display:flex;flex-direction:column;z-index:50;
   overflow:hidden;
-  transition:width .25s cubic-bezier(.4,0,.2,1);
+  transition:width .25s cubic-bezier(.4,0,.2,1), transform .25s cubic-bezier(.4,0,.2,1);
 }
 
 /* ── SIDEBAR COLLAPSE ── */
@@ -358,7 +357,8 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
 .q-chip.active{background:var(--accent-glow2);border-color:rgba(0,153,230,0.3);color:var(--accent);}
 
 /* ── INCOME TABLE ── */
-.table-modern{width:100%;border-collapse:collapse;font-size:12.5px;}
+.table-modern-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.table-modern{width:100%;border-collapse:collapse;font-size:12.5px;min-width:480px;}
 .table-modern thead th{padding:9px 16px;text-align:left;font-size:10.5px;font-weight:700;letter-spacing:0.05em;color:var(--text3);text-transform:uppercase;background:var(--bg3);border-bottom:1px solid var(--border);}
 .table-modern tbody td{padding:10px 16px;border-bottom:1px solid var(--border);vertical-align:middle;}
 .table-modern tbody tr:hover{background:var(--bg3);}
@@ -701,7 +701,7 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
     <div class="card mb16">
       <div class="card-header"><span class="card-title">Últimas Transacciones</span></div>
       <div class="card-body" style="padding:0">
-        <table class="table-modern"><thead><tr><th>Concepto</th><th>Categoría</th><th>Monto</th></tr></thead><tbody id="tabla-recientes"></tbody></table>
+        <div class="table-modern-wrap"><table class="table-modern"><thead><tr><th>Concepto</th><th>Categoría</th><th>Monto</th></tr></thead><tbody id="tabla-recientes"></tbody></table></div>
       </div>
     </div>
 
@@ -875,7 +875,7 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
     <div class="g-65">
       <div class="card">
         <div class="card-header"><span class="card-title">Ingresos Registrados</span><button class="btn btn-primary btn-sm" onclick="openModal('modal-ingreso')"><i class="fa-solid fa-plus"></i> Agregar</button></div>
-        <div class="card-body" style="padding:0"><table class="table-modern"><thead><tr><th>Fuente</th><th>Q</th><th>Mes</th><th>Año</th><th>Monto</th><th></th></tr></thead><tbody id="tabla-ingresos"></tbody></table></div>
+        <div class="card-body" style="padding:0"><div class="table-modern-wrap"><table class="table-modern"><thead><tr><th>Fuente</th><th>Q</th><th>Mes</th><th>Año</th><th>Monto</th><th></th></tr></thead><tbody id="tabla-ingresos"></tbody></table></div></div>
       </div>
       <div>
         <div class="card mb16">
@@ -909,10 +909,10 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
     </div>
     <div class="card">
       <div class="card-body" style="padding:0">
-        <table class="table-modern">
+        <div class="table-modern-wrap"><table class="table-modern">
           <thead><tr><th>Concepto</th><th>Categoría</th><th>Frecuencia</th><th>Quincena</th><th>Mes/Año</th><th>Monto</th><th>Método</th><th></th></tr></thead>
           <tbody id="tabla-gastos"></tbody>
-        </table>
+        </table></div>
       </div>
     </div>
   </div>
@@ -969,10 +969,10 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
             </select>
           </div>
           <div class="card-body" style="padding:0">
-            <table class="table-modern">
+            <div class="table-modern-wrap"><table class="table-modern">
               <thead><tr><th>Concepto</th><th>Tarjeta</th><th>Fecha</th><th>Monto</th><th>Tipo</th><th></th></tr></thead>
               <tbody id="tbody-movs-tarjeta"></tbody>
-            </table>
+            </table></div>
           </div>
         </div>
       </div>
@@ -1080,7 +1080,7 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
   ============================================================ -->
   <div id="page-config" class="page">
     <div class="section-h">Configuración</div>
-    <div class="section-sub">Firebase, perfil y preferencias</div>
+    <div class="section-sub">Perfil y preferencias</div>
     <div class="g2">
       <div>
         <div class="card mb16">
@@ -1806,16 +1806,17 @@ function saveState(){
 loadState();
 
 // ============================================================
-// SYNC — usa backend API (credenciales Firebase en el servidor)
+// SYNC — Firebase Firestore
 // ============================================================
 async function syncData(){
-  if(!ST.uid || ST.uid.startsWith('local-')) {
+  if(!window._FB || !ST.uid || ST.uid.startsWith('local-')) {
     document.getElementById('sync-dot').className = 'sync-dot offline';
     document.getElementById('sync-label').textContent = 'Modo local';
     return;
   }
   try {
-    await window._API.saveData(ST.uid, {
+    const { db, doc, setDoc } = window._FB;
+    await setDoc(doc(db,'users',ST.uid,'data','state'), {
       perfil:    ST.perfil,
       ingresos:  ST.ingresos,
       gastos:    ST.gastos,
@@ -1831,20 +1832,21 @@ async function syncData(){
   }
 }
 async function loadFromFirebase(uid){
+  if(!window._FB) return;
   try {
-    const data = await window._API.loadData(uid);
-    if(data && data.perfil !== undefined){
-      ST.perfil    = data.perfil    || ST.perfil;
-      ST.ingresos  = data.ingresos  || [];
-      ST.gastos    = data.gastos    || [];
-      ST.deudas    = data.deudas    || [];
-      ST.alertas   = data.alertas   || [];
+    const { db, doc, getDoc } = window._FB;
+    const snap = await getDoc(doc(db,'users',uid,'data','state'));
+    if(snap.exists()){
+      const data = snap.data();
+      ST.perfil   = data.perfil    || ST.perfil;
+      ST.ingresos = data.ingresos  || [];
+      ST.gastos   = data.gastos    || [];
+      ST.deudas   = data.deudas    || [];
+      ST.alertas  = data.alertas   || [];
       saveToLocal();
-      toast('Datos cargados desde servidor','success');
+      toast('Datos cargados desde la nube','success');
     }
-  } catch(e){
-    // Sin datos remotos — continuar con los datos locales
-  }
+  } catch(e){}
 }
 function saveToLocal(){ localStorage.setItem('sema_pro_v3', JSON.stringify(ST)); }
 
@@ -1883,8 +1885,7 @@ async function handleAuth(){
   btn.textContent = 'Cargando...';
   btn.disabled = true;
 
-  // Si API no está disponible, entrar en modo local
-  if(!window._API){
+  if(!window._FB){
     demoLogin(email);
     btn.textContent = btnOriginal;
     btn.disabled = false;
@@ -1892,15 +1893,16 @@ async function handleAuth(){
   }
 
   try {
-    let res;
+    const { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword } = window._FB;
+    let cred;
     if(authMode==='login'){
-      res = await window._API.login(email, pass);
+      cred = await signInWithEmailAndPassword(auth, email, pass);
     } else {
       const nombre = document.getElementById('auth-name').value.trim();
-      res = await window._API.register(email, pass, nombre);
-      ST.perfil.nombre = res.nombre || nombre;
+      cred = await createUserWithEmailAndPassword(auth, email, pass);
+      ST.perfil.nombre = nombre;
     }
-    ST.uid = res.uid;
+    ST.uid = cred.user.uid;
     ST.perfil.email = email;
     await loadFromFirebase(ST.uid);
     enterApp();
@@ -1930,8 +1932,8 @@ function enterApp(){
   initApp();
 }
 function cerrarSesion(){
-  if(ST.uid && !ST.uid.startsWith('local-')){
-    window._API.logout(ST.uid).catch(()=>{});
+  if(window._FB && ST.uid && !ST.uid.startsWith('local-')){
+    window._FB.signOut(window._FB.auth).catch(()=>{});
   }
   ST.uid = null;
   saveToLocal();
@@ -4005,7 +4007,7 @@ function initApp(){
   }
   refreshDashboard();
   // check sync status
-  if(!ST.uid || ST.uid.startsWith('local-')){
+  if(!window._FB || !ST.uid || ST.uid.startsWith('local-')){
     document.getElementById('sync-dot').className='sync-dot offline';
     document.getElementById('sync-label').textContent='Modo local';
   }
@@ -4041,22 +4043,19 @@ function filterByQ(q,mes,ano,stripId,el){
 }
 
 // Check if already have session — esperar DOM listo
-window.addEventListener('load', async ()=>{
+window.addEventListener('load', ()=>{
   if(ST.uid && ST.uid.startsWith('local-')){
     enterApp();
-  } else if(ST.uid) {
-    // Validar sesión con el servidor
-    try {
-      const session = await window._API.session().catch(()=>null);
-      if(session && session.uid){
-        ST.uid = session.uid;
-        ST.perfil.email = session.email || ST.perfil.email;
-        await loadFromFirebase(ST.uid);
+  } else if(window._FB){
+    window._FB.onAuthStateChanged(window._FB.auth, user=>{
+      if(user){
+        ST.uid = user.uid;
+        ST.perfil.email = user.email;
+        loadFromFirebase(user.uid).then(()=>enterApp()).catch(()=>enterApp());
       }
-      enterApp();
-    } catch(e){
-      enterApp(); // fallback con datos locales
-    }
+    });
+  } else if(ST.uid){
+    enterApp();
   }
 });
 
