@@ -18,12 +18,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
-<!-- Firebase SDK (la API key web es pública por diseño; la seguridad real son las Firestore Rules) -->
-<script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-  import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-
+<!-- Firebase SDK compat — se carga síncrono, sin race condition -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+(function(){
   const firebaseConfig = {
     apiKey:            "AIzaSyDdM6BBWMxrRwFAqn6ZKzogW_7D-dFN7rc",
     authDomain:        "sema-wealth.firebaseapp.com",
@@ -32,15 +32,31 @@
     messagingSenderId: "916630135081",
     appId:             "1:916630135081:web:3fa56116ee20535d6bd738"
   };
-
   try {
-    const app  = initializeApp(firebaseConfig);
-    const db   = getFirestore(app);
-    const auth = getAuth(app);
-    window._FB = { db, auth, doc, setDoc, getDoc, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut };
+    firebase.initializeApp(firebaseConfig);
+    const db   = firebase.firestore();
+    const auth = firebase.auth();
+
+    // Adaptar la API compat al mismo objeto _FB que usa el resto del código
+    window._FB = {
+      auth,
+      db,
+      // Firestore helpers
+      doc:    (db, ...path) => db.doc(path.join('/')),
+      setDoc: (ref, data)   => ref.set(data, { merge: true }),
+      getDoc: (ref)         => ref.get(),
+      // Auth helpers
+      signInWithEmailAndPassword:    (auth, email, pass) => auth.signInWithEmailAndPassword(email, pass),
+      createUserWithEmailAndPassword:(auth, email, pass) => auth.createUserWithEmailAndPassword(email, pass),
+      onAuthStateChanged:            (auth, cb)          => auth.onAuthStateChanged(cb),
+      signOut:                       (auth)              => auth.signOut(),
+    };
+    console.log('Firebase compat inicializado ✓');
   } catch(e) {
+    console.warn('Firebase no disponible, modo local activo:', e);
     window._FB = null;
   }
+})();
 </script>
 
 <style>
@@ -773,9 +789,8 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
     <button id="install-btn" style="display:none;width:100%;justify-content:center;padding:10px;margin-top:10px;background:rgba(0,153,230,0.08);border:1px solid rgba(0,153,230,0.2);border-radius:9px;color:#0099e6;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Inter',Arial,sans-serif;" onclick="installApp()">
       <i class="fa-solid fa-download" style="margin-right:6px"></i> Instalar como app en esta computadora
     </button>
-    <!-- BUG4 FIX: botón de modo local siempre visible -->
     <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);text-align:center">
-      <button onclick="demoLogin()" style="background:none;border:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:'Inter',Arial,sans-serif;text-decoration:underline">
+      <button onclick="demoLogin()" style="background:none;border:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:'Inter',Arial,sans-serif;text-decoration:underline;padding:4px">
         Continuar sin cuenta (modo local)
       </button>
     </div>
@@ -2219,10 +2234,9 @@ loadState();
 // SYNC — Firebase Firestore
 // ============================================================
 async function syncData(){
-  // BUG1 FIX: debounce + guard para que no falle antes del DOM
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
   if(!window._FB || !ST.uid || ST.uid.startsWith('local-')) {
-    const dot = document.getElementById('sync-dot');
-    const lbl = document.getElementById('sync-label');
     if(dot) dot.className = 'sync-dot offline';
     if(lbl) lbl.textContent = 'Modo local';
     return;
@@ -2231,8 +2245,7 @@ async function syncData(){
   clearTimeout(window._syncTimer);
   window._syncTimer = setTimeout(async () => {
     try {
-      const { db, doc, setDoc } = window._FB;
-      await setDoc(doc(db,'users',ST.uid,'data','state'), {
+      await window._FB.db.doc('users/'+ST.uid+'/data/state').set({
         perfil:         ST.perfil,
         ingresos:       ST.ingresos,
         gastos:         ST.gastos,
@@ -2245,25 +2258,26 @@ async function syncData(){
         corridaCerradas:ST.corridaCerradas|| [],
         notifConfig:    ST.notifConfig    || {},
         updatedAt:      new Date().toISOString()
-      });
-      const dot = document.getElementById('sync-dot');
-      const lbl = document.getElementById('sync-label');
-      if(dot) dot.className = 'sync-dot';
-      if(lbl) lbl.textContent = 'Sincronizado';
+      }, { merge: true });
+      const d2 = document.getElementById('sync-dot');
+      const l2 = document.getElementById('sync-label');
+      if(d2) d2.className = 'sync-dot';
+      if(l2) l2.textContent = 'Sincronizado';
     } catch(e){
-      const dot = document.getElementById('sync-dot');
-      const lbl = document.getElementById('sync-label');
-      if(dot) dot.className = 'sync-dot offline';
-      if(lbl) lbl.textContent = 'Error sync';
+      const d2 = document.getElementById('sync-dot');
+      const l2 = document.getElementById('sync-label');
+      if(d2) d2.className = 'sync-dot offline';
+      if(l2) l2.textContent = 'Error sync';
+      console.warn('Firestore sync error:', e);
     }
   }, 1500);
 }
 async function loadFromFirebase(uid){
   if(!window._FB) return;
   try {
-    const { db, doc, getDoc } = window._FB;
-    const snap = await getDoc(doc(db,'users',uid,'data','state'));
-    if(snap.exists()){
+    const { db } = window._FB;
+    const snap = await db.doc('users/'+uid+'/data/state').get();
+    if(snap.exists){
       const data = snap.data();
       ST.perfil          = data.perfil          || ST.perfil;
       ST.ingresos        = data.ingresos         || [];
@@ -2340,17 +2354,13 @@ async function handleAuth(){
     await loadFromFirebase(ST.uid);
     enterApp();
   } catch(e){
-    // BUG2 FIX: revisar e.code (Firebase) y e.message
-    const code = e.code||'';
-    const msg  = e.message||'';
+    const msg = e.message||'';
     let texto = 'Error al iniciar sesión. Intenta de nuevo.';
-    if(code.includes('invalid-credential')||code.includes('wrong-password')||code.includes('user-not-found')||msg.includes('invalid-credential')||msg.includes('wrong-password')) texto='Correo o contraseña incorrectos';
-    else if(code.includes('email-already-in-use')||msg.includes('email-already-in-use')) texto='Este correo ya está registrado';
-    else if(code.includes('weak-password')||msg.includes('weak-password')) texto='Contraseña muy débil (mínimo 6 caracteres)';
-    else if(code.includes('invalid-email')||msg.includes('invalid-email')) texto='Correo inválido';
-    else if(code.includes('too-many-requests')) texto='Demasiados intentos. Espera unos minutos e intenta de nuevo.';
-    else if(msg.includes('network')||code.includes('network')) texto='Sin conexión. Verifica tu internet.';
-    console.error('Auth error:', code, msg); // ayuda a debuggear
+    if(msg.includes('invalid-credential')||msg.includes('wrong-password')||msg.includes('user-not-found')) texto='Correo o contraseña incorrectos';
+    else if(msg.includes('email-already-in-use')) texto='Este correo ya está registrado';
+    else if(msg.includes('weak-password')) texto='Contraseña muy débil (mínimo 6 caracteres)';
+    else if(msg.includes('invalid-email')) texto='Correo inválido';
+    else if(msg.includes('network')) texto='Sin conexión. Verifica tu internet.';
     errEl.textContent = texto;
     errEl.style.display='block';
     btn.textContent = btnOriginal;
@@ -2370,7 +2380,7 @@ function enterApp(){
 }
 function cerrarSesion(){
   if(window._FB && ST.uid && !ST.uid.startsWith('local-')){
-    window._FB.signOut(window._FB.auth).catch(()=>{});
+    window._FB.auth.signOut().catch(()=>{});
   }
   ST.uid = null;
   saveToLocal();
@@ -4483,49 +4493,20 @@ function filterByQ(q,mes,ano,stripId,el){
   el.classList.add('active');
 }
 
-// BUG3 FIX: timeout de seguridad + auto-restore de sesión local
+// Check if already have session — esperar DOM listo
 window.addEventListener('load', ()=>{
-  // Si ya hay sesión local guardada, entrar directo
   if(ST.uid && ST.uid.startsWith('local-')){
     enterApp();
-    return;
-  }
-  // Si hay UID de Firebase en localStorage, restaurar sesión
-  if(ST.uid && !ST.uid.startsWith('local-') && window._FB){
+  } else if(window._FB){
     window._FB.onAuthStateChanged(window._FB.auth, user=>{
       if(user){
         ST.uid = user.uid;
         ST.perfil.email = user.email;
         loadFromFirebase(user.uid).then(()=>enterApp()).catch(()=>enterApp());
       }
-      // Si Firebase responde sin usuario, mostrar auth screen (ya está visible)
     });
-    return;
-  }
-  // Sin Firebase disponible pero con UID local
-  if(ST.uid){
+  } else if(ST.uid){
     enterApp();
-    return;
-  }
-  // Verificar sesión Firebase activa (usuario volvió al tab)
-  if(window._FB){
-    let authResolved = false;
-    window._FB.onAuthStateChanged(window._FB.auth, user=>{
-      authResolved = true;
-      if(user){
-        ST.uid = user.uid;
-        ST.perfil.email = user.email;
-        loadFromFirebase(user.uid).then(()=>enterApp()).catch(()=>enterApp());
-      }
-      // Sin usuario activo: mostrar pantalla de login (ya visible por defecto)
-    });
-    // Timeout de seguridad: si Firebase no responde en 6s, desbloquear auth
-    setTimeout(()=>{
-      if(!authResolved){
-        const btn = document.getElementById('auth-btn');
-        if(btn){ btn.disabled = false; }
-      }
-    }, 6000);
   }
 });
 
