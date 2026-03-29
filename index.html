@@ -1148,6 +1148,537 @@ input, select, textarea {
   .auth-hero{ padding:44px 20px 28px;min-height:190px; }
   .auth-hero-logo{ font-size:38px; }
 }
+
+/* ════════════════════════════════════════════════════════
+   SEMA NATIVE MOBILE — v2.0  Redesign completo
+════════════════════════════════════════════════════════ */
+
+/* Elementos ocultos por defecto, solo activos en mobile */
+.m-hero, .m-corrida-native { display:none; }
+
+@media(max-width:768px){
+
+  /* ── Sin topbar en mobile (reemplazado por hero) ── */
+  .topbar { display:none !important; }
+  .content {
+    padding-top: calc(env(safe-area-inset-top,0px) + 12px) !important;
+    background: #f0f4fc;
+  }
+
+  /* ══════════════════════════════════════════
+     HOME HERO
+  ══════════════════════════════════════════ */
+  .m-hero {
+    display: block;
+    margin: calc(-12px - env(safe-area-inset-top,0px)) -14px 20px;
+    background: linear-gradient(155deg, #002f8a 0%, #0047cc 38%, #1a6eff 72%, #c2d9ff 100%);
+    border-radius: 0 0 36px 36px;
+    overflow: hidden;
+    position: relative;
+    padding: calc(env(safe-area-inset-top,14px) + 18px) 20px 28px;
+  }
+  .m-hero::before {
+    content:''; position:absolute; top:-70px; right:-50px;
+    width:220px; height:220px; border-radius:50%;
+    background:rgba(255,255,255,0.07); pointer-events:none;
+  }
+  .m-hero::after {
+    content:''; position:absolute; bottom:-50px; left:-30px;
+    width:160px; height:160px; border-radius:50%;
+    background:rgba(255,255,255,0.05); pointer-events:none;
+  }
+
+  /* Row 1: avatar + greeting + bell */
+  .m-h-row1 {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:20px; position:relative; z-index:1;
+  }
+  .m-h-greet { display:flex; align-items:center; gap:11px; }
+  .m-h-avatar {
+    width:44px; height:44px; border-radius:50%;
+    background: rgba(255,255,255,0.2);
+    border: 2px solid rgba(255,255,255,0.5);
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px; font-weight:800; color:#fff;
+    font-family:'Sora',sans-serif; flex-shrink:0;
+    box-shadow: 0 2px 12px rgba(0,0,80,0.3);
+  }
+  .m-h-name {
+    font-size:17px; font-weight:800; color:#fff;
+    font-family:'Sora',sans-serif; letter-spacing:-0.4px; line-height:1.1;
+  }
+  .m-h-time {
+    font-size:12px; color:rgba(255,255,255,0.65);
+    font-family:'DM Sans',sans-serif; margin-top:2px;
+  }
+  .m-h-bell {
+    width:40px; height:40px; border-radius:50%;
+    background:rgba(255,255,255,0.13);
+    border:1.5px solid rgba(255,255,255,0.28);
+    color:#fff; font-size:16px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    position:relative; backdrop-filter:blur(8px);
+    -webkit-tap-highlight-color:transparent;
+    transition:background .2s; flex-shrink:0; outline:none;
+  }
+  .m-h-bell:active { background:rgba(255,255,255,0.25); }
+  .m-h-bell-dot {
+    position:absolute; top:7px; right:7px;
+    width:8px; height:8px; border-radius:50%;
+    background:#ff4040; border:1.5px solid #1a6eff;
+  }
+
+  /* Balance card */
+  .m-balance {
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.22);
+    border-radius:22px; padding:18px 18px 15px;
+    backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+    position:relative; z-index:1; margin-bottom:18px;
+    box-shadow:0 8px 32px rgba(0,0,60,0.2);
+  }
+  .m-balance-lbl {
+    font-size:10.5px; font-weight:700;
+    color:rgba(255,255,255,0.62); text-transform:uppercase;
+    letter-spacing:0.1em; margin-bottom:6px;
+  }
+  .m-balance-amount {
+    font-family:'Sora',sans-serif;
+    font-size:36px; font-weight:900;
+    color:#ffffff; letter-spacing:-1.5px;
+    line-height:1; margin-bottom:14px;
+    text-shadow:0 2px 14px rgba(0,0,80,0.25);
+  }
+  .m-balance-meta {
+    display:flex; align-items:center; gap:10px;
+  }
+  .m-balance-bar-track {
+    flex:1; height:5px; border-radius:3px;
+    background:rgba(255,255,255,0.2); overflow:hidden;
+  }
+  .m-balance-bar-fill {
+    height:100%; border-radius:3px;
+    background:rgba(255,255,255,0.75);
+    transition:width .6s cubic-bezier(.4,0,.2,1);
+  }
+  .m-balance-pct {
+    font-size:11px; font-weight:600;
+    color:rgba(255,255,255,0.72); white-space:nowrap;
+  }
+
+  /* Quick actions row */
+  .m-qa {
+    display:grid; grid-template-columns:repeat(4,1fr); gap:10px;
+    position:relative; z-index:1;
+  }
+  .m-qa-btn {
+    display:flex; flex-direction:column; align-items:center; gap:7px;
+    cursor:pointer; border:none; background:none; padding:0;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .m-qa-btn:active .m-qa-icon { transform:scale(0.88); }
+  .m-qa-icon {
+    width:54px; height:54px; border-radius:18px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:21px; color:#fff;
+    background:rgba(255,255,255,0.16);
+    border:1.5px solid rgba(255,255,255,0.28);
+    backdrop-filter:blur(10px);
+    transition:transform .15s cubic-bezier(.34,1.56,.64,1), background .2s;
+    box-shadow:0 4px 16px rgba(0,0,0,0.18);
+  }
+  .m-qa-lbl {
+    font-size:10.5px; font-weight:600;
+    color:rgba(255,255,255,0.82); font-family:'DM Sans',sans-serif;
+    text-align:center;
+  }
+
+  /* ── INFO CARDS ROW ── */
+  .m-cards-row {
+    display:grid; grid-template-columns:1fr 1fr; gap:12px;
+    margin-bottom:16px;
+  }
+  .m-info-card {
+    background:#fff; border-radius:18px;
+    padding:14px;
+    box-shadow:0 3px 14px rgba(0,40,100,0.09);
+    border:1px solid var(--border);
+  }
+  .m-score-wrap {
+    display:flex; align-items:center; gap:10px;
+  }
+  .m-score-svg-box {
+    position:relative; width:50px; height:50px; flex-shrink:0;
+  }
+  .m-score-svg-box svg { width:50px; height:50px; }
+  .m-score-center {
+    position:absolute; top:50%; left:50%;
+    transform:translate(-50%,-50%); text-align:center;
+  }
+  .m-score-num {
+    font-family:'Sora',sans-serif; font-size:12px; font-weight:900;
+    color:var(--text); line-height:1;
+  }
+  .m-score-txt {
+    font-size:9.5px; font-weight:700; color:var(--text3);
+    text-transform:uppercase; letter-spacing:0.05em; margin-bottom:3px;
+  }
+  .m-score-status { font-size:12.5px; font-weight:700; color:var(--text); }
+
+  .m-next-icon-row {
+    display:flex; align-items:center; gap:7px; margin-bottom:7px;
+  }
+  .m-next-icon-box {
+    width:30px; height:30px; border-radius:9px;
+    background:var(--accent-glow2);
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px; color:var(--accent);
+  }
+  .m-next-label { font-size:10px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.06em; }
+  .m-next-q { font-size:12px; font-weight:700; color:var(--text); margin-bottom:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .m-next-amount { font-size:15px; font-weight:900; color:var(--accent); font-family:'Sora',sans-serif; letter-spacing:-0.5px; }
+
+  /* ── TODAY SECTION ── */
+  .m-today-hdr {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:12px;
+  }
+  .m-today-title {
+    font-size:17px; font-weight:800; color:var(--text);
+    font-family:'Sora',sans-serif; letter-spacing:-0.4px;
+  }
+  .m-today-stats {
+    font-size:12px; font-weight:600; color:var(--text3);
+  }
+
+  /* Mini add form toggle */
+  .m-add-toggle {
+    display:flex; align-items:center; gap:6px;
+    background:var(--accent); color:#fff;
+    border:none; border-radius:20px;
+    padding:8px 14px; font-size:12px; font-weight:700;
+    cursor:pointer; font-family:'DM Sans',sans-serif;
+    -webkit-tap-highlight-color:transparent;
+    box-shadow:0 4px 12px rgba(0,102,204,0.3);
+    transition:opacity .15s, transform .1s;
+  }
+  .m-add-toggle:active { opacity:0.88; transform:scale(0.96); }
+
+  /* Quick cat chips */
+  .m-chip-row {
+    display:flex; gap:6px; overflow-x:auto; margin-bottom:14px;
+    padding-bottom:2px; -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .m-chip-row::-webkit-scrollbar { display:none; }
+  .m-chip {
+    display:flex; align-items:center; gap:5px;
+    padding:8px 13px; border-radius:20px;
+    background:#fff; border:1.5px solid var(--border);
+    font-size:12px; font-weight:600; color:var(--text2);
+    cursor:pointer; white-space:nowrap; flex-shrink:0;
+    -webkit-tap-highlight-color:transparent;
+    box-shadow:0 2px 6px rgba(0,40,100,0.05);
+    transition:all .12s;
+  }
+  .m-chip:active {
+    background:var(--accent); color:#fff;
+    border-color:var(--accent); transform:scale(0.95);
+  }
+
+  /* Inline quick add form */
+  .m-qadd {
+    background:#fff; border-radius:18px;
+    border:1.5px solid var(--border);
+    padding:14px; margin-bottom:14px;
+    display:none; box-shadow:0 4px 20px rgba(0,40,100,0.09);
+    animation:qaddOpen .22s cubic-bezier(.4,0,.2,1);
+  }
+  @keyframes qaddOpen { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:none} }
+  .m-qadd.open { display:block; }
+  .m-qadd-row { display:flex; gap:8px; margin-bottom:8px; }
+  .m-qadd-row input {
+    flex:1; padding:12px 13px;
+    background:var(--bg3); border:1.5px solid var(--border);
+    border-radius:12px; font-size:16px !important;
+    font-family:'DM Sans',sans-serif; color:var(--text); outline:none;
+    transition:border-color .15s;
+  }
+  .m-qadd-row input:focus { border-color:var(--accent); background:#fff; }
+  .m-qadd-row input[type="number"] { flex:0 0 100px; }
+  .m-qadd-confirm {
+    width:100%; padding:13px; background:var(--accent); color:#fff;
+    border:none; border-radius:12px; font-size:14px; font-weight:700;
+    font-family:'DM Sans',sans-serif; cursor:pointer;
+    -webkit-tap-highlight-color:transparent; transition:opacity .15s;
+    box-shadow:0 4px 12px rgba(0,102,204,0.3);
+  }
+  .m-qadd-confirm:active { opacity:0.9; }
+
+  /* Transaction items */
+  .m-tx {
+    display:flex; align-items:center; gap:12px;
+    padding:13px 14px; background:#fff; border-radius:16px;
+    margin-bottom:8px;
+    box-shadow:0 2px 8px rgba(0,40,100,0.07);
+    border:1px solid var(--border);
+    animation:txIn .25s cubic-bezier(.4,0,.2,1) both;
+  }
+  @keyframes txIn { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:none} }
+  .m-tx-icon {
+    width:42px; height:42px; border-radius:14px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:19px; flex-shrink:0;
+    background:var(--bg3);
+  }
+  .m-tx-info { flex:1; min-width:0; }
+  .m-tx-concept { font-size:14px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .m-tx-meta { font-size:11.5px; color:var(--text3); margin-top:2px; }
+  .m-tx-right { display:flex; align-items:center; gap:10px; }
+  .m-tx-amount { font-size:15px; font-weight:800; color:var(--red); font-family:'Sora',sans-serif; white-space:nowrap; }
+  .m-tx-del {
+    width:28px; height:28px; border-radius:9px;
+    background:var(--red-glow); border:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--red); font-size:12px; flex-shrink:0;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  .m-empty {
+    text-align:center; padding:36px 20px;
+    background:#fff; border-radius:18px;
+    border:1.5px dashed var(--border2);
+  }
+  .m-empty-icon { font-size:30px; margin-bottom:10px; opacity:0.35; display:block; }
+  .m-empty-text { font-size:13px; color:var(--text3); font-weight:500; }
+
+  /* Desktop-only elements hidden on mobile home */
+  #page-hoy .kpi-grid,
+  #page-hoy .card.mb16:not(.m-show),
+  #page-hoy .g-65 { display:none; }
+
+  /* ══════════════════════════════════════════
+     CORRIDA NATIVE REDESIGN
+  ══════════════════════════════════════════ */
+  .m-corrida-native { display:block; }
+
+  /* Hide desktop corrida table and charts on mobile */
+  #page-corrida .card > .corrida-table-wrap,
+  #page-corrida > .card > .card-header,
+  #page-corrida .g2,
+  #page-corrida .g3.mb16 { display:none !important; }
+  #page-corrida > .card { display:none !important; }
+
+  /* KPI strip for corrida */
+  .m-corrida-kpis {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:8px;
+    margin-bottom:16px;
+  }
+  .m-ck {
+    background:#fff; border-radius:16px;
+    padding:13px 10px; text-align:center;
+    box-shadow:0 3px 12px rgba(0,40,100,0.08);
+    border:1px solid var(--border);
+    position:relative; overflow:hidden;
+  }
+  .m-ck::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background:var(--ck-c, var(--accent));
+    border-radius:16px 16px 0 0;
+  }
+  .m-ck-lbl {
+    font-size:9px; font-weight:700; text-transform:uppercase;
+    letter-spacing:0.08em; color:var(--text3); margin-bottom:5px; margin-top:4px;
+  }
+  .m-ck-val {
+    font-family:'Sora',sans-serif;
+    font-size:14px; font-weight:900; color:var(--text);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+
+  /* Quincena selector */
+  .m-q-sel {
+    display:flex; gap:8px; overflow-x:auto;
+    padding:0 0 8px; margin-bottom:16px;
+    -webkit-overflow-scrolling:touch; scrollbar-width:none;
+  }
+  .m-q-sel::-webkit-scrollbar { display:none; }
+
+  .m-q-pill {
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    padding:10px 15px; border-radius:18px;
+    border:1.5px solid var(--border); background:#fff;
+    cursor:pointer; white-space:nowrap; flex-shrink:0;
+    -webkit-tap-highlight-color:transparent;
+    transition:all .18s cubic-bezier(.4,0,.2,1);
+    box-shadow:0 2px 6px rgba(0,40,100,0.05);
+  }
+  .m-q-pill.active {
+    background:var(--accent); border-color:var(--accent);
+    box-shadow:0 6px 20px rgba(0,102,204,0.35);
+    transform:translateY(-1px);
+  }
+  .m-q-pill-top {
+    font-size:10px; font-weight:700; text-transform:uppercase;
+    letter-spacing:0.04em; color:var(--text3);
+  }
+  .m-q-pill.active .m-q-pill-top { color:rgba(255,255,255,0.72); }
+  .m-q-pill-date {
+    font-size:13px; font-weight:800; color:var(--text);
+    font-family:'Sora',sans-serif;
+  }
+  .m-q-pill.active .m-q-pill-date { color:#fff; }
+  .m-q-dot {
+    width:6px; height:6px; border-radius:50%; margin-top:1px;
+  }
+  .m-q-pill.ok .m-q-dot { background:var(--green); }
+  .m-q-pill.ajustado .m-q-dot { background:var(--orange); }
+  .m-q-pill.deficit .m-q-dot { background:var(--red); }
+  .m-q-pill.active .m-q-dot { background:rgba(255,255,255,0.7); }
+
+  /* Quincena detail card */
+  .m-q-card {
+    background:#fff; border-radius:22px;
+    box-shadow:0 6px 28px rgba(0,40,100,0.11);
+    border:1px solid var(--border); overflow:hidden;
+    margin-bottom:16px;
+    animation:qcardIn .28s cubic-bezier(.4,0,.2,1);
+  }
+  @keyframes qcardIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+
+  .m-q-card-hdr {
+    background:linear-gradient(135deg, var(--accent), #0041b0);
+    padding:18px 20px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .m-q-card-date {
+    font-family:'Sora',sans-serif;
+    font-size:16px; font-weight:800; color:#fff; letter-spacing:-0.3px;
+  }
+  .m-q-badge {
+    padding:5px 12px; border-radius:20px; font-size:11px; font-weight:700;
+  }
+  .m-q-badge.ok { background:rgba(0,184,122,0.3); color:#fff; }
+  .m-q-badge.ajustado { background:rgba(245,158,11,0.35); color:#fff; }
+  .m-q-badge.deficit { background:rgba(224,45,74,0.35); color:#fff; }
+
+  .m-q-card-body { padding:18px 20px; }
+
+  .m-q-income-row {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .m-q-income-lbl { font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.07em; }
+  .m-q-income-val { font-size:20px; font-weight:900; color:var(--accent); font-family:'Sora',sans-serif; }
+
+  .m-q-prog {
+    height:8px; background:var(--bg3); border-radius:4px;
+    overflow:hidden; margin-bottom:18px;
+  }
+  .m-q-prog-fill { height:100%; border-radius:4px; transition:width .5s ease; }
+
+  .m-q-section {
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:10px; font-weight:800; text-transform:uppercase;
+    letter-spacing:0.1em; color:var(--text3);
+    padding:5px 0 8px; border-bottom:1px solid var(--border); margin-bottom:8px;
+  }
+  .m-q-selall {
+    font-size:10px; font-weight:700; color:var(--accent);
+    cursor:pointer; text-transform:none; letter-spacing:0;
+  }
+
+  .m-q-item {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 0; border-bottom:1px solid rgba(0,40,100,0.05);
+    transition:opacity .2s;
+  }
+  .m-q-item:last-child { border-bottom:none; }
+  .m-q-item.done { opacity:0.38; }
+  .m-q-item.done .m-q-concept { text-decoration:line-through; }
+
+  .m-q-chk {
+    width:24px; height:24px; border-radius:8px;
+    border:2px solid var(--border2); background:#fff;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; flex-shrink:0;
+    transition:all .18s cubic-bezier(.4,0,.2,1);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .m-q-chk.checked { background:var(--green); border-color:var(--green); }
+  .m-q-chk.checked::after { content:'✓'; color:#fff; font-size:13px; font-weight:700; }
+
+  .m-q-item-info { flex:1; min-width:0; }
+  .m-q-concept { font-size:14px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .m-q-meta { font-size:11.5px; color:var(--text3); margin-top:2px; }
+  .m-q-amount { font-size:15px; font-weight:800; font-family:'Sora',sans-serif; white-space:nowrap; flex-shrink:0; }
+
+  .m-q-saldo {
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--bg3); border-radius:14px; padding:14px 16px;
+    margin-top:14px;
+  }
+  .m-q-saldo-lbl { font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.07em; }
+  .m-q-saldo-val { font-size:24px; font-weight:900; font-family:'Sora',sans-serif; letter-spacing:-0.8px; }
+
+  .m-q-close-btn {
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    width:100%; margin-top:12px; padding:14px;
+    background:linear-gradient(135deg,var(--green),#00995f);
+    color:#fff; border:none; border-radius:14px;
+    font-size:14px; font-weight:700; font-family:'DM Sans',sans-serif;
+    cursor:pointer; -webkit-tap-highlight-color:transparent;
+    box-shadow:0 4px 14px rgba(0,168,122,0.35);
+    transition:opacity .15s;
+  }
+  .m-q-close-btn:active { opacity:0.88; }
+
+  /* Empty corrida state */
+  .m-corrida-empty {
+    text-align:center; padding:40px 20px;
+    background:#fff; border-radius:20px;
+    border:1.5px dashed var(--border2);
+    box-shadow:0 2px 10px rgba(0,40,100,0.06);
+  }
+
+  /* ── BOTTOM NAV refinements ── */
+  #mobile-bottom-nav {
+    background:rgba(255,255,255,0.96) !important;
+    box-shadow:0 -1px 0 rgba(0,40,100,0.08), 0 -8px 32px rgba(0,40,100,0.09) !important;
+    border-top:none !important;
+    padding:0 8px !important;
+  }
+  .mbn-item {
+    border-radius:14px; margin:0;
+    font-family:'DM Sans',sans-serif;
+  }
+  .mbn-item i { font-size:21px; }
+  .mbn-item span { font-size:9.5px; letter-spacing:0.01em; }
+  .mbn-item.active {
+    background:rgba(0,102,204,0.07);
+    color:var(--accent);
+  }
+  .mbn-item.active::before {
+    background:linear-gradient(90deg,var(--accent),var(--accent3));
+    width:26px; height:3px;
+    border-radius:0 0 3px 3px;
+  }
+  .mbn-item.active i { transform:scale(1.1) translateY(-1px); }
+
+  /* FAB refined */
+  #mobile-fab {
+    box-shadow:0 6px 24px rgba(0,102,204,0.45), 0 2px 8px rgba(0,0,80,0.2);
+    bottom: calc(78px + env(safe-area-inset-bottom,0px));
+  }
+}
+
+@media(max-width:390px){
+  .m-balance-amount { font-size:30px; }
+  .m-h-name { font-size:15px; }
+  .m-qa-icon { width:48px; height:48px; font-size:19px; }
+  .m-corrida-kpis { gap:6px; }
+  .m-ck-val { font-size:12px; }
+}
 </style>
 </head>
 <body>
@@ -1236,11 +1767,11 @@ input, select, textarea {
 ====================================================== -->
 <nav id="mobile-bottom-nav">
   <div class="mbn-item active" id="mbn-hoy" onclick="mobileNavigate('hoy',this)">
-    <i class="fa-solid fa-sun"></i>
-    <span>Hoy</span>
+    <i class="fa-solid fa-house"></i>
+    <span>Inicio</span>
   </div>
   <div class="mbn-item" id="mbn-corrida" onclick="mobileNavigate('corrida',this)">
-    <i class="fa-solid fa-table-list"></i>
+    <i class="fa-solid fa-calendar-check"></i>
     <span>Mis Pagos</span>
     <span class="mbn-badge" id="mbn-badge" style="display:none">!</span>
   </div>
@@ -1249,7 +1780,7 @@ input, select, textarea {
     <span>Tarjetas</span>
   </div>
   <div class="mbn-item" id="mbn-mas" onclick="openMoreSheet()">
-    <i class="fa-solid fa-grip"></i>
+    <i class="fa-solid fa-ellipsis"></i>
     <span>Más</span>
   </div>
 </nav>
@@ -1380,7 +1911,130 @@ input, select, textarea {
   ============================================================ -->
   <div id="page-hoy" class="page active">
 
-    <!-- Resumen del día -->
+    <!-- ══ MOBILE HERO — solo visible en móvil ══ -->
+    <div class="m-hero" id="m-hero">
+      <!-- Row: avatar + saludo + campana -->
+      <div class="m-h-row1">
+        <div class="m-h-greet">
+          <div class="m-h-avatar" id="m-avatar">U</div>
+          <div>
+            <div class="m-h-name" id="m-hname">Hola, Usuario</div>
+            <div class="m-h-time" id="m-htime">Buenos días ☀️</div>
+          </div>
+        </div>
+        <button class="m-h-bell" onclick="mobileNavigate('config',null)" aria-label="Configuración">
+          <i class="fa-solid fa-bell"></i>
+        </button>
+      </div>
+
+      <!-- Balance card -->
+      <div class="m-balance">
+        <div class="m-balance-lbl">Saldo libre esta quincena</div>
+        <div class="m-balance-amount" id="m-balance">$0.00</div>
+        <div class="m-balance-meta">
+          <div class="m-balance-bar-track">
+            <div class="m-balance-bar-fill" id="m-bar" style="width:0%"></div>
+          </div>
+          <span class="m-balance-pct" id="m-pct">0% comprometido</span>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="m-qa">
+        <button class="m-qa-btn" onclick="openModal('modal-ingreso')">
+          <div class="m-qa-icon"><i class="fa-solid fa-wallet"></i></div>
+          <span class="m-qa-lbl">Ingreso</span>
+        </button>
+        <button class="m-qa-btn" onclick="abrirGastoRapido()">
+          <div class="m-qa-icon"><i class="fa-solid fa-receipt"></i></div>
+          <span class="m-qa-lbl">Gasto</span>
+        </button>
+        <button class="m-qa-btn" onclick="openModal('modal-deuda')">
+          <div class="m-qa-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+          <span class="m-qa-lbl">Deuda</span>
+        </button>
+        <button class="m-qa-btn" onclick="mobileNavigate('corrida',document.getElementById('mbn-corrida'))">
+          <div class="m-qa-icon"><i class="fa-solid fa-calendar-check"></i></div>
+          <span class="m-qa-lbl">Pagos</span>
+        </button>
+      </div>
+    </div>
+    <!-- /m-hero -->
+
+    <!-- ══ MOBILE CONTENT (solo en móvil) ══ -->
+    <div id="m-home-body">
+      <!-- Score + Próxima quincena -->
+      <div class="m-cards-row" id="m-info-cards">
+        <!-- Score Card -->
+        <div class="m-info-card m-score-wrap" id="m-score-card">
+          <div class="m-score-svg-box">
+            <svg viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg" style="transform:rotate(-90deg)">
+              <circle cx="26" cy="26" r="21" fill="none" stroke="rgba(0,102,204,0.1)" stroke-width="5"/>
+              <circle cx="26" cy="26" r="21" fill="none" stroke="var(--accent)" stroke-width="5"
+                stroke-linecap="round" id="m-score-arc"
+                stroke-dasharray="0 131.9" stroke-dashoffset="0"/>
+            </svg>
+            <div class="m-score-center">
+              <div class="m-score-num" id="m-score-n">—</div>
+            </div>
+          </div>
+          <div>
+            <div class="m-score-txt">Salud</div>
+            <div class="m-score-status" id="m-score-s">—</div>
+          </div>
+        </div>
+        <!-- Next Payment Card -->
+        <div class="m-info-card" id="m-next-card" style="cursor:pointer" onclick="mobileNavigate('corrida',document.getElementById('mbn-corrida'))">
+          <div class="m-next-icon-row">
+            <div class="m-next-icon-box"><i class="fa-solid fa-calendar-check"></i></div>
+            <div class="m-next-label">Próxima Q</div>
+          </div>
+          <div class="m-next-q" id="m-next-q">—</div>
+          <div class="m-next-amount" id="m-next-amt">$0</div>
+        </div>
+      </div>
+
+      <!-- Today section -->
+      <div class="m-today-hdr">
+        <div>
+          <div class="m-today-title">Hoy gasté</div>
+          <div class="m-today-stats" id="m-today-stats">—</div>
+        </div>
+        <button class="m-add-toggle" onclick="toggleMAddForm()">
+          <i class="fa-solid fa-plus"></i> Anotar
+        </button>
+      </div>
+
+      <!-- Quick category chips -->
+      <div class="m-chip-row">
+        <div class="m-chip" onclick="mSetCat('Alimentación')">🍔 Comida</div>
+        <div class="m-chip" onclick="mSetCat('Transporte')">⛽ Gasolina</div>
+        <div class="m-chip" onclick="mSetCat('Entretenimiento')">🎬 Ocio</div>
+        <div class="m-chip" onclick="mSetCat('Salud')">💊 Farmacia</div>
+        <div class="m-chip" onclick="mSetCat('Servicios')">🛒 Super</div>
+        <div class="m-chip" onclick="mSetCat('Otro')">📦 Otro</div>
+      </div>
+
+      <!-- Inline add form -->
+      <div class="m-qadd" id="m-qadd">
+        <div class="m-qadd-row">
+          <input type="text" id="m-qadd-concept" placeholder="¿En qué gasté?" onkeydown="if(event.key==='Enter')mRegistrar()">
+          <input type="number" id="m-qadd-monto" placeholder="$0" step="0.01" inputmode="decimal" onkeydown="if(event.key==='Enter')mRegistrar()">
+        </div>
+        <select class="form-control" id="m-qadd-cat" style="margin-bottom:10px">
+          <option>Alimentación</option><option>Transporte</option><option>Salud</option>
+          <option>Entretenimiento</option><option>Ropa</option><option>Servicios</option><option>Otro</option>
+        </select>
+        <button class="m-qadd-confirm" onclick="mRegistrar()">
+          <i class="fa-solid fa-plus"></i> Registrar gasto
+        </button>
+      </div>
+
+      <!-- Tx list -->
+      <div id="m-tx-list"></div>
+    </div>
+
+    <!-- Resumen del día (desktop) -->
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px">
       <div class="kpi" style="padding:16px">
         <div class="kpi-label">Gasté hoy</div>
@@ -1471,6 +2125,42 @@ input, select, textarea {
   <div id="page-corrida" class="page">
     <div class="section-h">Mis Pagos por Quincena</div>
     <div class="section-sub">Todo lo que debes pagar — calculado automático según tus deudas, tarjetas y préstamos</div>
+
+    <!-- ══ MOBILE NATIVE CORRIDA ══ -->
+    <div class="m-corrida-native">
+      <!-- KPI strip -->
+      <div class="m-corrida-kpis">
+        <div class="m-ck" style="--ck-c:var(--accent)">
+          <div class="m-ck-lbl">Ingreso /Q</div>
+          <div class="m-ck-val" id="mc-ingreso">$0</div>
+        </div>
+        <div class="m-ck" style="--ck-c:var(--red)">
+          <div class="m-ck-lbl">Compromisos</div>
+          <div class="m-ck-val" id="mc-compromisos">$0</div>
+        </div>
+        <div class="m-ck" style="--ck-c:var(--green)">
+          <div class="m-ck-lbl">Margen libre</div>
+          <div class="m-ck-val" id="mc-margen">$0</div>
+        </div>
+      </div>
+
+      <!-- Quincena pills selector -->
+      <div class="m-q-sel" id="m-q-sel"></div>
+
+      <!-- Selected quincena detail -->
+      <div id="m-q-card-wrap"></div>
+
+      <!-- Export buttons -->
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="exportCorridaExcel()">
+          <i class="fa-solid fa-file-excel"></i> Excel
+        </button>
+        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="exportCorridaPDF()">
+          <i class="fa-solid fa-file-pdf"></i> PDF
+        </button>
+      </div>
+    </div>
+    <!-- /m-corrida-native -->
 
     <div class="g3 mb16">
       <div class="predict-card">
@@ -3376,6 +4066,8 @@ function reabrirQuincena(qKey){
 }
 
 function recalcularCorrida(){
+  // ── Mobile corrida native ──
+  if(window.innerWidth<=768){ renderMobileCorridaTimeline(); return; }
   const n = parseInt(document.getElementById('corrida-n')?.value||12);
   const corrida = generarCorrida(n);
   const base = calcIngresoBase();
@@ -4805,6 +5497,13 @@ function guardarPerfil(){
   ST.perfil.umbralAlerta= parseFloat(document.getElementById('cfg-umbral').value)||80;
   document.getElementById('user-name-sidebar').textContent = ST.perfil.nombre||'Usuario';
   document.getElementById('user-avatar').textContent = (ST.perfil.nombre||'U')[0].toUpperCase();
+  // Mobile hero
+  if(window.innerWidth<=768){
+    const mAv = document.getElementById('m-avatar');
+    if(mAv) mAv.textContent = (ST.perfil.nombre||'U')[0].toUpperCase();
+    const mHn = document.getElementById('m-hname');
+    if(mHn) mHn.textContent = `Hola, ${(ST.perfil.nombre||'Usuario').split(' ')[0]}`;
+  }
   saveState();
   toast('Perfil guardado','success');
   refreshDashboard();
@@ -4906,6 +5605,11 @@ function initApp(){
   }
   // Iniciar en Hoy
   navigate('hoy', document.querySelector('.nav-item'));
+  // ── Mobile: actualizar avatar en hero ──
+  if(window.innerWidth<=768){
+    const mAv = document.getElementById('m-avatar');
+    if(mAv) mAv.textContent = (ST.perfil.nombre||'U')[0].toUpperCase();
+  }
   if(!window._FB || !ST.uid || ST.uid.startsWith('local-')){
     document.getElementById('sync-dot').className='sync-dot offline';
     document.getElementById('sync-label').textContent='Modo local';
@@ -5458,6 +6162,8 @@ function toggleVerSemana(){
 
 function renderHoy(){
   const now = new Date();
+  // ── Mobile hero integration ──
+  if(window.innerWidth<=768) renderMobileHero();
   const hoyStr = now.toISOString().slice(0,10);
   const dias7 = new Date(now); dias7.setDate(dias7.getDate()-6);
 
@@ -5601,6 +6307,328 @@ function catEmoji(cat){
 const MOBILE_NAV_MAP = {
   hoy:'mbn-hoy', corrida:'mbn-corrida', tarjetas:'mbn-tarjetas'
 };
+
+// ── Saludo según hora ──
+function getSaludo(){
+  const h = new Date().getHours();
+  if(h>=5 && h<12) return 'Buenos días ☀️';
+  if(h>=12 && h<18) return 'Buenas tardes 🌤️';
+  return 'Buenas noches 🌙';
+}
+
+let _mAddOpen = false;
+function toggleMAddForm(){
+  _mAddOpen = !_mAddOpen;
+  const f = document.getElementById('m-qadd');
+  if(f) f.classList.toggle('open', _mAddOpen);
+  if(_mAddOpen) document.getElementById('m-qadd-concept')?.focus();
+}
+function mSetCat(cat){
+  const sel = document.getElementById('m-qadd-cat');
+  if(sel){ sel.value = cat; }
+  if(!_mAddOpen) toggleMAddForm();
+  document.getElementById('m-qadd-concept')?.focus();
+}
+function mRegistrar(){
+  const concepto = document.getElementById('m-qadd-concept')?.value.trim();
+  const monto    = parseFloat(document.getElementById('m-qadd-monto')?.value);
+  const cat      = document.getElementById('m-qadd-cat')?.value || 'Otro';
+  if(!concepto || !monto || monto<=0){ toast('Completa concepto y monto','error'); return; }
+  const now = new Date();
+  const gasto = {
+    id:Date.now(), concepto, monto, categoria:cat,
+    frecuencia:'Único', metodo:'Efectivo',
+    mes:now.getMonth()+1, ano:now.getFullYear(),
+    quincena:now.getDate()<=15?1:2,
+    fecha:now.toISOString().slice(0,10), esHoy:true
+  };
+  ST.gastos.push(gasto);
+  saveState();
+  document.getElementById('m-qadd-concept').value = '';
+  document.getElementById('m-qadd-monto').value = '';
+  _mAddOpen = false;
+  document.getElementById('m-qadd')?.classList.remove('open');
+  toast(`${fmt(monto)} anotado ✓`, 'success');
+  renderHoy();
+}
+
+// ── Mobile Hero Render ──
+function renderMobileHero(){
+  if(window.innerWidth > 768) return;
+  const nombre = ST.perfil.nombre || 'Usuario';
+  const base   = calcIngresoBase();
+  const fijos  = calcFijosQ();
+  const cuotas = calcCuotasQ();
+  const libre  = base - fijos - cuotas;
+  const usado  = fijos + cuotas;
+  const pct    = base>0 ? Math.min(100,(usado/base*100)).toFixed(0) : 0;
+
+  // Avatar y saludo
+  const avatarEl = document.getElementById('m-avatar');
+  if(avatarEl) avatarEl.textContent = nombre[0].toUpperCase();
+  const hnameEl = document.getElementById('m-hname');
+  if(hnameEl) hnameEl.textContent = `Hola, ${nombre.split(' ')[0]}`;
+  const htimeEl = document.getElementById('m-htime');
+  if(htimeEl) htimeEl.textContent = getSaludo();
+
+  // Balance
+  const balEl = document.getElementById('m-balance');
+  if(balEl) balEl.textContent = fmt(Math.max(0,libre));
+  const barEl = document.getElementById('m-bar');
+  if(barEl) barEl.style.width = pct+'%';
+  const pctEl = document.getElementById('m-pct');
+  if(pctEl) pctEl.textContent = `${pct}% comprometido`;
+
+  // Score
+  const hs = calcHealthScore();
+  const arc = document.getElementById('m-score-arc');
+  if(arc){
+    const circum = 2*Math.PI*21; // r=21
+    const dash = (hs.score/100)*circum;
+    arc.setAttribute('stroke-dasharray', `${dash} ${circum}`);
+    arc.setAttribute('stroke', hs.score>=75?'var(--green)':hs.score>=50?'var(--orange)':'var(--red)');
+  }
+  const snEl = document.getElementById('m-score-n');
+  if(snEl) snEl.textContent = hs.score;
+  const ssEl = document.getElementById('m-score-s');
+  if(ssEl){ ssEl.textContent = hs.label; ssEl.style.color = hs.score>=75?'var(--green)':hs.score>=50?'var(--orange)':'var(--red)'; }
+
+  // Próxima quincena
+  const corrida = generarCorrida(2);
+  const nextQ = corrida[0];
+  const mqEl = document.getElementById('m-next-q');
+  const maEl = document.getElementById('m-next-amt');
+  if(mqEl && nextQ) mqEl.textContent = nextQ.label;
+  if(maEl && nextQ) maEl.textContent = fmt(nextQ.totalEgreso) + ' compromisos';
+
+  // Today stats
+  const now = new Date();
+  const hoyStr = now.toISOString().slice(0,10);
+  const gastosHoy = ST.gastos.filter(g=>g.fecha===hoyStr && g.metodo!=='Tarjeta Crédito');
+  const totalHoy  = gastosHoy.reduce((s,g)=>s+g.monto,0);
+  const statsEl = document.getElementById('m-today-stats');
+  if(statsEl) statsEl.textContent = totalHoy>0 ? fmt(totalHoy) + ' hoy' : 'Sin gastos hoy';
+
+  // Transaction list
+  renderMobileTxList(gastosHoy);
+}
+
+function renderMobileTxList(items){
+  const listEl = document.getElementById('m-tx-list');
+  if(!listEl) return;
+  const gastosHoy = items || [];
+  if(!gastosHoy.length){
+    listEl.innerHTML = `<div class="m-empty">
+      <span class="m-empty-icon">☀️</span>
+      <div class="m-empty-text">Sin gastos hoy — ¡que buen día!</div>
+    </div>`;
+    return;
+  }
+  listEl.innerHTML = gastosHoy.slice().reverse().map((g,i)=>`
+    <div class="m-tx" style="animation-delay:${i*0.04}s">
+      <div class="m-tx-icon">${catEmoji(g.categoria)}</div>
+      <div class="m-tx-info">
+        <div class="m-tx-concept">${g.concepto}</div>
+        <div class="m-tx-meta">${g.categoria} · ${g.fecha||'Hoy'}</div>
+      </div>
+      <div class="m-tx-right">
+        <div class="m-tx-amount">${fmt(g.monto)}</div>
+        <button class="m-tx-del" onclick="eliminarGastoHoy(${g.id})"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+    </div>`).join('');
+}
+
+// ── Mobile Corrida Timeline ──
+let _mCorridaIdx = 0;
+function renderMobileCorridaTimeline(){
+  if(window.innerWidth > 768) return;
+  const n = parseInt(document.getElementById('corrida-n')?.value||12);
+  const corrida = generarCorrida(n);
+  const base = calcIngresoBase();
+  const fijos = calcFijosQ();
+  const cuotas = calcCuotasQ();
+  const libre = base-fijos-cuotas;
+
+  // KPI strip
+  const mcI = document.getElementById('mc-ingreso');
+  const mcC = document.getElementById('mc-compromisos');
+  const mcM = document.getElementById('mc-margen');
+  if(mcI) mcI.textContent = fmt(base);
+  if(mcC) mcC.textContent = fmt(fijos+cuotas);
+  if(mcM){
+    mcM.textContent = fmt(libre);
+    mcM.style.color = libre<0?'var(--red)':libre/base<0.15?'var(--orange)':'var(--green)';
+  }
+
+  if(!corrida.length){
+    document.getElementById('m-q-sel').innerHTML = '';
+    document.getElementById('m-q-card-wrap').innerHTML = `<div class="m-corrida-empty"><i class="fa-solid fa-calendar-xmark" style="font-size:32px;color:var(--text3);opacity:0.4;margin-bottom:12px;display:block"></i><div style="font-size:13px;color:var(--text3)">Sin datos de quincenas.<br>Registra tus ingresos y gastos.</div></div>`;
+    return;
+  }
+
+  // Clamp index
+  _mCorridaIdx = Math.max(0,Math.min(_mCorridaIdx,corrida.length-1));
+
+  // Selector pills
+  const selEl = document.getElementById('m-q-sel');
+  if(selEl){
+    selEl.innerHTML = corrida.map((q,i)=>`
+      <div class="m-q-pill ${q.estado} ${i===_mCorridaIdx?'active':''}"
+        onclick="selectMobileQ(${i})">
+        <div class="m-q-pill-top">${q.q===1?'1ª':'2ª'} Q</div>
+        <div class="m-q-pill-date">${MESES[q.mes-1].slice(0,3)} ${q.ano.toString().slice(2)}</div>
+        <div class="m-q-dot"></div>
+      </div>`).join('');
+    // Scroll to active pill
+    setTimeout(()=>{
+      const active = selEl.querySelector('.m-q-pill.active');
+      if(active) active.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+    },100);
+  }
+
+  renderMobileQCard(corrida[_mCorridaIdx], _mCorridaIdx, corrida);
+}
+
+function selectMobileQ(idx){
+  _mCorridaIdx = idx;
+  const n = parseInt(document.getElementById('corrida-n')?.value||12);
+  const corrida = generarCorrida(n);
+
+  // Update active pill
+  document.querySelectorAll('.m-q-pill').forEach((p,i)=>p.classList.toggle('active',i===idx));
+
+  // Scroll to it
+  const pills = document.querySelectorAll('.m-q-pill');
+  if(pills[idx]) pills[idx].scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+
+  renderMobileQCard(corrida[idx], idx, corrida);
+}
+
+function renderMobileQCard(q, qIdxReal, corrida){
+  const wrap = document.getElementById('m-q-card-wrap');
+  if(!wrap||!q) return;
+
+  if(!ST.corridaChecks) ST.corridaChecks = {};
+  const qKey = q.ano+'-'+q.mes+'-'+q.q;
+  if(!ST.corridaChecks[qKey]) ST.corridaChecks[qKey]={};
+  const checks = ST.corridaChecks[qKey];
+
+  // Gather items
+  const items = [];
+  const gastosFijos = ST.gastos.filter(g=>!g.esDeuda&&!g.yaPagado&&['Quincenal','Mensual','Semanal'].includes(g.frecuencia));
+  const deudasActivas = ST.deudas.filter(d=>d.activa);
+
+  gastosFijos.forEach(g=>{
+    let show=false, monto=0;
+    if(g.frecuencia==='Quincenal'){show=true;monto=g.monto;}
+    else if(g.frecuencia==='Mensual'&&quincenaDeGasto(g)===q.q){show=true;monto=g.monto;}
+    else if(g.frecuencia==='Semanal'){show=true;monto=g.monto*2;}
+    if(!show) return;
+    const iKey='g_'+g.id;
+    if(checks[iKey]===undefined) checks[iKey]=false;
+    items.push({iKey, monto, tipo:'fijo', concepto:g.concepto, meta:g.diaPago?`Día ${g.diaPago}`:'', done:!!checks[iKey]});
+  });
+
+  deudasActivas.forEach(d=>{
+    const pagAct=(d.pagadas||0)+qIdxReal;
+    if(pagAct>=(d.quincenas||1)) return;
+    const diaD=d.fechaPago?new Date(d.fechaPago).getDate():d.diaPago||null;
+    if(diaD&&(parseInt(diaD)<=15?1:2)!==q.q) return;
+    const rest=(d.quincenas||1)-(d.pagadas||0)-qIdxReal;
+    const iKey='d_'+d.id;
+    if(checks[iKey]===undefined) checks[iKey]=false;
+    items.push({iKey, monto:d.cuota, tipo:'deuda', concepto:d.nombre, meta:`${rest}Q restantes`, done:!!checks[iKey]});
+  });
+
+  const unicosQ = ST.gastos.filter(g=>!g.esDeuda&&g.frecuencia==='Único'&&g.mes===q.mes&&g.ano===q.ano&&g.quincena===q.q);
+  unicosQ.forEach(g=>{
+    const iKey='u_'+g.id;
+    if(checks[iKey]===undefined) checks[iKey]=false;
+    items.push({iKey, monto:g.monto, tipo:'unico', concepto:g.concepto, meta:'Único', done:!!checks[iKey]});
+  });
+
+  const allDone = items.length>0 && items.every(i=>i.done);
+  const pendiente = items.filter(i=>!i.done).reduce((s,i)=>s+i.monto,0);
+  const saldoReal = q.ingrBase - pendiente;
+  const pctBar = Math.min(100, q.ingrBase>0?((pendiente/q.ingrBase)*100):0).toFixed(1);
+  const barColor = pctBar>=90?'var(--red)':pctBar>=70?'var(--orange)':'var(--accent)';
+  const saldoColor = saldoReal<0?'var(--red)':saldoReal/q.ingrBase<0.1?'var(--orange)':'var(--green)';
+
+  const isCerrada = (ST.corridaCerradas||[]).includes(qKey);
+  const badgeClass = q.estado;
+  const badgeText = q.estado==='deficit'?'⚠ Déficit':q.estado==='ajustado'?'⚡ Ajustado':'✓ OK';
+
+  const fijosItems  = items.filter(i=>i.tipo==='fijo');
+  const deudasItems = items.filter(i=>i.tipo==='deuda');
+  const unicosItems = items.filter(i=>i.tipo==='unico');
+
+  function buildSection(arr, title){
+    if(!arr.length) return '';
+    const allS = arr.every(i=>i.done);
+    return `
+      <div class="m-q-section">
+        <span>${title}</span>
+        <span class="m-q-selall" onclick="mToggleSection('${qKey}',${JSON.stringify(arr.map(i=>i.iKey))},${allS?'false':'true'})">${allS?'Desmarcar':'Marcar todos'}</span>
+      </div>
+      ${arr.map(item=>`
+        <div class="m-q-item ${item.done?'done':''}" id="mqi-${item.iKey}">
+          <div class="m-q-chk ${item.done?'checked':''}" onclick="toggleMobileQCheck('${qKey}','${item.iKey}')"></div>
+          <div class="m-q-item-info">
+            <div class="m-q-concept">${item.concepto}</div>
+            ${item.meta?`<div class="m-q-meta">${item.meta}</div>`:''}
+          </div>
+          <div class="m-q-amount" style="color:${item.tipo==='fijo'?'var(--red)':item.tipo==='deuda'?'var(--orange)':'var(--accent)'}">${fmt(item.monto)}</div>
+        </div>`).join('')}`;
+  }
+
+  wrap.innerHTML = `
+    <div class="m-q-card">
+      <div class="m-q-card-hdr">
+        <div class="m-q-card-date">${q.label}</div>
+        <div class="m-q-badge ${badgeClass}">${badgeText}</div>
+      </div>
+      <div class="m-q-card-body">
+        <div class="m-q-income-row">
+          <div class="m-q-income-lbl">Ingreso quincena</div>
+          <div class="m-q-income-val">${fmt(q.ingrBase)}</div>
+        </div>
+        <div class="m-q-prog">
+          <div class="m-q-prog-fill" style="width:${pctBar}%;background:${barColor}"></div>
+        </div>
+        ${!items.length?`<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px">Sin compromisos esta quincena 🎉</div>`:''}
+        ${buildSection(fijosItems,'💳 Gastos fijos')}
+        ${buildSection(deudasItems,'📋 Deudas & préstamos')}
+        ${buildSection(unicosItems,'⚡ Gastos únicos')}
+        <div class="m-q-saldo">
+          <div class="m-q-saldo-lbl">Saldo libre</div>
+          <div class="m-q-saldo-val" style="color:${saldoColor}">${fmt(saldoReal)}</div>
+        </div>
+        ${allDone&&items.length&&!isCerrada?`<button class="m-q-close-btn" onclick="cerrarQuincena('${qKey}','${q.label}')"><i class="fa-solid fa-lock"></i> Cerrar quincena</button>`:''}
+        ${isCerrada?`<div style="text-align:center;margin-top:10px;font-size:12px;color:var(--green);font-weight:700"><i class="fa-solid fa-lock"></i> Quincena cerrada · <span style="cursor:pointer;color:var(--accent)" onclick="reabrirQuincena('${qKey}')">Reabrir</span></div>`:''}
+      </div>
+    </div>`;
+}
+
+function toggleMobileQCheck(qKey, iKey){
+  if(!ST.corridaChecks) ST.corridaChecks={};
+  if(!ST.corridaChecks[qKey]) ST.corridaChecks[qKey]={};
+  ST.corridaChecks[qKey][iKey] = !ST.corridaChecks[qKey][iKey];
+  saveState();
+  // Re-render only the card, not full timeline
+  const n = parseInt(document.getElementById('corrida-n')?.value||12);
+  const corrida = generarCorrida(n);
+  renderMobileQCard(corrida[_mCorridaIdx], _mCorridaIdx, corrida);
+}
+
+function mToggleSection(qKey, iKeys, checked){
+  if(!ST.corridaChecks) ST.corridaChecks={};
+  if(!ST.corridaChecks[qKey]) ST.corridaChecks[qKey]={};
+  iKeys.forEach(k=>{ ST.corridaChecks[qKey][k] = checked; });
+  saveState();
+  const n = parseInt(document.getElementById('corrida-n')?.value||12);
+  const corrida = generarCorrida(n);
+  renderMobileQCard(corrida[_mCorridaIdx], _mCorridaIdx, corrida);
+}
 
 function mobileNavigate(page, el){
   // Delega directamente a navigate; la sincronización del bottom nav ya está integrada ahí
