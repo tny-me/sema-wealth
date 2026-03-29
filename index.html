@@ -165,11 +165,23 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
 .main.expanded{ margin-left:var(--sidebar-collapsed); }
 
 #auth-screen {
-  position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  z-index:1000;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:20px 16px;
+  align-items:flex-start;
+}
+@media(min-height:700px){
+  #auth-screen{ align-items:center; }
 }
 .auth-card {
-  width:420px;padding:48px 40px;background:var(--bg2);border:1px solid var(--border2);border-radius:20px;
+  width:100%;max-width:420px;
+  padding:40px 32px;
+  background:var(--bg2);border:1px solid var(--border2);border-radius:24px;
   position:relative;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.10);
+  margin:auto;
 }
 .auth-card::before {
   content:'';position:absolute;top:-80px;left:-80px;width:300px;height:300px;
@@ -584,6 +596,14 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
     position:fixed;width:100%;
   }
 
+  /* Auth screen — necesita su propio scroll en móvil */
+  #auth-screen{
+    position:fixed;inset:0;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    /* Ignorar el overflow:hidden del body usando posición fixed propia */
+  }
+
   /* Sidebar — oculto en móvil (navegación va abajo) */
   .sidebar{ display:none !important; }
 
@@ -654,12 +674,7 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
   .card-header{ padding:14px 16px 12px; flex-wrap:wrap; gap:6px; }
   .card-body{ padding:14px 16px; }
 
-  /* Auth — centrado y full width */
-  .auth-card{
-    width:calc(100% - 32px);
-    padding:28px 20px;
-    border-radius:24px;
-  }
+  /* Auth — ya manejado globalmente */
 
   /* Modales — bottom sheet nativo */
   .modal-bg{
