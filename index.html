@@ -773,6 +773,12 @@ body{font-family:'Inter',Arial,sans-serif;font-size:13.5px;letter-spacing:-0.01e
     <button id="install-btn" style="display:none;width:100%;justify-content:center;padding:10px;margin-top:10px;background:rgba(0,153,230,0.08);border:1px solid rgba(0,153,230,0.2);border-radius:9px;color:#0099e6;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Inter',Arial,sans-serif;" onclick="installApp()">
       <i class="fa-solid fa-download" style="margin-right:6px"></i> Instalar como app en esta computadora
     </button>
+    <!-- BUG4 FIX: botón de modo local siempre visible -->
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);text-align:center">
+      <button onclick="demoLogin()" style="background:none;border:none;color:var(--text2);font-size:12px;cursor:pointer;font-family:'Inter',Arial,sans-serif;text-decoration:underline">
+        Continuar sin cuenta (modo local)
+      </button>
+    </div>
   </div>
 </div>
 
@@ -2213,33 +2219,44 @@ loadState();
 // SYNC — Firebase Firestore
 // ============================================================
 async function syncData(){
+  // BUG1 FIX: debounce + guard para que no falle antes del DOM
   if(!window._FB || !ST.uid || ST.uid.startsWith('local-')) {
-    document.getElementById('sync-dot').className = 'sync-dot offline';
-    document.getElementById('sync-label').textContent = 'Modo local';
+    const dot = document.getElementById('sync-dot');
+    const lbl = document.getElementById('sync-label');
+    if(dot) dot.className = 'sync-dot offline';
+    if(lbl) lbl.textContent = 'Modo local';
     return;
   }
-  try {
-    const { db, doc, setDoc } = window._FB;
-    await setDoc(doc(db,'users',ST.uid,'data','state'), {
-      perfil:         ST.perfil,
-      ingresos:       ST.ingresos,
-      gastos:         ST.gastos,
-      deudas:         ST.deudas,
-      tarjetas:       ST.tarjetas       || [],
-      cargosTarjeta:  ST.cargosTarjeta  || [],
-      prestamos:      ST.prestamos      || [],
-      alertas:        ST.alertas        || [],
-      corridaChecks:  ST.corridaChecks  || {},
-      corridaCerradas:ST.corridaCerradas|| [],
-      notifConfig:    ST.notifConfig    || {},
-      updatedAt:      new Date().toISOString()
-    });
-    document.getElementById('sync-dot').className = 'sync-dot';
-    document.getElementById('sync-label').textContent = 'Sincronizado';
-  } catch(e){
-    document.getElementById('sync-dot').className = 'sync-dot offline';
-    document.getElementById('sync-label').textContent = 'Error sync';
-  }
+  // Debounce: esperar 1.5s antes de escribir a Firestore
+  clearTimeout(window._syncTimer);
+  window._syncTimer = setTimeout(async () => {
+    try {
+      const { db, doc, setDoc } = window._FB;
+      await setDoc(doc(db,'users',ST.uid,'data','state'), {
+        perfil:         ST.perfil,
+        ingresos:       ST.ingresos,
+        gastos:         ST.gastos,
+        deudas:         ST.deudas,
+        tarjetas:       ST.tarjetas       || [],
+        cargosTarjeta:  ST.cargosTarjeta  || [],
+        prestamos:      ST.prestamos      || [],
+        alertas:        ST.alertas        || [],
+        corridaChecks:  ST.corridaChecks  || {},
+        corridaCerradas:ST.corridaCerradas|| [],
+        notifConfig:    ST.notifConfig    || {},
+        updatedAt:      new Date().toISOString()
+      });
+      const dot = document.getElementById('sync-dot');
+      const lbl = document.getElementById('sync-label');
+      if(dot) dot.className = 'sync-dot';
+      if(lbl) lbl.textContent = 'Sincronizado';
+    } catch(e){
+      const dot = document.getElementById('sync-dot');
+      const lbl = document.getElementById('sync-label');
+      if(dot) dot.className = 'sync-dot offline';
+      if(lbl) lbl.textContent = 'Error sync';
+    }
+  }, 1500);
 }
 async function loadFromFirebase(uid){
   if(!window._FB) return;
@@ -2323,13 +2340,17 @@ async function handleAuth(){
     await loadFromFirebase(ST.uid);
     enterApp();
   } catch(e){
-    const msg = e.message||'';
+    // BUG2 FIX: revisar e.code (Firebase) y e.message
+    const code = e.code||'';
+    const msg  = e.message||'';
     let texto = 'Error al iniciar sesión. Intenta de nuevo.';
-    if(msg.includes('invalid-credential')||msg.includes('wrong-password')||msg.includes('user-not-found')) texto='Correo o contraseña incorrectos';
-    else if(msg.includes('email-already-in-use')) texto='Este correo ya está registrado';
-    else if(msg.includes('weak-password')) texto='Contraseña muy débil (mínimo 6 caracteres)';
-    else if(msg.includes('invalid-email')) texto='Correo inválido';
-    else if(msg.includes('network')) texto='Sin conexión. Verifica tu internet.';
+    if(code.includes('invalid-credential')||code.includes('wrong-password')||code.includes('user-not-found')||msg.includes('invalid-credential')||msg.includes('wrong-password')) texto='Correo o contraseña incorrectos';
+    else if(code.includes('email-already-in-use')||msg.includes('email-already-in-use')) texto='Este correo ya está registrado';
+    else if(code.includes('weak-password')||msg.includes('weak-password')) texto='Contraseña muy débil (mínimo 6 caracteres)';
+    else if(code.includes('invalid-email')||msg.includes('invalid-email')) texto='Correo inválido';
+    else if(code.includes('too-many-requests')) texto='Demasiados intentos. Espera unos minutos e intenta de nuevo.';
+    else if(msg.includes('network')||code.includes('network')) texto='Sin conexión. Verifica tu internet.';
+    console.error('Auth error:', code, msg); // ayuda a debuggear
     errEl.textContent = texto;
     errEl.style.display='block';
     btn.textContent = btnOriginal;
@@ -4462,20 +4483,49 @@ function filterByQ(q,mes,ano,stripId,el){
   el.classList.add('active');
 }
 
-// Check if already have session — esperar DOM listo
+// BUG3 FIX: timeout de seguridad + auto-restore de sesión local
 window.addEventListener('load', ()=>{
+  // Si ya hay sesión local guardada, entrar directo
   if(ST.uid && ST.uid.startsWith('local-')){
     enterApp();
-  } else if(window._FB){
+    return;
+  }
+  // Si hay UID de Firebase en localStorage, restaurar sesión
+  if(ST.uid && !ST.uid.startsWith('local-') && window._FB){
     window._FB.onAuthStateChanged(window._FB.auth, user=>{
       if(user){
         ST.uid = user.uid;
         ST.perfil.email = user.email;
         loadFromFirebase(user.uid).then(()=>enterApp()).catch(()=>enterApp());
       }
+      // Si Firebase responde sin usuario, mostrar auth screen (ya está visible)
     });
-  } else if(ST.uid){
+    return;
+  }
+  // Sin Firebase disponible pero con UID local
+  if(ST.uid){
     enterApp();
+    return;
+  }
+  // Verificar sesión Firebase activa (usuario volvió al tab)
+  if(window._FB){
+    let authResolved = false;
+    window._FB.onAuthStateChanged(window._FB.auth, user=>{
+      authResolved = true;
+      if(user){
+        ST.uid = user.uid;
+        ST.perfil.email = user.email;
+        loadFromFirebase(user.uid).then(()=>enterApp()).catch(()=>enterApp());
+      }
+      // Sin usuario activo: mostrar pantalla de login (ya visible por defecto)
+    });
+    // Timeout de seguridad: si Firebase no responde en 6s, desbloquear auth
+    setTimeout(()=>{
+      if(!authResolved){
+        const btn = document.getElementById('auth-btn');
+        if(btn){ btn.disabled = false; }
+      }
+    }, 6000);
   }
 });
 
