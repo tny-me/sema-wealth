@@ -1929,7 +1929,7 @@ input, select, textarea {
   <div class="nav-item" onclick="navigate('ingresos',this)"><i class="fa-solid fa-wallet"></i><span class="nav-text">Ingresos</span></div>
   <div class="nav-item" onclick="navigate('deudas',this)"><i class="fa-solid fa-file-invoice-dollar"></i><span class="nav-text">Deudas</span></div>
   <div class="nav-item" onclick="navigate('prestamos',this)"><i class="fa-solid fa-hand-holding-dollar"></i><span class="nav-text">Préstamos</span></div>
-  <div class="nav-item" onclick="navigate('gastos',this)"><i class="fa-solid fa-receipt"></i><span class="nav-text">Historial gastos</span></div>
+  <div class="nav-item" onclick="navigate('gastos',this)"><i class="fa-solid fa-clock-rotate-left"></i><span class="nav-text">Historial</span></div>
   <div class="nav-item" onclick="navigate('config',this)"><i class="fa-solid fa-gear"></i><span class="nav-text">Configuración</span></div>
 
   <div class="sidebar-footer">
@@ -2417,27 +2417,82 @@ input, select, textarea {
        GASTOS
   ============================================================ -->
   <div id="page-gastos" class="page">
-    <div class="section-h">Control de Gastos</div>
-    <div class="section-sub">Registro detallado de egresos</div>
-    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
-      <select class="form-control" style="width:auto" id="f-mes-gasto" onchange="renderTablaGastos()"><option value="">Todos los meses</option></select>
-      <select class="form-control" style="width:auto" id="f-ano-gasto" onchange="renderTablaGastos()"><option value="">Todos los años</option></select>
-      <select class="form-control" style="width:auto" id="f-cat-gasto" onchange="renderTablaGastos()">
+    <!-- ── Header ── -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div class="section-h">Historial Completo</div>
+        <div class="section-sub">Todos tus gastos, deudas y cargos en un solo lugar</div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="openModal('modal-gasto')"><i class="fa-solid fa-plus"></i> Nuevo Gasto</button>
+    </div>
+
+    <!-- ── KPI strip ── -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px" id="hist-kpis"></div>
+
+    <!-- ── Filtros ── -->
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+      <!-- Búsqueda texto -->
+      <div style="position:relative;flex:1;min-width:180px;max-width:260px">
+        <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px;pointer-events:none"></i>
+        <input type="text" id="hist-search" class="form-control" placeholder="Buscar concepto..." style="padding-left:32px;font-size:13px" oninput="renderHistorial()">
+      </div>
+      <!-- Tipo -->
+      <select class="form-control" style="width:auto;font-size:13px" id="hist-tipo" onchange="renderHistorial()">
+        <option value="">Todos los tipos</option>
+        <option value="gasto">Gastos</option>
+        <option value="deuda">Deudas</option>
+        <option value="prestamo">Préstamos</option>
+        <option value="tarjeta">Cargos tarjeta</option>
+      </select>
+      <!-- Categoría -->
+      <select class="form-control" style="width:auto;font-size:13px" id="hist-cat" onchange="renderHistorial()">
         <option value="">Todas las categorías</option>
         <option>Vivienda</option><option>Alimentación</option><option>Transporte</option><option>Salud</option>
         <option>Educación</option><option>Entretenimiento</option><option>Ropa</option><option>Servicios</option>
         <option>Tarjetas de Crédito</option><option>Préstamos</option><option>Ahorro</option><option>Otro</option>
       </select>
-      <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="openModal('modal-gasto')"><i class="fa-solid fa-plus"></i> Nuevo Gasto</button>
+      <!-- Mes -->
+      <select class="form-control" style="width:auto;font-size:13px" id="hist-mes" onchange="renderHistorial()">
+        <option value="">Todos los meses</option>
+      </select>
+      <!-- Año -->
+      <select class="form-control" style="width:auto;font-size:13px" id="hist-ano" onchange="renderHistorial()">
+        <option value="">Todos los años</option>
+      </select>
+      <!-- Reset -->
+      <button class="btn btn-ghost btn-sm" onclick="resetFiltrosHistorial()" title="Limpiar filtros"><i class="fa-solid fa-filter-circle-xmark"></i></button>
+      <!-- Conteo -->
+      <span id="hist-count" style="font-size:12px;color:var(--text3);margin-left:auto;white-space:nowrap"></span>
     </div>
+
+    <!-- ── Tabla ── -->
     <div class="card">
       <div class="card-body" style="padding:0">
-        <div class="table-modern-wrap"><table class="table-modern">
-          <thead><tr><th>Concepto</th><th>Categoría</th><th>Frecuencia</th><th>Quincena</th><th>Mes/Año</th><th>Monto</th><th>Método</th><th></th></tr></thead>
-          <tbody id="tabla-gastos"></tbody>
-        </table></div>
+        <div class="table-modern-wrap">
+          <table class="table-modern" id="hist-table">
+            <thead>
+              <tr>
+                <th style="width:36px"></th>
+                <th>Concepto</th>
+                <th>Tipo</th>
+                <th>Categoría</th>
+                <th>Fecha / Período</th>
+                <th>Monto</th>
+                <th>Progreso / Método</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="hist-tbody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
+
+    <!-- keep original id for legacy calls -->
+    <div id="tabla-gastos" style="display:none"></div>
+    <div id="f-mes-gasto" style="display:none"></div>
+    <div id="f-ano-gasto" style="display:none"></div>
+    <div id="f-cat-gasto" style="display:none"></div>
   </div>
 
   <!-- ============================================================
@@ -3630,7 +3685,7 @@ function navigate(page, el){
   if(page==='corrida') recalcularCorrida();
   if(page==='prediccion') renderPrediccion();
   if(page==='ingresos') renderIngresos();
-  if(page==='gastos') renderGastos();
+  if(page==='gastos') renderHistorial();
   if(page==='deudas') renderDeudas();
   if(page==='tarjetas') renderTarjetas();
   if(page==='prestamos') renderPrestamos();
@@ -4807,40 +4862,241 @@ function eliminarDeudaEdit(){
   eliminarDeuda(id);
   toast('Deuda eliminada','info');
 }
-function renderGastos(){
-  const f_mes  = document.getElementById('f-mes-gasto')?.value;
-  const f_ano  = document.getElementById('f-ano-gasto')?.value;
-  const f_cat  = document.getElementById('f-cat-gasto')?.value;
-  // Populate filter selects
-  const anos = [...new Set(ST.gastos.map(g=>g.ano))].sort();
-  const msel = document.getElementById('f-mes-gasto');
-  const asel = document.getElementById('f-ano-gasto');
-  if(msel && msel.children.length===1) MESES.forEach((m,i)=>{ const o=document.createElement('option');o.value=i+1;o.textContent=m;msel.appendChild(o); });
-  if(asel && asel.children.length===1) anos.forEach(y=>{ const o=document.createElement('option');o.value=y;o.textContent=y;asel.appendChild(o); });
-  const data = ST.gastos.filter(g=>(!f_mes||g.mes==f_mes)&&(!f_ano||g.ano==f_ano)&&(!f_cat||g.categoria===f_cat));
-  document.getElementById('tabla-gastos').innerHTML = data.length
-    ? data.map(g=>{
-        const tarjeta = g.tarjetaId ? ST.tarjetas.find(t=>t.id===g.tarjetaId) : null;
-        const metodoLabel = tarjeta
-          ? `<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:${tarjeta.color||'#0099e6'};display:inline-block"></span>${tarjeta.nombre}</span>`
-          : g.metodo;
-        return `<tr style="cursor:pointer;${g.yaPagado?'opacity:0.6':''};" onclick="abrirEditGasto(${g.id})" title="Clic para editar">
-          <td style="font-weight:500">${g.concepto}${g.yaPagado?' <span class="badge badge-green" style="font-size:10px">Pagado</span>':''}</td>
-          <td><span class="badge" style="background:${CATS_COLORS[g.categoria]||'#6b7280'}22;color:${CATS_COLORS[g.categoria]||'#6b7280'}">${g.categoria}</span></td>
-          <td><span class="badge badge-blue">${g.frecuencia}</span></td>
-          <td><span class="badge badge-blue">${g.quincena===1?'1-15':'16-30'}</span></td>
-          <td>${MESES[g.mes-1]||''} ${g.ano}</td>
-          <td class="mono" style="color:var(--red)">${fmt(g.monto)}</td>
-          <td style="font-size:12px">${metodoLabel}</td>
-          <td style="display:flex;gap:5px" onclick="event.stopPropagation()">
-            <button class="btn btn-ghost btn-sm" onclick="abrirEditGasto(${g.id})" title="Editar"><i class="fa-solid fa-pen"></i></button>
-            <button class="btn btn-danger btn-sm" onclick="eliminarGasto(${g.id})" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
-          </td>
-        </tr>`;
-      }).join('')
-    : '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:20px">Sin gastos registrados</td></tr>';
+function renderGastos(){ renderHistorial(); }
+function renderTablaGastos(){ renderHistorial(); }
+
+function resetFiltrosHistorial(){
+  ['hist-search','hist-tipo','hist-cat','hist-mes','hist-ano'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+  renderHistorial();
 }
-function renderTablaGastos(){ renderGastos(); }
+
+function renderHistorial(){
+  const search  = (document.getElementById('hist-search')?.value||'').toLowerCase().trim();
+  const fTipo   = document.getElementById('hist-tipo')?.value  || '';
+  const fCat    = document.getElementById('hist-cat')?.value   || '';
+  const fMes    = document.getElementById('hist-mes')?.value   || '';
+  const fAno    = document.getElementById('hist-ano')?.value   || '';
+
+  // ── Populate year/month dropdowns dynamically ──
+  const todosAnos = [...new Set([
+    ...ST.gastos.map(g=>g.ano),
+    ...ST.deudas.map(d=>d.ano||new Date().getFullYear()),
+    ...ST.prestamos.map(p=>p.ano||new Date().getFullYear()),
+  ])].filter(Boolean).sort((a,b)=>b-a);
+
+  const aSel = document.getElementById('hist-ano');
+  if(aSel && aSel.children.length===1){
+    todosAnos.forEach(y=>{ const o=document.createElement('option');o.value=y;o.textContent=y;aSel.appendChild(o); });
+  }
+  const mSel = document.getElementById('hist-mes');
+  if(mSel && mSel.children.length===1){
+    MESES.forEach((m,i)=>{ const o=document.createElement('option');o.value=i+1;o.textContent=m;mSel.appendChild(o); });
+  }
+
+  // ── Build unified rows ──
+  const rows = [];
+
+  // 1. GASTOS
+  if(!fTipo || fTipo==='gasto'){
+    ST.gastos.forEach(g=>{
+      if(fCat && g.categoria!==fCat) return;
+      if(fMes && g.mes!=fMes) return;
+      if(fAno && g.ano!=fAno) return;
+      if(search && !g.concepto.toLowerCase().includes(search)) return;
+      const tarjeta = g.tarjetaId ? ST.tarjetas.find(t=>t.id===g.tarjetaId) : null;
+      rows.push({ _type:'gasto', _sort: g.fecha||`${g.ano}-${String(g.mes).padStart(2,'0')}-01`, g, tarjeta });
+    });
+  }
+
+  // 2. DEUDAS
+  if(!fTipo || fTipo==='deuda'){
+    ST.deudas.forEach(d=>{
+      if(fCat && 'Deuda'!==fCat && fCat!=='') {
+        // deudas don't have categoria filter — skip only if explicitly filtered to something else
+        if(fCat !== 'Tarjetas de Crédito' && fCat !== 'Préstamos') return;
+      }
+      if(search && !d.nombre.toLowerCase().includes(search)) return;
+      rows.push({ _type:'deuda', _sort: `${new Date().getFullYear()}-01-01`, d });
+    });
+  }
+
+  // 3. PRÉSTAMOS
+  if(!fTipo || fTipo==='prestamo'){
+    ST.prestamos.forEach(p=>{
+      if(search && !p.nombre.toLowerCase().includes(search)) return;
+      rows.push({ _type:'prestamo', _sort: `${new Date().getFullYear()}-01-01`, p });
+    });
+  }
+
+  // 4. CARGOS TARJETA (solo los que no tienen origenGastoId para no duplicar)
+  if(!fTipo || fTipo==='tarjeta'){
+    ST.cargosTarjeta.filter(c=>!c.origenGastoId).forEach(c=>{
+      if(search && !c.concepto.toLowerCase().includes(search)) return;
+      if(fMes){
+        const cMes = c.fecha ? parseInt(c.fecha.slice(5,7)) : 0;
+        if(cMes != fMes) return;
+      }
+      if(fAno){
+        const cAno = c.fecha ? parseInt(c.fecha.slice(0,4)) : 0;
+        if(cAno != fAno) return;
+      }
+      const tarjeta = ST.tarjetas.find(t=>t.id===c.tarjetaId);
+      rows.push({ _type:'tarjeta', _sort: c.fecha||'', c, tarjeta });
+    });
+  }
+
+  // ── Sort: newest first ──
+  rows.sort((a,b)=> (b._sort||'').localeCompare(a._sort||''));
+
+  // ── KPIs ──
+  const totalGastos   = ST.gastos.reduce((s,g)=>s+g.monto,0);
+  const totalDeudas   = ST.deudas.filter(d=>d.activa).reduce((s,d)=>s+(d.cuota||0)*(d.quincenas-d.pagadas||0),0);
+  const totalPrestamos= ST.prestamos.filter(p=>p.activa).reduce((s,p)=>s+(p.pago||0)*(p.plazo-p.pagadas||0),0);
+  const totalCargos   = ST.cargosTarjeta.filter(c=>c.tipo==='cargo').reduce((s,c)=>s+c.monto,0);
+
+  const kpiEl = document.getElementById('hist-kpis');
+  if(kpiEl){
+    const kpis = [
+      { label:'Total gastos', val:fmt(totalGastos), icon:'fa-receipt', color:'var(--red)' },
+      { label:'Deuda pendiente', val:fmt(totalDeudas+totalPrestamos), icon:'fa-file-invoice-dollar', color:'var(--orange)' },
+      { label:'Cargos tarjeta', val:fmt(totalCargos), icon:'fa-credit-card', color:'var(--accent)' },
+      { label:'Registros totales', val: ST.gastos.length + ST.deudas.length + ST.prestamos.length, icon:'fa-list', color:'var(--green)' },
+    ];
+    kpiEl.innerHTML = kpis.map(k=>`
+      <div class="kpi" style="padding:14px 16px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <i class="fa-solid ${k.icon}" style="color:${k.color};font-size:14px"></i>
+          <span class="kpi-label" style="margin:0">${k.label}</span>
+        </div>
+        <div class="kpi-val mono" style="font-size:18px;color:${k.color}">${k.val}</div>
+      </div>`).join('');
+  }
+
+  // ── Count ──
+  const countEl = document.getElementById('hist-count');
+  if(countEl) countEl.textContent = `${rows.length} registro${rows.length!==1?'s':''}`;
+
+  // ── Render rows ──
+  const tbody = document.getElementById('hist-tbody');
+  if(!tbody) return;
+
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:36px;color:var(--text3)">
+      <i class="fa-solid fa-box-open" style="font-size:28px;display:block;margin-bottom:10px;opacity:0.3"></i>
+      Sin registros con los filtros actuales</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(row=>{
+    if(row._type==='gasto'){
+      const g = row.g;
+      const tarjeta = row.tarjeta;
+      const esTDC = g.metodo==='Tarjeta Crédito';
+      const metodoHtml = tarjeta
+        ? `<span style="display:inline-flex;align-items:center;gap:5px;font-size:11.5px"><span style="width:8px;height:8px;border-radius:50%;background:${tarjeta.color||'#0099e6'};display:inline-block;flex-shrink:0"></span>${tarjeta.nombre}</span>`
+        : `<span style="font-size:11.5px;color:var(--text2)">${g.metodo||'Efectivo'}</span>`;
+      const fechaLabel = g.fecha
+        ? new Date(g.fecha+'T12:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})
+        : `${MESES[(g.mes||1)-1]} ${g.ano} · Q${g.quincena===1?'1-15':'16-30'}`;
+      return `<tr style="cursor:pointer${g.yaPagado?';opacity:0.55':''}" onclick="abrirEditGasto(${g.id})" title="Editar">
+        <td><div style="width:32px;height:32px;border-radius:9px;background:var(--bg3);display:flex;align-items:center;justify-content:center">${catEmoji(g.categoria)}</div></td>
+        <td style="font-weight:600">${g.concepto}${g.yaPagado?' <span class="badge badge-green" style="font-size:9px">Pagado</span>':''}</td>
+        <td><span class="badge badge-blue"><i class="fa-solid fa-receipt" style="font-size:9px"></i> Gasto</span></td>
+        <td><span class="badge" style="background:${CATS_COLORS[g.categoria]||'#6b7280'}22;color:${CATS_COLORS[g.categoria]||'#6b7280'}">${g.categoria}</span></td>
+        <td style="font-size:12px;color:var(--text2)">${fechaLabel}</td>
+        <td class="mono" style="color:${esTDC?'var(--accent)':'var(--red)'};font-weight:600">${fmt(g.monto)}</td>
+        <td>${metodoHtml}<br><span class="badge" style="background:transparent;border:1px solid var(--border);color:var(--text3);font-size:9.5px;margin-top:3px">${g.frecuencia}</span></td>
+        <td onclick="event.stopPropagation()" style="white-space:nowrap">
+          <button class="btn btn-ghost btn-sm" onclick="abrirEditGasto(${g.id})"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-danger btn-sm" onclick="eliminarGasto(${g.id})"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      </tr>`;
+    }
+
+    if(row._type==='deuda'){
+      const d = row.d;
+      const pagadas  = d.pagadas||0;
+      const total    = d.quincenas||1;
+      const restantes= Math.max(0, total-pagadas);
+      const montoPag = pagadas * (d.cuota||0);
+      const montoPend= restantes * (d.cuota||0);
+      const pct      = Math.min(100,(pagadas/total*100));
+      const statusBadge = d.activa
+        ? `<span class="badge badge-orange">Activa</span>`
+        : `<span class="badge badge-green">Liquidada</span>`;
+      return `<tr>
+        <td><div style="width:32px;height:32px;border-radius:9px;background:rgba(245,158,11,0.1);display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-file-invoice-dollar" style="color:var(--orange);font-size:14px"></i></div></td>
+        <td style="font-weight:600">${d.nombre}<br><span style="font-size:11px;color:var(--text3)">${d.tipo||'Deuda'}</span></td>
+        <td><span class="badge badge-orange"><i class="fa-solid fa-landmark" style="font-size:9px"></i> Deuda</span></td>
+        <td>${statusBadge}</td>
+        <td style="font-size:12px;color:var(--text2)">Pago ${pagadas}/${total} quincenas<br>
+          <div style="height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;margin-top:4px;width:100px">
+            <div style="height:100%;border-radius:2px;background:${pct>=100?'var(--green)':'var(--orange)'};width:${pct.toFixed(0)}%"></div>
+          </div>
+        </td>
+        <td class="mono" style="font-size:12px">
+          <div style="color:var(--green)">${fmt(montoPag)} <span style="font-size:10px;color:var(--text3)">pagado</span></div>
+          <div style="color:${restantes>0?'var(--red)':'var(--text3)'}">${fmt(montoPend)} <span style="font-size:10px;color:var(--text3)">pendiente</span></div>
+        </td>
+        <td style="font-size:12px;color:var(--text2)">${fmt(d.cuota||0)}/quincena${d.tasa?`<br><span style="font-size:10px">Tasa: ${d.tasa}% anual</span>`:''}
+        </td>
+        <td></td>
+      </tr>`;
+    }
+
+    if(row._type==='prestamo'){
+      const p = row.p;
+      const pagadas  = p.pagadas||0;
+      const total    = p.plazo||1;
+      const restantes= Math.max(0,total-pagadas);
+      const montoPag = pagadas * (p.pago||0);
+      const montoPend= restantes * (p.pago||0);
+      const pct      = Math.min(100,(pagadas/total*100));
+      return `<tr>
+        <td><div style="width:32px;height:32px;border-radius:9px;background:rgba(109,40,217,0.1);display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-hand-holding-dollar" style="color:var(--purple);font-size:14px"></i></div></td>
+        <td style="font-weight:600">${p.nombre}<br><span style="font-size:11px;color:var(--text3)">${p.tipo||'Préstamo'}</span></td>
+        <td><span class="badge badge-purple"><i class="fa-solid fa-hand-holding-dollar" style="font-size:9px"></i> Préstamo</span></td>
+        <td>${p.activa?'<span class="badge badge-orange">Activo</span>':'<span class="badge badge-green">Liquidado</span>'}</td>
+        <td style="font-size:12px;color:var(--text2)">Pago ${pagadas}/${total} quincenas<br>
+          <div style="height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;margin-top:4px;width:100px">
+            <div style="height:100%;border-radius:2px;background:${pct>=100?'var(--green)':'var(--purple)'};width:${pct.toFixed(0)}%"></div>
+          </div>
+        </td>
+        <td class="mono" style="font-size:12px">
+          <div style="color:var(--green)">${fmt(montoPag)} <span style="font-size:10px;color:var(--text3)">pagado</span></div>
+          <div style="color:${restantes>0?'var(--red)':'var(--text3)'}">${fmt(montoPend)} <span style="font-size:10px;color:var(--text3)">pendiente</span></div>
+        </td>
+        <td style="font-size:12px;color:var(--text2)">${fmt(p.pago||0)}/quincena${p.tasa?`<br><span style="font-size:10px">Tasa: ${p.tasa}% anual</span>`:''}
+        </td>
+        <td></td>
+      </tr>`;
+    }
+
+    if(row._type==='tarjeta'){
+      const c = row.c;
+      const tarjeta = row.tarjeta;
+      const fechaLabel = c.fecha
+        ? new Date(c.fecha+'T12:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})
+        : '—';
+      return `<tr>
+        <td><div style="width:32px;height:32px;border-radius:9px;background:rgba(0,102,204,0.1);display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-credit-card" style="color:var(--accent);font-size:14px"></i></div></td>
+        <td style="font-weight:600">${c.concepto}</td>
+        <td><span class="badge badge-blue"><i class="fa-solid fa-credit-card" style="font-size:9px"></i> Tarjeta</span></td>
+        <td><span style="font-size:11.5px;color:var(--text2)">${c.categoria||'—'}</span></td>
+        <td style="font-size:12px;color:var(--text2)">${fechaLabel}</td>
+        <td class="mono" style="color:${c.tipo==='cargo'?'var(--red)':'var(--green)'};font-weight:600">${c.tipo==='cargo'?'-':'+'} ${fmt(c.monto)}</td>
+        <td>${tarjeta?`<span style="display:inline-flex;align-items:center;gap:5px;font-size:11.5px"><span style="width:8px;height:8px;border-radius:50%;background:${tarjeta.color||'#0099e6'};display:inline-block"></span>${tarjeta.nombre}</span>`:'—'}</td>
+        <td onclick="event.stopPropagation()">
+          <button class="btn btn-danger btn-sm" onclick="eliminarCargo(${c.id})"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      </tr>`;
+    }
+    return '';
+  }).join('');
+}
 
 // ============================================================
 // MODAL UNIFICADO INTELIGENTE
