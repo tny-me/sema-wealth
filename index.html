@@ -3482,6 +3482,11 @@ function saveState(){
   localStorage.setItem('sema_pro_v3', JSON.stringify(ST));
   syncData();
 }
+// Fecha local YYYY-MM-DD (evita desfase UTC en timezones UTC-)
+function localDateStr(d){
+  d = d || new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
 loadState();
 
 // ============================================================
@@ -6124,7 +6129,7 @@ function renderTarjetas(){
   if(filtroSel){ filtroSel.innerHTML='<option value="">Todas las tarjetas</option>'+ST.tarjetas.map(t=>`<option value="${t.id}">${t.nombre}</option>`).join(''); }
   // Set default date for cargo
   const cgFecha = document.getElementById('cg-fecha');
-  if(cgFecha&&!cgFecha.value) cgFecha.value=new Date().toISOString().slice(0,10);
+  if(cgFecha&&!cgFecha.value) cgFecha.value=localDateStr();
 
   if(!ST.tarjetas.length){
     lista.innerHTML='<div class="card"><div class="card-body" style="text-align:center;padding:40px;color:var(--text3)">Sin tarjetas registradas. Agrega tu primera tarjeta.</div></div>';
@@ -6542,7 +6547,7 @@ function agregarGastoHoy(){
     frecuencia:'Único', metodo, tarjetaId,
     mes: now.getMonth()+1, ano: now.getFullYear(),
     quincena: now.getDate()<=15?1:2,
-    fecha: now.toISOString().slice(0,10),
+    fecha: localDateStr(now),
     esHoy: true, esDeuda: false
   };
   ST.gastos.push(gasto);
@@ -6553,7 +6558,7 @@ function agregarGastoHoy(){
     if(t){
       ST.cargosTarjeta.push({
         id: id+1, concepto, monto, tarjetaId,
-        fecha: now.toISOString().slice(0,10),
+        fecha: localDateStr(now),
         tipo: 'cargo', categoria: cat,
         origenGastoId: id
       });
@@ -6592,7 +6597,7 @@ function renderHoy(){
   // Sync tarjeta selector on render
   const metodoEl = document.getElementById('hoy-metodo');
   if(metodoEl) toggleTarjetaHoy(metodoEl.value);
-  const hoyStr = now.toISOString().slice(0,10);
+  const hoyStr = localDateStr(now);
   const dias7 = new Date(now); dias7.setDate(dias7.getDate()-6);
 
   // Gastos de hoy — todos los métodos incluido tarjeta crédito
@@ -6787,7 +6792,7 @@ function mRegistrar(){
     frecuencia:'Único', metodo:'Efectivo',
     mes:now.getMonth()+1, ano:now.getFullYear(),
     quincena:now.getDate()<=15?1:2,
-    fecha:now.toISOString().slice(0,10), esHoy:true, esDeuda:false
+    fecha:localDateStr(now), esHoy:true, esDeuda:false
   };
   ST.gastos.push(gasto);
   saveState();
@@ -6850,7 +6855,7 @@ function renderMobileHero(){
 
   // Today stats
   const now = new Date();
-  const hoyStr = now.toISOString().slice(0,10);
+  const hoyStr = localDateStr(now);
   const gastosHoy = ST.gastos.filter(g=>g.fecha===hoyStr); // incluye TDC
   const totalHoy  = gastosHoy.reduce((s,g)=>s+g.monto,0);
   const statsEl = document.getElementById('m-today-stats');
