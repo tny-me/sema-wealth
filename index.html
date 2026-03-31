@@ -769,6 +769,35 @@ input, select, textarea {
 .badge-purple{background:rgba(109,40,217,0.1);color:var(--purple);}
 
 /* ════════════════════════════════════════════════════
+   DESKTOP RESET — protege layout en pantallas grandes
+════════════════════════════════════════════════════ */
+@media(min-width:769px){
+  html, body{
+    height:auto;
+    overflow:auto;
+    position:static;
+    width:auto;
+  }
+  body{
+    display:flex;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  .main{
+    margin-left:var(--sidebar);
+    height:auto;
+    overflow:visible;
+    display:flex;
+    flex-direction:column;
+  }
+  .main.expanded{ margin-left:var(--sidebar-collapsed); }
+  .content{
+    padding:20px 16px 28px;
+    overflow:visible;
+  }
+}
+
+/* ════════════════════════════════════════════════════
    TABLET  ≤ 1024px
 ════════════════════════════════════════════════════ */
 @media(max-width:1024px){
