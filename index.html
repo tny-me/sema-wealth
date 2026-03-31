@@ -3487,6 +3487,30 @@ loadState();
 // ============================================================
 // SYNC — Firebase Firestore
 // ============================================================
+async function _doFirestoreWrite(){
+  const ts = new Date().toISOString();
+  await window._FB.db.doc('users/'+ST.uid+'/data/state').set({
+    perfil:         ST.perfil,
+    ingresos:       ST.ingresos,
+    gastos:         ST.gastos,
+    deudas:         ST.deudas,
+    tarjetas:       ST.tarjetas       || [],
+    cargosTarjeta:  ST.cargosTarjeta  || [],
+    prestamos:      ST.prestamos      || [],
+    alertas:        ST.alertas        || [],
+    corridaChecks:  ST.corridaChecks  || {},
+    corridaCerradas:ST.corridaCerradas|| [],
+    notifConfig:    ST.notifConfig    || {},
+    updatedAt:      ts
+  }, { merge: true });
+  ST.updatedAt = ts;
+  saveToLocal();
+}
+async function flushSync(){
+  if(!window._FB || !ST.uid || ST.uid.startsWith('local-')) return;
+  clearTimeout(window._syncTimer);
+  try { await _doFirestoreWrite(); } catch(e){ console.warn('flushSync error:', e); }
+}
 async function syncData(){
   const dot = document.getElementById('sync-dot');
   const lbl = document.getElementById('sync-label');
@@ -3499,20 +3523,7 @@ async function syncData(){
   clearTimeout(window._syncTimer);
   window._syncTimer = setTimeout(async () => {
     try {
-      await window._FB.db.doc('users/'+ST.uid+'/data/state').set({
-        perfil:         ST.perfil,
-        ingresos:       ST.ingresos,
-        gastos:         ST.gastos,
-        deudas:         ST.deudas,
-        tarjetas:       ST.tarjetas       || [],
-        cargosTarjeta:  ST.cargosTarjeta  || [],
-        prestamos:      ST.prestamos      || [],
-        alertas:        ST.alertas        || [],
-        corridaChecks:  ST.corridaChecks  || {},
-        corridaCerradas:ST.corridaCerradas|| [],
-        notifConfig:    ST.notifConfig    || {},
-        updatedAt:      new Date().toISOString()
-      }, { merge: true });
+      await _doFirestoreWrite();
       const d2 = document.getElementById('sync-dot');
       const l2 = document.getElementById('sync-label');
       if(d2) d2.className = 'sync-dot';
@@ -3533,6 +3544,15 @@ async function loadFromFirebase(uid){
     const snap = await db.doc('users/'+uid+'/data/state').get();
     if(snap.exists){
       const data = snap.data();
+      // Si los datos locales son más nuevos que Firestore, no sobreescribir
+      const localUpdated = ST.updatedAt || null;
+      const remoteUpdated = data.updatedAt || null;
+      if(localUpdated && remoteUpdated && localUpdated > remoteUpdated){
+        // Datos locales más recientes: subir a Firestore en lugar de bajar
+        await flushSync();
+        toast('Datos locales más recientes, sincronizando... ☁️','success');
+        return;
+      }
       ST.perfil          = data.perfil          || ST.perfil;
       ST.ingresos        = data.ingresos         || [];
       ST.gastos          = data.gastos           || [];
@@ -3544,6 +3564,7 @@ async function loadFromFirebase(uid){
       ST.corridaChecks   = data.corridaChecks    || {};
       ST.corridaCerradas = data.corridaCerradas  || [];
       ST.notifConfig     = data.notifConfig      || {};
+      ST.updatedAt       = data.updatedAt        || null;
       saveToLocal();
       toast('Datos cargados desde la nube ☁️','success');
     }
@@ -3644,9 +3665,10 @@ function enterApp(){
   document.getElementById('auth-screen').style.display = 'none';
   initApp();
 }
-function cerrarSesion(){
+async function cerrarSesion(){
+  await flushSync();
   if(window._FB && ST.uid && !ST.uid.startsWith('local-')){
-    window._FB.auth.signOut().catch(()=>{});
+    await window._FB.auth.signOut().catch(()=>{});
   }
   ST.uid = null;
   saveToLocal();
@@ -5973,6 +5995,16 @@ function filterByQ(q,mes,ano,stripId,el){
   document.querySelectorAll(`#${stripId} .q-chip`).forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
 }
+
+// Flush sync antes de cerrar/recargar la página
+window.addEventListener('beforeunload', ()=>{
+  if(window._FB && ST.uid && !ST.uid.startsWith('local-') && window._syncTimer){
+    clearTimeout(window._syncTimer);
+    // Usar sendBeacon o escribir de forma sincrónica no es posible con Firestore,
+    // pero al menos cancelamos el debounce pendiente y disparamos la escritura.
+    _doFirestoreWrite().catch(()=>{});
+  }
+});
 
 // Check if already have session — esperar DOM listo
 window.addEventListener('load', ()=>{
