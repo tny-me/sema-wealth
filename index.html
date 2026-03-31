@@ -2113,11 +2113,11 @@ input, select, textarea {
         <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
           <div class="form-group" style="flex:2;min-width:140px;margin-bottom:0">
             <label class="form-label">Concepto</label>
-            <input type="text" class="form-control" id="hoy-concepto" placeholder="ej. Tacos, Gasolina, Farmacia" onkeydown="if(event.key==='Enter')registrarGastoHoy()">
+            <input type="text" class="form-control" id="hoy-concepto" placeholder="ej. Tacos, Gasolina, Farmacia" onkeydown="if(event.key==='Enter')agregarGastoHoy()">
           </div>
           <div class="form-group" style="flex:1;min-width:100px;margin-bottom:0">
             <label class="form-label">Monto ($)</label>
-            <input type="number" class="form-control" id="hoy-monto" placeholder="0.00" step="0.01" onkeydown="if(event.key==='Enter')registrarGastoHoy()">
+            <input type="number" class="form-control" id="hoy-monto" placeholder="0.00" step="0.01" onkeydown="if(event.key==='Enter')agregarGastoHoy()">
           </div>
           <div class="form-group" style="flex:1;min-width:120px;margin-bottom:0">
             <label class="form-label">Categoría</label>
@@ -2126,7 +2126,7 @@ input, select, textarea {
               <option>Entretenimiento</option><option>Ropa</option><option>Servicios</option><option>Otro</option>
             </select>
           </div>
-          <button class="btn btn-primary" style="height:40px;padding:0 20px;margin-bottom:0" onclick="registrarGastoHoy()">
+          <button class="btn btn-primary" style="height:40px;padding:0 20px;margin-bottom:0" onclick="agregarGastoHoy()">
             <i class="fa-solid fa-plus"></i> Anotar
           </button>
         </div>
@@ -6196,7 +6196,7 @@ function agregarGastoHoy(){
     mes: now.getMonth()+1, ano: now.getFullYear(),
     quincena: now.getDate()<=15?1:2,
     fecha: now.toISOString().slice(0,10),
-    esHoy: true
+    esHoy: true, esDeuda: false
   };
   ST.gastos.push(gasto);
   saveState();
@@ -6393,7 +6393,7 @@ function mRegistrar(){
     frecuencia:'Único', metodo:'Efectivo',
     mes:now.getMonth()+1, ano:now.getFullYear(),
     quincena:now.getDate()<=15?1:2,
-    fecha:now.toISOString().slice(0,10), esHoy:true
+    fecha:now.toISOString().slice(0,10), esHoy:true, esDeuda:false
   };
   ST.gastos.push(gasto);
   saveState();
