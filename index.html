@@ -773,28 +773,52 @@ input, select, textarea {
 ════════════════════════════════════════════════════ */
 @media(min-width:769px){
   html, body{
-    height:auto;
-    overflow:auto;
-    position:static;
-    width:auto;
+    height:auto !important;
+    overflow:auto !important;
+    position:static !important;
+    width:auto !important;
   }
   body{
-    display:flex;
+    display:flex !important;
     min-height:100vh;
     overflow-x:hidden;
   }
   .main{
-    margin-left:var(--sidebar);
-    height:auto;
-    overflow:visible;
-    display:flex;
-    flex-direction:column;
+    margin-left:var(--sidebar) !important;
+    height:auto !important;
+    overflow:visible !important;
+    display:flex !important;
+    flex-direction:column !important;
+    width:auto !important;
   }
-  .main.expanded{ margin-left:var(--sidebar-collapsed); }
+  .main.expanded{ margin-left:var(--sidebar-collapsed) !important; }
   .content{
-    padding:20px 16px 28px;
-    overflow:visible;
+    padding:20px 16px 28px !important;
+    overflow:visible !important;
+    background:var(--bg) !important;
+    flex:none !important;
   }
+  /* Topbar siempre visible en desktop */
+  .topbar{ display:flex !important; }
+  /* Sidebar siempre visible en desktop */
+  .sidebar{ display:flex !important; }
+  /* Elementos solo-móvil: ocultos en desktop */
+  .m-hero{ display:none !important; }
+  #m-home-body{ display:none !important; }
+  #mobile-bottom-nav{ display:none !important; }
+  #mobile-fab{ display:none !important; }
+  #mobile-fab-menu{ display:none !important; }
+  /* Elementos solo-desktop: visibles en desktop */
+  #page-hoy .kpi-grid{ display:grid !important; }
+  #page-hoy .card.mb16{ display:block !important; }
+  #page-hoy .g-65{ display:grid !important; }
+  /* Corrida desktop */
+  .m-corrida-native{ display:none !important; }
+  #page-corrida .card{ display:block !important; }
+  #page-corrida .card > .corrida-table-wrap{ display:block !important; }
+  #page-corrida > .card > .card-header{ display:flex !important; }
+  #page-corrida .g2{ display:grid !important; }
+  #page-corrida .g3.mb16{ display:grid !important; }
 }
 
 /* ════════════════════════════════════════════════════
