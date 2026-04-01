@@ -385,6 +385,8 @@ input, select, textarea {
 .sync-status{display:flex;align-items:center;gap:6px;padding:8px 12px;margin:8px 12px 0;background:#111820;border-radius:8px;font-size:10.5px;color:#4a5568;white-space:nowrap;overflow:hidden;}
 .sync-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--green);box-shadow:0 0 6px var(--green);}
 .sync-dot.offline{background:#4a5568;box-shadow:none;}
+.sync-dot.pending{background:var(--orange);box-shadow:0 0 6px var(--orange);animation:pulse-sync .8s infinite alternate;}
+@keyframes pulse-sync{from{opacity:1}to{opacity:0.3}}
 .nav-section{padding:20px 12px 4px;font-size:9.5px;font-weight:700;letter-spacing:0.1em;color:#3d4455;text-transform:uppercase;white-space:nowrap;overflow:hidden;}
 .nav-item{display:flex;align-items:center;gap:9px;padding:9px 12px;margin:1px 8px;border-radius:10px;color:#8b97a8;font-size:12.5px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;overflow:hidden;}
 .nav-item i{width:16px;text-align:center;font-size:12px;flex-shrink:0;}
@@ -1744,6 +1746,21 @@ input, select, textarea {
 <div id="toast-container"></div>
 <div id="sb-overlay" onclick="closeSidebarMobile()"></div>
 
+<!-- Modal resumen quincenal -->
+<div id="modal-resumen-q" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1200;align-items:center;justify-content:center;padding:16px">
+  <div style="background:var(--bg2);border-radius:18px;padding:28px 24px;max-width:420px;width:100%;box-shadow:var(--shadow-lg);position:relative">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:32px;margin-bottom:6px">🎯</div>
+      <div style="font-size:17px;font-weight:800;color:var(--text)" id="rq-titulo">Cierre de quincena</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px" id="rq-subtitulo"></div>
+    </div>
+    <div id="rq-body" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px"></div>
+    <button onclick="cerrarResumenQ()" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer">
+      ¡Entendido, a la nueva quincena! 🚀
+    </button>
+  </div>
+</div>
+
 <!-- ======================================================
      AUTH SCREEN — Fintech Premium
 ====================================================== -->
@@ -2076,7 +2093,7 @@ input, select, textarea {
       <!-- Inline add form -->
       <div class="m-qadd" id="m-qadd">
         <div class="m-qadd-row">
-          <input type="text" id="m-qadd-concept" placeholder="¿En qué gasté?" onkeydown="if(event.key==='Enter')mRegistrar()">
+          <input type="text" id="m-qadd-concept" placeholder="¿En qué gasté?" onkeydown="if(event.key==='Enter')mRegistrar()" oninput="onConceptoInput(this.value,'m-qadd-cat')">
           <input type="number" id="m-qadd-monto" placeholder="$0" step="0.01" inputmode="decimal" onkeydown="if(event.key==='Enter')mRegistrar()">
         </div>
         <select class="form-control" id="m-qadd-cat" style="margin-bottom:10px">
@@ -2111,6 +2128,9 @@ input, select, textarea {
       </div>
     </div>
 
+    <!-- Insight diario -->
+    <div id="hoy-insight" style="display:none;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12.5px;line-height:1.5;border-left:3px solid var(--accent)"></div>
+
     <!-- Registro rápido -->
     <div class="card mb16">
       <div class="card-header"><span class="card-title">¿En qué gasté?</span></div>
@@ -2118,7 +2138,7 @@ input, select, textarea {
         <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
           <div class="form-group" style="flex:2;min-width:140px;margin-bottom:0">
             <label class="form-label">Concepto</label>
-            <input type="text" class="form-control" id="hoy-concepto" placeholder="ej. Tacos, Gasolina, Farmacia" onkeydown="if(event.key==='Enter')agregarGastoHoy()">
+            <input type="text" class="form-control" id="hoy-concepto" placeholder="ej. Tacos, Gasolina, Farmacia" onkeydown="if(event.key==='Enter')agregarGastoHoy()" oninput="onConceptoInput(this.value,'hoy-categoria')">
           </div>
           <div class="form-group" style="flex:1;min-width:100px;margin-bottom:0">
             <label class="form-label">Monto ($)</label>
@@ -2133,6 +2153,9 @@ input, select, textarea {
           </div>
           <button class="btn btn-primary" style="height:40px;padding:0 20px;margin-bottom:0" onclick="agregarGastoHoy()">
             <i class="fa-solid fa-plus"></i> Anotar
+          </button>
+          <button class="btn btn-ghost btn-sm" style="height:40px;padding:0 12px;margin-bottom:0;color:var(--orange)" onclick="guardarPlantilla()" title="Guardar como gasto frecuente">
+            <i class="fa-solid fa-bolt"></i>
           </button>
         </div>
         <!-- Método de pago + Tarjeta -->
@@ -2164,6 +2187,14 @@ input, select, textarea {
       </div>
     </div>
 
+    <!-- Plantillas rápidas -->
+    <div id="hoy-plantillas-wrap" style="display:none;margin-bottom:14px">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;display:flex;align-items:center;gap:6px">
+        <i class="fa-solid fa-bolt" style="color:var(--orange)"></i> Gastos frecuentes
+      </div>
+      <div id="hoy-plantillas-list" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    </div>
+
     <!-- Lo de hoy -->
     <div class="g-65">
       <div class="card">
@@ -2183,6 +2214,11 @@ input, select, textarea {
         <div class="card mb16">
           <div class="card-header"><span class="card-title">Por categoría</span></div>
           <div class="card-body" id="hoy-cats" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+        <!-- Comparativa quincenal -->
+        <div class="card mb16" id="dash-comparativa-card">
+          <div class="card-header"><span class="card-title"><i class="fa-solid fa-chart-line" style="color:var(--accent);margin-right:6px;font-size:12px"></i>vs quincena anterior</span></div>
+          <div class="card-body" id="dash-comparativa" style="font-size:12.5px"></div>
         </div>
         <!-- Próximo pago urgente -->
         <div class="card" id="hoy-prox-card">
@@ -2688,8 +2724,20 @@ input, select, textarea {
         </div>
       </div>
 
-      <!-- COLUMNA DERECHA: Notificaciones + Reportes -->
+      <!-- COLUMNA DERECHA: Presupuesto por categoría + Notificaciones + Reportes -->
+
       <div>
+        <!-- ── PRESUPUESTO POR CATEGORÍA ── -->
+        <div class="card mb16">
+          <div class="card-header">
+            <span class="card-title"><i class="fa-solid fa-sliders" style="color:var(--accent);margin-right:6px"></i>Presupuesto por categoría</span>
+          </div>
+          <div class="card-body">
+            <p style="font-size:12px;color:var(--text3);margin-bottom:12px">Límite de gasto por quincena por categoría. Si no defines límite, no se aplica.</p>
+            <div id="cfg-presupuesto-cats" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
+            <button class="btn btn-primary btn-sm" onclick="guardarPresupuestoCats()"><i class="fa-solid fa-save"></i> Guardar límites</button>
+          </div>
+        </div>
         <!-- ── NOTIFICACIONES ── -->
         <div class="card mb16">
           <div class="card-header">
@@ -3469,7 +3517,24 @@ let ST = {
   ingresos: [], gastos: [], deudas: [], tarjetas: [], cargosTarjeta: [], prestamos: [],
   alertas: [], uid: null,
   corridaChecks: {},   // { "qKey": { "itemKey": true/false } }
-  corridaCerradas: []  // [ { label, mes, ano, q, resumen } ]
+  corridaCerradas: [], // [ { label, mes, ano, q, resumen } ]
+  plantillas: [],      // gastos rápidos favoritos [{id,concepto,monto,categoria,metodo}]
+  presupuestoCats: {}, // { "Alimentación": 1500, ... }
+  _lastSeenQ: null,    // "YYYY-MM-Q" — detectar cambio de quincena
+  _lastSyncAt: null    // ISO timestamp del último sync exitoso
+};
+
+// Keywords → categoría automática
+const CAT_KEYWORDS = {
+  'Alimentación': ['taco','tacos','comida','burger','pizza','sushi','pollo','carne','restaurant','restaurante','oxxo','walmart','soriana','chedraui','super','supermercado','carnitas','torta','pozole','birria','tamale','antojo','domino','kfc','mcdonalds','mac','bimbo','sabritas','fonda','cenad','desayun','almuerz','café','cafe','panad','tortill','abarrot'],
+  'Transporte':   ['uber','taxi','gasolina','gasolinera','diésel','diesel','bus','metro','camion','camión','lyft','didi','bolt','caseta','peaje','estacionamiento','parking','inditex','transporte'],
+  'Salud':        ['farmacia','doctor','médico','medico','consulta','medicina','hospital','clínica','clinica','dentista','óptica','optica','laboratorio','análisis','analisis','rx','medicamento','pastilla','vacuna'],
+  'Entretenimiento':['cine','netflix','spotify','amazon','prime','hbo','disney','apple tv','youtube','juego','teatro','concierto','bar','antro','club','copa','cerveza','chelas','evento','boleto','ticket','karaoke'],
+  'Ropa':         ['ropa','zapatos','playera','pantalón','pantalon','vestido','camisa','tenis','zapatilla','calcetín','calcetines','ropa interior','blusa','falda','saco','chamarra','abrigo','zara','h&m','pull','shein'],
+  'Servicios':    ['luz','cfe','agua','internet','telcel','att','telmex','izzi','totalplay','megacable','gas','servicio','predial','tenencia','seguro','prima','pago servicio'],
+  'Vivienda':     ['renta','rent','mantenimiento','hipoteca','cuota mantenimiento','condominio','casa','cuarto'],
+  'Educación':    ['escuela','universidad','colegio','libro','libros','curso','clases','taller','inscripción','inscripcion','colegiatura','útiles','utiles','papelería','papeleria'],
+  'Ahorro':       ['ahorro','inversión','inversion','cetes','afore','fondo','guardad']
 };
 
 function loadState(){
@@ -3486,6 +3551,12 @@ function saveState(){
 function localDateStr(d){
   d = d || new Date();
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+// Anti-XSS: escapar texto antes de insertar en innerHTML
+function esc(str){
+  const d = document.createElement('div');
+  d.textContent = String(str||'');
+  return d.innerHTML;
 }
 loadState();
 
@@ -3506,10 +3577,19 @@ async function _doFirestoreWrite(){
     corridaChecks:  ST.corridaChecks  || {},
     corridaCerradas:ST.corridaCerradas|| [],
     notifConfig:    ST.notifConfig    || {},
+    plantillas:     ST.plantillas     || [],
+    presupuestoCats:ST.presupuestoCats|| {},
     updatedAt:      ts
   }, { merge: true });
   ST.updatedAt = ts;
+  ST._lastSyncAt = ts;
   saveToLocal();
+  // Mostrar hora del último sync
+  const lbl = document.getElementById('sync-label');
+  if(lbl){
+    const hora = new Date(ts).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+    lbl.textContent = 'Sync ' + hora;
+  }
 }
 async function flushSync(){
   if(!window._FB || !ST.uid || ST.uid.startsWith('local-')) return;
@@ -3524,20 +3604,21 @@ async function syncData(){
     if(lbl) lbl.textContent = 'Modo local';
     return;
   }
+  // Mostrar estado "pendiente" inmediatamente
+  if(dot) dot.className = 'sync-dot pending';
+  if(lbl) lbl.textContent = 'Guardando...';
   // Debounce: esperar 1.5s antes de escribir a Firestore
   clearTimeout(window._syncTimer);
   window._syncTimer = setTimeout(async () => {
     try {
       await _doFirestoreWrite();
       const d2 = document.getElementById('sync-dot');
-      const l2 = document.getElementById('sync-label');
       if(d2) d2.className = 'sync-dot';
-      if(l2) l2.textContent = 'Sincronizado';
     } catch(e){
       const d2 = document.getElementById('sync-dot');
       const l2 = document.getElementById('sync-label');
       if(d2) d2.className = 'sync-dot offline';
-      if(l2) l2.textContent = 'Error sync';
+      if(l2) l2.textContent = 'Sin conexión';
       console.warn('Firestore sync error:', e);
     }
   }, 1500);
@@ -3568,8 +3649,11 @@ async function loadFromFirebase(uid){
       ST.alertas         = data.alertas          || [];
       ST.corridaChecks   = data.corridaChecks    || {};
       ST.corridaCerradas = data.corridaCerradas  || [];
-      ST.notifConfig     = data.notifConfig      || {};
-      ST.updatedAt       = data.updatedAt        || null;
+      ST.notifConfig      = data.notifConfig      || {};
+      ST.updatedAt        = data.updatedAt        || null;
+      ST._lastSyncAt      = data.updatedAt        || null;
+      ST.plantillas       = data.plantillas       || [];
+      ST.presupuestoCats  = data.presupuestoCats  || {};
       saveToLocal();
       toast('Datos cargados desde la nube ☁️','success');
     }
@@ -4048,10 +4132,10 @@ function refreshDashboard(){
   document.getElementById('kpi-cuotas-pct').innerHTML= '<span class="'+(cuotas/base>0.3?'down':'neutral')+'">'+fmtPct(pctCuotas*100)+' del ingreso</span>';
   document.getElementById('kpi-libre-pct').innerHTML = '<span class="'+(libre<0?'down':libre/base>0.3?'up':'neutral')+'">'+fmtPct(pctLibre*100)+' disponible</span>';
 
-  // Últimas transacciones
+  // Últimas transacciones (XSS-safe)
   const recents = [...ST.gastos].sort((a,b)=>b.id-a.id).slice(0,8);
   document.getElementById('tabla-recientes').innerHTML = recents.length
-    ? recents.map(g=>'<tr><td>'+g.concepto+'</td><td><span class="badge badge-blue">'+g.categoria+'</span></td><td class="mono" style="color:var(--red)">'+fmt(g.monto)+'</td></tr>').join('')
+    ? recents.map(g=>`<tr><td>${esc(g.concepto)}</td><td><span class="badge badge-blue">${esc(g.categoria)}</span></td><td class="mono" style="color:var(--red)">${fmt(g.monto)}</td></tr>`).join('')
     : '<tr><td colspan="3" style="text-align:center;color:var(--text3);padding:20px">Sin gastos registrados</td></tr>';
 
   // Badge alertas en nav
@@ -4059,7 +4143,74 @@ function refreshDashboard(){
   const badgeEl = document.getElementById('badge-alertas');
   if(badgeEl) badgeEl.textContent = alertCount;
 
+  // ── Comparativa quincena actual vs anterior ──
+  renderComparativaQ();
   renderDashCharts();
+}
+
+function renderComparativaQ(){
+  const el = document.getElementById('dash-comparativa');
+  if(!el) return;
+  const now = new Date();
+  const mesAct = now.getMonth()+1, anoAct = now.getFullYear(), qAct = now.getDate()<=15?1:2;
+  // Quincena anterior
+  let mesPrev=mesAct, anoPrev=anoAct, qPrev=qAct===1?2:1;
+  if(qAct===1){ mesPrev--; if(mesPrev===0){mesPrev=12;anoPrev--;} }
+
+  const gastosAct  = ST.gastos.filter(g=>g.mes===mesAct&&g.ano===anoAct&&g.quincena===qAct&&g.metodo!=='Tarjeta Crédito');
+  const gastosPrev = ST.gastos.filter(g=>g.mes===mesPrev&&g.ano===anoPrev&&g.quincena===qPrev&&g.metodo!=='Tarjeta Crédito');
+  const totalAct   = gastosAct.reduce((s,g)=>s+g.monto,0);
+  const totalPrev  = gastosPrev.reduce((s,g)=>s+g.monto,0);
+
+  if(!totalAct && !totalPrev){ el.style.display='none'; return; }
+  el.style.display='block';
+
+  const diff = totalPrev>0?(totalAct-totalPrev)/totalPrev*100:0;
+  const diffSign = diff>=0?'+':'';
+  const diffColor = diff>10?'var(--red)':diff<-10?'var(--green)':'var(--orange)';
+  const diffIcon  = diff>10?'▲':diff<-10?'▼':'●';
+
+  // Comparativa por categoría
+  const cats = new Set([...gastosAct.map(g=>g.categoria),...gastosPrev.map(g=>g.categoria)]);
+  const catRows = [...cats].map(cat=>{
+    const a = gastosAct.filter(g=>g.categoria===cat).reduce((s,g)=>s+g.monto,0);
+    const p = gastosPrev.filter(g=>g.categoria===cat).reduce((s,g)=>s+g.monto,0);
+    const d = p>0?(a-p)/p*100:0;
+    return {cat,a,p,d};
+  }).filter(r=>r.a>0||r.p>0).sort((a,b)=>b.a-a.a).slice(0,5);
+
+  const MESES_SHORT=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const labelAct  = `${qAct===1?'1-15':'16-30'} ${MESES_SHORT[mesAct-1]}`;
+  const labelPrev = `${qPrev===1?'1-15':'16-30'} ${MESES_SHORT[mesPrev-1]}`;
+
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <span style="font-size:13px;font-weight:700;color:var(--text)">Comparativa quincenal</span>
+      <span style="font-size:12px;font-weight:700;color:${diffColor}">${diffIcon} ${diffSign}${diff.toFixed(0)}%</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div style="background:var(--bg3);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;font-weight:700">${labelAct}</div>
+        <div style="font-size:16px;font-weight:800;color:var(--text);font-family:var(--font-mono)">${fmt(totalAct)}</div>
+        <div style="font-size:10px;color:var(--text3)">quincena actual</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;font-weight:700">${labelPrev}</div>
+        <div style="font-size:16px;font-weight:800;color:var(--text2);font-family:var(--font-mono)">${fmt(totalPrev)}</div>
+        <div style="font-size:10px;color:var(--text3)">quincena anterior</div>
+      </div>
+    </div>
+    ${catRows.length?`<div style="display:flex;flex-direction:column;gap:6px">
+      ${catRows.map(r=>{
+        const dc=r.d>10?'var(--red)':r.d<-10?'var(--green)':'var(--text3)';
+        const di=r.d>10?'▲':r.d<-10?'▼':'●';
+        return `<div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
+          <span style="color:var(--text2);min-width:100px">${esc(r.cat)}</span>
+          <span style="font-family:var(--font-mono);color:var(--text)">${fmt(r.a)}</span>
+          <span style="font-size:11px;color:${dc};font-weight:700;min-width:50px;text-align:right">${di} ${r.p>0?Math.abs(r.d).toFixed(0)+'%':'nuevo'}</span>
+        </div>`;
+      }).join('')}
+    </div>`:''}`;
 }
 
 function renderFuentesIngreso(){
@@ -5847,6 +5998,32 @@ function renderConfig(){
   document.getElementById('cfg-meta-ahorro').value = ST.perfil.metaAhorro||15;
   document.getElementById('cfg-umbral').value = ST.perfil.umbralAlerta||80;
   document.getElementById('cfg-user-email').textContent = ST.perfil.email||'Sin email';
+  renderPresupuestoCatsConfig();
+}
+const CATEGORIAS_LIST = ['Alimentación','Transporte','Salud','Entretenimiento','Ropa','Servicios','Vivienda','Educación','Ahorro','Otro'];
+function renderPresupuestoCatsConfig(){
+  const el = document.getElementById('cfg-presupuesto-cats');
+  if(!el) return;
+  el.innerHTML = CATEGORIAS_LIST.map(cat=>`
+    <div style="display:flex;align-items:center;gap:8px">
+      <label style="font-size:12.5px;color:var(--text2);min-width:120px;font-weight:500">${esc(cat)}</label>
+      <input type="number" class="form-control" style="flex:1;font-size:13px"
+        id="cfg-cat-${cat.replace(/\s/g,'_')}"
+        placeholder="Sin límite" min="0" step="100"
+        value="${ST.presupuestoCats[cat]||''}">
+    </div>`).join('');
+}
+function guardarPresupuestoCats(){
+  ST.presupuestoCats = ST.presupuestoCats || {};
+  CATEGORIAS_LIST.forEach(cat=>{
+    const el = document.getElementById('cfg-cat-'+cat.replace(/\s/g,'_'));
+    if(!el) return;
+    const v = parseFloat(el.value);
+    if(v>0) ST.presupuestoCats[cat] = v;
+    else delete ST.presupuestoCats[cat];
+  });
+  saveState();
+  toast('Límites guardados','success');
 }
 function guardarPerfil(){
   ST.perfil.nombre = document.getElementById('cfg-nombre').value.trim();
@@ -5961,6 +6138,8 @@ function initApp(){
     main.classList.add('expanded');
     if(icon) icon.className='fa-solid fa-chevron-right';
   }
+  // ── Detectar cambio de quincena y mostrar resumen ──
+  checkQuincenaCambio();
   // Iniciar en Hoy
   navigate('hoy', document.querySelector('.nav-item'));
   // ── Mobile: actualizar avatar en hero ──
@@ -6583,6 +6762,125 @@ function agregarGastoHoy(){
   renderHoy();
 }
 
+// ── RESUMEN QUINCENAL ──
+function checkQuincenaCambio(){
+  const now = new Date();
+  const q = now.getDate()<=15?1:2;
+  const claveActual = `${now.getFullYear()}-${now.getMonth()+1}-${q}`;
+  const claveAnterior = ST._lastSeenQ;
+  ST._lastSeenQ = claveActual;
+  saveToLocal();
+
+  if(!claveAnterior || claveAnterior === claveActual) return;
+  // Calcular la quincena anterior
+  const [ano, mes, qa] = claveAnterior.split('-').map(Number);
+  const gastosPrevQ = ST.gastos.filter(g=>
+    g.ano===ano && g.mes===mes && g.quincena===qa &&
+    g.metodo !== 'Tarjeta Crédito'
+  );
+  if(!gastosPrevQ.length) return;
+
+  const totalGastado = gastosPrevQ.reduce((s,g)=>s+g.monto,0);
+  const presupQ = calcIngresoBase() - calcFijosQ() - calcCuotasQ();
+  const ahorro = Math.max(0, presupQ - totalGastado);
+  const superado = totalGastado > presupQ;
+
+  // Categorías más gastadas
+  const catMap = {};
+  gastosPrevQ.forEach(g=>{ catMap[g.categoria]=(catMap[g.categoria]||0)+g.monto; });
+  const top3 = Object.entries(catMap).sort((a,b)=>b[1]-a[1]).slice(0,3);
+
+  const MESES_FULL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const titulo = document.getElementById('rq-titulo');
+  const sub    = document.getElementById('rq-subtitulo');
+  const body   = document.getElementById('rq-body');
+  if(!titulo||!sub||!body) return;
+
+  titulo.textContent = superado ? '⚠️ Quincena superada' : '✅ Quincena cerrada';
+  sub.textContent = `${qa===1?'1-15':'16-30'} de ${MESES_FULL[mes-1]} ${ano}`;
+
+  body.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;font-weight:700;letter-spacing:.04em">Gasté</div>
+        <div style="font-size:18px;font-weight:800;color:${superado?'var(--red)':'var(--text)'};font-family:var(--font-mono)">${fmt(totalGastado)}</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;font-weight:700;letter-spacing:.04em">${superado?'Exceso':'Ahorro'}</div>
+        <div style="font-size:18px;font-weight:800;color:${superado?'var(--red)':'var(--green)'};font-family:var(--font-mono)">${superado?'-':'+'} ${fmt(superado?totalGastado-presupQ:ahorro)}</div>
+      </div>
+    </div>
+    ${top3.length?`
+    <div style="background:var(--bg3);border-radius:10px;padding:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">Top categorías</div>
+      ${top3.map(([cat,monto])=>`
+        <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;border-bottom:1px solid var(--border)">
+          <span style="color:var(--text2)">${esc(cat)}</span>
+          <span style="font-family:var(--font-mono);font-weight:700;color:var(--text)">${fmt(monto)}</span>
+        </div>`).join('')}
+    </div>`:''}
+    <div style="font-size:12px;color:var(--text3);text-align:center;padding:4px">
+      ${superado?'Este período te pasaste del presupuesto. ¡Próxima quincena lo recuperas! 💪':'¡Lograste respetar tu presupuesto! Sigue así. 🌟'}
+    </div>`;
+
+  const modal = document.getElementById('modal-resumen-q');
+  if(modal) modal.style.display = 'flex';
+}
+function cerrarResumenQ(){
+  const modal = document.getElementById('modal-resumen-q');
+  if(modal) modal.style.display = 'none';
+}
+
+// ── PLANTILLAS RÁPIDAS ──
+function guardarPlantilla(){
+  const concepto = document.getElementById('hoy-concepto').value.trim();
+  const monto    = parseFloat(document.getElementById('hoy-monto').value)||0;
+  const cat      = document.getElementById('hoy-categoria').value;
+  const metodo   = document.getElementById('hoy-metodo')?.value || 'Efectivo';
+  if(!concepto){ toast('Escribe un concepto para guardar plantilla','error'); return; }
+  const existe = ST.plantillas.find(p=>p.concepto.toLowerCase()===concepto.toLowerCase());
+  if(existe){ toast('Ya tienes esa plantilla','info'); return; }
+  ST.plantillas.push({ id:Date.now(), concepto, monto, categoria:cat, metodo });
+  saveState();
+  renderPlantillas();
+  toast(`Plantilla "${concepto}" guardada ⚡`, 'success');
+}
+function usarPlantilla(id){
+  const p = ST.plantillas.find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById('hoy-concepto').value = p.concepto;
+  document.getElementById('hoy-monto').value    = p.monto || '';
+  document.getElementById('hoy-categoria').value = p.categoria;
+  const metodoEl = document.getElementById('hoy-metodo');
+  if(metodoEl){ metodoEl.value = p.metodo || 'Efectivo'; toggleTarjetaHoy(metodoEl.value); }
+  document.getElementById('hoy-concepto').focus();
+}
+function borrarPlantilla(id, e){
+  e.stopPropagation();
+  ST.plantillas = ST.plantillas.filter(p=>p.id!==id);
+  saveState();
+  renderPlantillas();
+}
+function renderPlantillas(){
+  const wrap = document.getElementById('hoy-plantillas-wrap');
+  const list = document.getElementById('hoy-plantillas-list');
+  if(!wrap || !list) return;
+  if(!ST.plantillas || !ST.plantillas.length){ wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  list.innerHTML = ST.plantillas.map(p=>`
+    <button onclick="usarPlantilla(${p.id})" style="
+      display:inline-flex;align-items:center;gap:6px;
+      background:var(--bg2);border:1px solid var(--border2);
+      border-radius:20px;padding:5px 10px 5px 12px;
+      font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;
+      transition:background .15s">
+      <i class="fa-solid fa-bolt" style="color:var(--orange);font-size:10px"></i>
+      ${esc(p.concepto)}${p.monto?` · ${fmt(p.monto)}`:''}
+      <span onclick="borrarPlantilla(${p.id},event)"
+        style="margin-left:4px;color:var(--text3);font-size:10px;padding:2px 4px;
+        border-radius:4px;background:var(--bg3)">✕</span>
+    </button>`).join('');
+}
 function toggleVerSemana(){
   verSemana = !verSemana;
   const btn = document.getElementById('hoy-ver-btn');
@@ -6627,6 +6925,87 @@ function renderHoy(){
   document.getElementById('hoy-fecha').textContent =
     `${now.getDate()} de ${meses[now.getMonth()]}`;
 
+  // ── Alerta visual de límite diario (color dinámico) ──
+  const libreEl = document.getElementById('hoy-libre');
+  const pctLibreHoy = presupDiario > 0 ? libreHoy / presupDiario : 1;
+  if(pctLibreHoy <= 0){
+    libreEl.style.color = 'var(--red)';
+  } else if(pctLibreHoy <= 0.2){
+    libreEl.style.color = 'var(--red)';
+  } else if(pctLibreHoy <= 0.5){
+    libreEl.style.color = 'var(--orange)';
+  } else {
+    libreEl.style.color = 'var(--green)';
+  }
+
+  // ── Insight diario inteligente ──
+  const insightEl = document.getElementById('hoy-insight');
+  if(insightEl && presupDiario > 0){
+    // Promedio diario real de últimos 30 días (excluyendo hoy)
+    const hace30 = new Date(now); hace30.setDate(hace30.getDate()-30);
+    const gastosRecientes = ST.gastos.filter(g=>{
+      if(!g.fecha || g.fecha === hoyStr) return false;
+      return new Date(g.fecha+'T12:00:00') >= hace30;
+    });
+    const diasConGasto = new Set(gastosRecientes.map(g=>g.fecha)).size;
+    const promedioHistorico = diasConGasto > 0
+      ? gastosRecientes.reduce((s,g)=>s+g.monto,0) / diasConGasto : 0;
+
+    let msg='', bgColor='', borderColor='';
+    if(totalHoy === 0){
+      msg = `<b>¡Buen inicio!</b> Presupuesto diario disponible: <b>${fmt(presupDiario)}</b>`;
+      bgColor='rgba(0,184,122,0.07)'; borderColor='var(--green)';
+    } else if(libreHoy <= 0){
+      const exceso = Math.abs(libreHoy);
+      msg = `<b>⚠️ Límite diario superado</b> en <b>${fmt(exceso)}</b>. Considera ajustar gastos del resto del día.`;
+      bgColor='rgba(224,45,74,0.07)'; borderColor='var(--red)';
+    } else if(pctLibreHoy <= 0.2){
+      msg = `<b>🔴 Casi al límite.</b> Solo te quedan <b>${fmt(libreHoy)}</b> de tu presupuesto de hoy.`;
+      bgColor='rgba(245,158,11,0.07)'; borderColor='var(--orange)';
+    } else if(promedioHistorico > 0){
+      const diff = totalHoy - promedioHistorico;
+      const pctDiff = promedioHistorico > 0 ? Math.abs(diff/promedioHistorico*100).toFixed(0) : 0;
+      if(diff > promedioHistorico * 0.25 && totalHoy > 0){
+        msg = `<b>📈 ${pctDiff}% más</b> que tu promedio diario (${fmt(promedioHistorico)}). Te quedan <b>${fmt(libreHoy)}</b>.`;
+        bgColor='rgba(245,158,11,0.07)'; borderColor='var(--orange)';
+      } else if(diff < -promedioHistorico * 0.2 && totalHoy > 0){
+        msg = `<b>✅ Muy buen ritmo.</b> Llevas <b>${pctDiff}% menos</b> que tu promedio. Quedan <b>${fmt(libreHoy)}</b>.`;
+        bgColor='rgba(0,184,122,0.07)'; borderColor='var(--green)';
+      } else {
+        msg = `Llevas <b>${fmt(totalHoy)}</b> hoy — ritmo normal. Quedan <b>${fmt(libreHoy)}</b> del presupuesto.`;
+        bgColor='rgba(0,102,204,0.06)'; borderColor='var(--accent)';
+      }
+    } else {
+      msg = `Llevas <b>${fmt(totalHoy)}</b> hoy. Quedan <b>${fmt(libreHoy)}</b> del presupuesto diario.`;
+      bgColor='rgba(0,102,204,0.06)'; borderColor='var(--accent)';
+    }
+    // Alerta si alguna categoría supera el 80% del presupuesto
+    const presupCats = ST.presupuestoCats || {};
+    const catMap2 = {};
+    gastosHoy.forEach(g=>{ catMap2[g.categoria]=(catMap2[g.categoria]||0)+g.monto; });
+    const alertasCat = Object.entries(presupCats)
+      .filter(([cat,lim])=> lim>0 && (catMap2[cat]||0)/lim >= 0.8 && (catMap2[cat]||0) > 0)
+      .map(([cat,lim])=>{
+        const used = catMap2[cat]||0;
+        const pct  = (used/lim*100).toFixed(0);
+        return `${esc(cat)} al ${pct}%`;
+      });
+    if(alertasCat.length){
+      const extra = `<br><span style="color:var(--orange)"><b>⚠️ Límite de categoría:</b> ${alertasCat.join(', ')}</span>`;
+      msg += extra;
+    }
+
+    insightEl.style.display = 'block';
+    insightEl.style.background = bgColor;
+    insightEl.style.borderLeftColor = borderColor;
+    insightEl.innerHTML = msg;
+  }
+
+  // ── Plantillas rápidas ──
+  renderPlantillas();
+  // ── Comparativa quincenal ──
+  renderComparativaQ();
+
   // Lista de gastos
   const listaEl = document.getElementById('hoy-lista');
   const items = verSemana ? gastosSemana : gastosHoy;
@@ -6669,16 +7048,27 @@ function renderHoy(){
       catEl.innerHTML = '<div style="color:var(--text3);font-size:12.5px;text-align:center;padding:8px">Sin datos</div>';
     } else {
       const max = sorted[0][1];
-      catEl.innerHTML = sorted.map(([cat,total])=>`
+      catEl.innerHTML = sorted.map(([cat,total])=>{
+        const presup = (ST.presupuestoCats||{})[cat];
+        const pctBar = presup ? Math.min(100,(total/presup*100)) : (total/max*100);
+        const barColor = presup
+          ? (pctBar>=100?'var(--red)':pctBar>=80?'var(--orange)':'var(--accent)')
+          : 'var(--accent)';
+        const label = presup
+          ? `<span class="mono" style="font-weight:600;color:${barColor}">${fmt(total)}</span>
+             <span style="color:var(--text3);font-size:10.5px"> / ${fmt(presup)}</span>`
+          : `<span class="mono" style="color:var(--text);font-weight:600">${fmt(total)}</span>`;
+        return `
         <div>
           <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
-            <span style="display:flex;align-items:center;gap:5px;color:var(--text2)">${catEmoji(cat)} ${cat}</span>
-            <span class="mono" style="color:var(--text);font-weight:600">${fmt(total)}</span>
+            <span style="display:flex;align-items:center;gap:5px;color:var(--text2)">${catEmoji(cat)} ${esc(cat)}</span>
+            <span>${label}</span>
           </div>
           <div style="height:4px;background:var(--bg4);border-radius:2px;overflow:hidden">
-            <div style="height:100%;border-radius:2px;background:var(--accent);width:${(total/max*100).toFixed(0)}%"></div>
+            <div style="height:100%;border-radius:2px;background:${barColor};width:${pctBar.toFixed(0)}%"></div>
           </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
     }
   }
 
@@ -6727,11 +7117,72 @@ function renderHoy(){
 }
 
 function eliminarGastoHoy(id){
+  const gasto = ST.gastos.find(g=>g.id===id);
+  if(!gasto) return;
+  // Remover temporalmente
   ST.gastos = ST.gastos.filter(g=>g.id!==id);
-  saveState();
   renderHoy();
+
+  // Toast con botón Deshacer
+  let undone = false;
+  const toastEl = document.createElement('div');
+  toastEl.className = 'toast info';
+  toastEl.innerHTML = `<span>${esc(gasto.concepto)} eliminado</span>
+    <button onclick="(function(){window._undoGasto_${id}&&window._undoGasto_${id}()})()"
+      style="margin-left:12px;background:rgba(255,255,255,0.25);border:none;color:#fff;
+      font-size:11px;font-weight:700;padding:3px 10px;border-radius:5px;cursor:pointer">
+      Deshacer
+    </button>`;
+  document.getElementById('toast-container').appendChild(toastEl);
+
+  window['_undoGasto_'+id] = function(){
+    undone = true;
+    ST.gastos.push(gasto);
+    ST.gastos.sort((a,b)=>a.id-b.id);
+    saveState();
+    renderHoy();
+    toastEl.style.opacity='0';
+    setTimeout(()=>toastEl.remove(),400);
+    toast('Gasto restaurado','success');
+  };
+
+  // Auto-guardar si no se deshace en 4s
+  setTimeout(()=>{
+    toastEl.style.opacity='0';
+    setTimeout(()=>toastEl.remove(),400);
+    delete window['_undoGasto_'+id];
+    if(!undone) saveState();
+  }, 4000);
 }
 
+// Sugerir categoría según palabras clave en el concepto
+function sugerirCategoria(concepto){
+  if(!concepto) return null;
+  const lower = concepto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  for(const [cat, keywords] of Object.entries(CAT_KEYWORDS)){
+    for(const kw of keywords){
+      if(lower.includes(kw)) return cat;
+    }
+  }
+  return null;
+}
+function onConceptoInput(val, catSelId){
+  const cat = sugerirCategoria(val);
+  if(!cat) return;
+  const sel = document.getElementById(catSelId);
+  if(sel && sel.value !== cat){
+    sel.value = cat;
+    sel.style.transition='background 0.3s';
+    sel.style.background='rgba(0,102,204,0.08)';
+    setTimeout(()=>{ if(sel) sel.style.background=''; }, 1200);
+    // Sincronizar chip de atajo si existe
+    const chip = document.getElementById('chip-'+cat);
+    if(chip){
+      document.querySelectorAll('.hoy-chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+    }
+  }
+}
 function catEmoji(cat){
   // Devuelve HTML de icono FA con color por categoría
   const map = {
