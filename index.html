@@ -2463,7 +2463,10 @@ input, select, textarea {
     </div>
 
     <!-- ── KPI strip ── -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px" id="hist-kpis"></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px" id="hist-kpis"></div>
+
+    <!-- ── Resumen visual quincena ── -->
+    <div id="hist-resumen-q" style="display:none;margin-bottom:14px"></div>
 
     <!-- ── Filtros ── -->
     <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
@@ -4914,7 +4917,9 @@ function agregarGasto(){
   recalcularCorrida();
 }
 function eliminarGasto(id){
-  // Si tenía cargo automático a tarjeta, revertirlo
+  const gasto = ST.gastos.find(g=>g.id===id);
+  if(!gasto) return;
+  // Si tenía cargo automático a tarjeta, revertirlo temporalmente
   const cargo = ST.cargosTarjeta.find(c=>c.origenGastoId===id);
   if(cargo){
     const t = ST.tarjetas.find(t=>t.id===cargo.tarjetaId);
@@ -4922,7 +4927,39 @@ function eliminarGasto(id){
     ST.cargosTarjeta = ST.cargosTarjeta.filter(c=>c.origenGastoId!==id);
   }
   ST.gastos = ST.gastos.filter(g=>g.id!==id);
-  saveState(); renderGastos(); refreshDashboard();
+  renderHistorial(); renderHoy();
+
+  let undone = false;
+  const toastEl = document.createElement('div');
+  toastEl.className = 'toast info';
+  toastEl.innerHTML = `<span>${esc(gasto.concepto)} eliminado</span>
+    <button onclick="(function(){window._undoHist_${id}&&window._undoHist_${id}()})()"
+      style="margin-left:12px;background:rgba(255,255,255,0.25);border:none;color:#fff;
+      font-size:11px;font-weight:700;padding:3px 10px;border-radius:5px;cursor:pointer">
+      Deshacer
+    </button>`;
+  document.getElementById('toast-container').appendChild(toastEl);
+
+  window['_undoHist_'+id] = function(){
+    undone = true;
+    ST.gastos.push(gasto);
+    ST.gastos.sort((a,b)=>a.id-b.id);
+    if(cargo){
+      ST.cargosTarjeta.push(cargo);
+      const t = ST.tarjetas.find(t=>t.id===cargo.tarjetaId);
+      if(t) t.saldo = (t.saldo||0)+cargo.monto;
+    }
+    saveState(); renderHistorial(); renderHoy();
+    toastEl.style.opacity='0';
+    setTimeout(()=>toastEl.remove(),400);
+    toast('Gasto restaurado','success');
+  };
+  setTimeout(()=>{
+    toastEl.style.opacity='0';
+    setTimeout(()=>toastEl.remove(),400);
+    delete window['_undoHist_'+id];
+    if(!undone){ saveState(); refreshDashboard(); }
+  }, 4000);
   if(currentPage==='tarjetas') renderTarjetas();
 }
 
@@ -5129,28 +5166,87 @@ function renderHistorial(){
   // ── Sort: newest first ──
   rows.sort((a,b)=> (b._sort||'').localeCompare(a._sort||''));
 
-  // ── KPIs ──
-  const totalGastos   = ST.gastos.reduce((s,g)=>s+g.monto,0);
-  const totalDeudas   = ST.deudas.filter(d=>d.activa).reduce((s,d)=>s+(d.cuota||0)*(d.quincenas-d.pagadas||0),0);
-  const totalPrestamos= ST.prestamos.filter(p=>p.activa).reduce((s,p)=>s+(p.pago||0)*(p.plazo-p.pagadas||0),0);
-  const totalCargos   = ST.cargosTarjeta.filter(c=>c.tipo==='cargo').reduce((s,c)=>s+c.monto,0);
+  // ── KPIs de la quincena actual (útiles, no acumulados) ──
+  const now2 = new Date();
+  const mesAct2 = now2.getMonth()+1, anoAct2 = now2.getFullYear(), qAct2 = now2.getDate()<=15?1:2;
+  const hoyStr2 = localDateStr(now2);
+  // Días de la quincena: 1-15 o 16-fin
+  const diaInicioQ = qAct2===1 ? 1 : 16;
+  const diaFinQ    = qAct2===1 ? 15 : new Date(anoAct2, mesAct2, 0).getDate();
+  const diasTotQ   = diaFinQ - diaInicioQ + 1;
+  const diasTransc = now2.getDate() - diaInicioQ + 1;
+  const diasRest   = diaFinQ - now2.getDate();
+
+  const gastosQ = ST.gastos.filter(g=>
+    g.mes===mesAct2 && g.ano===anoAct2 && g.quincena===qAct2 && g.metodo!=='Tarjeta Crédito'
+  );
+  const gastosHoyH = ST.gastos.filter(g=>g.fecha===hoyStr2 && g.metodo!=='Tarjeta Crédito');
+  const totalQ     = gastosQ.reduce((s,g)=>s+g.monto,0);
+  const totalHoyH  = gastosHoyH.reduce((s,g)=>s+g.monto,0);
+  const presupQ2   = Math.max(0, calcIngresoBase()-calcFijosQ()-calcCuotasQ());
+  const pctUsadoQ  = presupQ2>0 ? totalQ/presupQ2 : 0;
+  const promDiario = diasTransc>0 ? totalQ/diasTransc : 0;
+  // Proyección al fin de quincena al ritmo actual
+  const proyeccion = promDiario * diasTotQ;
+  const colPct = pctUsadoQ>=1?'var(--red)':pctUsadoQ>=0.8?'var(--orange)':'var(--green)';
 
   const kpiEl = document.getElementById('hist-kpis');
   if(kpiEl){
-    const kpis = [
-      { label:'Total gastos', val:fmt(totalGastos), icon:'fa-receipt', color:'var(--red)' },
-      { label:'Deuda pendiente', val:fmt(totalDeudas+totalPrestamos), icon:'fa-file-invoice-dollar', color:'var(--orange)' },
-      { label:'Cargos tarjeta', val:fmt(totalCargos), icon:'fa-credit-card', color:'var(--accent)' },
-      { label:'Registros totales', val: ST.gastos.length + ST.deudas.length + ST.prestamos.length, icon:'fa-list', color:'var(--green)' },
-    ];
-    kpiEl.innerHTML = kpis.map(k=>`
+    kpiEl.innerHTML = `
       <div class="kpi" style="padding:14px 16px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-          <i class="fa-solid ${k.icon}" style="color:${k.color};font-size:14px"></i>
-          <span class="kpi-label" style="margin:0">${k.label}</span>
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">
+          <i class="fa-solid fa-wallet" style="color:var(--accent);font-size:13px"></i>
+          <span class="kpi-label" style="margin:0">Quincena actual</span>
         </div>
-        <div class="kpi-val mono" style="font-size:18px;color:${k.color}">${k.val}</div>
-      </div>`).join('');
+        <div class="kpi-val mono" style="font-size:18px;color:${colPct}">${fmt(totalQ)}</div>
+        <div style="height:3px;background:var(--bg4);border-radius:2px;margin-top:6px;overflow:hidden">
+          <div style="height:100%;background:${colPct};width:${Math.min(100,pctUsadoQ*100).toFixed(0)}%;border-radius:2px"></div>
+        </div>
+        <div style="font-size:10.5px;color:var(--text3);margin-top:4px">${(pctUsadoQ*100).toFixed(0)}% de ${fmt(presupQ2)}</div>
+      </div>
+      <div class="kpi" style="padding:14px 16px">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">
+          <i class="fa-solid fa-sun" style="color:var(--orange);font-size:13px"></i>
+          <span class="kpi-label" style="margin:0">Gasté hoy</span>
+        </div>
+        <div class="kpi-val mono" style="font-size:18px;color:var(--red)">${fmt(totalHoyH)}</div>
+        <div style="font-size:10.5px;color:var(--text3);margin-top:6px">${hoyStr2}</div>
+      </div>
+      <div class="kpi" style="padding:14px 16px">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">
+          <i class="fa-solid fa-chart-line" style="color:var(--purple);font-size:13px"></i>
+          <span class="kpi-label" style="margin:0">Promedio diario</span>
+        </div>
+        <div class="kpi-val mono" style="font-size:18px;color:var(--text)">${fmt(promDiario)}</div>
+        <div style="font-size:10.5px;color:var(--text3);margin-top:6px">proyección ${fmt(proyeccion)}/Q</div>
+      </div>
+      <div class="kpi" style="padding:14px 16px">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">
+          <i class="fa-solid fa-hourglass-half" style="color:${diasRest<=3?'var(--red)':'var(--green)'};font-size:13px"></i>
+          <span class="kpi-label" style="margin:0">Días restantes</span>
+        </div>
+        <div class="kpi-val mono" style="font-size:18px;color:${diasRest<=3?'var(--red)':'var(--text)'}">${diasRest}</div>
+        <div style="font-size:10.5px;color:var(--text3);margin-top:6px">libre: ${fmt(Math.max(0,presupQ2-totalQ))}</div>
+      </div>`;
+  }
+
+  // ── Top 3 categorías de la quincena ──
+  const resumenEl = document.getElementById('hist-resumen-q');
+  if(resumenEl && gastosQ.length){
+    const catTotals = {};
+    gastosQ.forEach(g=>{ catTotals[g.categoria]=(catTotals[g.categoria]||0)+g.monto; });
+    const top3 = Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).slice(0,3);
+    resumenEl.style.display='flex';
+    resumenEl.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center';
+    resumenEl.innerHTML = `<span style="font-size:11.5px;color:var(--text3);font-weight:600">Top quincena:</span>`
+      + top3.map(([cat,monto])=>`
+        <span style="display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:5px 12px;font-size:12px">
+          ${catEmoji(cat)}
+          <span style="font-weight:600;color:var(--text2)">${esc(cat)}</span>
+          <span style="font-family:var(--font-mono);color:var(--red);font-weight:700">${fmt(monto)}</span>
+        </span>`).join('');
+  } else if(resumenEl){
+    resumenEl.style.display='none';
   }
 
   // ── Count ──
@@ -5168,30 +5264,58 @@ function renderHistorial(){
     return;
   }
 
-  tbody.innerHTML = rows.map(row=>{
+  // ── Agrupar por fecha para insertar separadores ──
+  const grupoFechaLabel = (sortKey)=>{
+    if(!sortKey||sortKey.length<10) return null;
+    const hoy = localDateStr();
+    const ayer = localDateStr(new Date(Date.now()-86400000));
+    const hace7 = localDateStr(new Date(Date.now()-7*86400000));
+    const fecha = sortKey.slice(0,10);
+    if(fecha===hoy) return 'Hoy';
+    if(fecha===ayer) return 'Ayer';
+    if(fecha>hace7) return 'Esta semana';
+    return new Date(fecha+'T12:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'});
+  };
+
+  let ultimoGrupo = null;
+  let htmlRows = '';
+  rows.forEach(row=>{
+    const label = grupoFechaLabel(row._sort);
+    if(label && label!==ultimoGrupo){
+      ultimoGrupo = label;
+      htmlRows += `<tr><td colspan="8" style="
+        padding:8px 16px 4px;background:var(--bg3);
+        font-size:10.5px;font-weight:700;color:var(--text3);
+        text-transform:uppercase;letter-spacing:0.06em;
+        border-top:1px solid var(--border)">
+        ${esc(label)}
+      </td></tr>`;
+    }
+
     if(row._type==='gasto'){
       const g = row.g;
       const tarjeta = row.tarjeta;
       const esTDC = g.metodo==='Tarjeta Crédito';
       const metodoHtml = tarjeta
-        ? `<span style="display:inline-flex;align-items:center;gap:5px;font-size:11.5px"><span style="width:8px;height:8px;border-radius:50%;background:${tarjeta.color||'#0099e6'};display:inline-block;flex-shrink:0"></span>${tarjeta.nombre}</span>`
-        : `<span style="font-size:11.5px;color:var(--text2)">${g.metodo||'Efectivo'}</span>`;
+        ? `<span style="display:inline-flex;align-items:center;gap:5px;font-size:11.5px"><span style="width:8px;height:8px;border-radius:50%;background:${tarjeta.color||'#0099e6'};display:inline-block;flex-shrink:0"></span>${esc(tarjeta.nombre)}</span>`
+        : `<span style="font-size:11.5px;color:var(--text2)">${esc(g.metodo||'Efectivo')}</span>`;
       const fechaLabel = g.fecha
         ? new Date(g.fecha+'T12:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})
         : `${MESES[(g.mes||1)-1]} ${g.ano} · Q${g.quincena===1?'1-15':'16-30'}`;
-      return `<tr style="cursor:pointer${g.yaPagado?';opacity:0.55':''}" onclick="abrirEditGasto(${g.id})" title="Editar">
+      htmlRows += `<tr style="cursor:pointer${g.yaPagado?';opacity:0.55':''}" onclick="abrirEditGasto(${g.id})" title="Editar">
         <td><div style="width:32px;height:32px;border-radius:9px;background:var(--bg3);display:flex;align-items:center;justify-content:center">${catEmoji(g.categoria)}</div></td>
-        <td style="font-weight:600">${g.concepto}${g.yaPagado?' <span class="badge badge-green" style="font-size:9px">Pagado</span>':''}</td>
+        <td style="font-weight:600">${esc(g.concepto)}${g.yaPagado?' <span class="badge badge-green" style="font-size:9px">Pagado</span>':''}</td>
         <td><span class="badge badge-blue"><i class="fa-solid fa-receipt" style="font-size:9px"></i> Gasto</span></td>
-        <td><span class="badge" style="background:${CATS_COLORS[g.categoria]||'#6b7280'}22;color:${CATS_COLORS[g.categoria]||'#6b7280'}">${g.categoria}</span></td>
+        <td><span class="badge" style="background:${CATS_COLORS[g.categoria]||'#6b7280'}22;color:${CATS_COLORS[g.categoria]||'#6b7280'}">${esc(g.categoria)}</span></td>
         <td style="font-size:12px;color:var(--text2)">${fechaLabel}</td>
         <td class="mono" style="color:${esTDC?'var(--accent)':'var(--red)'};font-weight:600">${fmt(g.monto)}</td>
-        <td>${metodoHtml}<br><span class="badge" style="background:transparent;border:1px solid var(--border);color:var(--text3);font-size:9.5px;margin-top:3px">${g.frecuencia}</span></td>
+        <td>${metodoHtml}<br><span class="badge" style="background:transparent;border:1px solid var(--border);color:var(--text3);font-size:9.5px;margin-top:3px">${esc(g.frecuencia||'')}</span></td>
         <td onclick="event.stopPropagation()" style="white-space:nowrap">
           <button class="btn btn-ghost btn-sm" onclick="abrirEditGasto(${g.id})"><i class="fa-solid fa-pen"></i></button>
           <button class="btn btn-danger btn-sm" onclick="eliminarGasto(${g.id})"><i class="fa-solid fa-trash"></i></button>
         </td>
       </tr>`;
+      return;
     }
 
     if(row._type==='deuda'){
@@ -5205,9 +5329,9 @@ function renderHistorial(){
       const statusBadge = d.activa
         ? `<span class="badge badge-orange">Activa</span>`
         : `<span class="badge badge-green">Liquidada</span>`;
-      return `<tr>
+      htmlRows += `<tr>
         <td><div style="width:32px;height:32px;border-radius:9px;background:rgba(245,158,11,0.1);display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-file-invoice-dollar" style="color:var(--orange);font-size:14px"></i></div></td>
-        <td style="font-weight:600">${d.nombre}<br><span style="font-size:11px;color:var(--text3)">${d.tipo||'Deuda'}</span></td>
+        <td style="font-weight:600">${esc(d.nombre)}<br><span style="font-size:11px;color:var(--text3)">${esc(d.tipo||'Deuda')}</span></td>
         <td><span class="badge badge-orange"><i class="fa-solid fa-landmark" style="font-size:9px"></i> Deuda</span></td>
         <td>${statusBadge}</td>
         <td style="font-size:12px;color:var(--text2)">Pago ${pagadas}/${total} quincenas<br>
@@ -5223,6 +5347,7 @@ function renderHistorial(){
         </td>
         <td></td>
       </tr>`;
+      return;
     }
 
     if(row._type==='prestamo'){
@@ -5233,9 +5358,9 @@ function renderHistorial(){
       const montoPag = pagadas * (p.pago||0);
       const montoPend= restantes * (p.pago||0);
       const pct      = Math.min(100,(pagadas/total*100));
-      return `<tr>
+      htmlRows += `<tr>
         <td><div style="width:32px;height:32px;border-radius:9px;background:rgba(109,40,217,0.1);display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-hand-holding-dollar" style="color:var(--purple);font-size:14px"></i></div></td>
-        <td style="font-weight:600">${p.nombre}<br><span style="font-size:11px;color:var(--text3)">${p.tipo||'Préstamo'}</span></td>
+        <td style="font-weight:600">${esc(p.nombre)}<br><span style="font-size:11px;color:var(--text3)">${esc(p.tipo||'Préstamo')}</span></td>
         <td><span class="badge badge-purple"><i class="fa-solid fa-hand-holding-dollar" style="font-size:9px"></i> Préstamo</span></td>
         <td>${p.activa?'<span class="badge badge-orange">Activo</span>':'<span class="badge badge-green">Liquidado</span>'}</td>
         <td style="font-size:12px;color:var(--text2)">Pago ${pagadas}/${total} quincenas<br>
@@ -5251,6 +5376,7 @@ function renderHistorial(){
         </td>
         <td></td>
       </tr>`;
+      return;
     }
 
     if(row._type==='tarjeta'){
@@ -5259,21 +5385,21 @@ function renderHistorial(){
       const fechaLabel = c.fecha
         ? new Date(c.fecha+'T12:00:00').toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})
         : '—';
-      return `<tr>
+      htmlRows += `<tr>
         <td><div style="width:32px;height:32px;border-radius:9px;background:rgba(0,102,204,0.1);display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-credit-card" style="color:var(--accent);font-size:14px"></i></div></td>
-        <td style="font-weight:600">${c.concepto}</td>
+        <td style="font-weight:600">${esc(c.concepto)}</td>
         <td><span class="badge badge-blue"><i class="fa-solid fa-credit-card" style="font-size:9px"></i> Tarjeta</span></td>
-        <td><span style="font-size:11.5px;color:var(--text2)">${c.categoria||'—'}</span></td>
+        <td><span style="font-size:11.5px;color:var(--text2)">${esc(c.categoria||'—')}</span></td>
         <td style="font-size:12px;color:var(--text2)">${fechaLabel}</td>
         <td class="mono" style="color:${c.tipo==='cargo'?'var(--red)':'var(--green)'};font-weight:600">${c.tipo==='cargo'?'-':'+'} ${fmt(c.monto)}</td>
-        <td>${tarjeta?`<span style="display:inline-flex;align-items:center;gap:5px;font-size:11.5px"><span style="width:8px;height:8px;border-radius:50%;background:${tarjeta.color||'#0099e6'};display:inline-block"></span>${tarjeta.nombre}</span>`:'—'}</td>
+        <td>${tarjeta?`<span style="display:inline-flex;align-items:center;gap:5px;font-size:11.5px"><span style="width:8px;height:8px;border-radius:50%;background:${tarjeta.color||'#0099e6'};display:inline-block"></span>${esc(tarjeta.nombre)}</span>`:'—'}</td>
         <td onclick="event.stopPropagation()">
           <button class="btn btn-danger btn-sm" onclick="eliminarCargo(${c.id})"><i class="fa-solid fa-trash"></i></button>
         </td>
       </tr>`;
     }
-    return '';
-  }).join('');
+  });
+  tbody.innerHTML = htmlRows;
 }
 
 // ============================================================
